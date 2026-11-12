@@ -1,14 +1,14 @@
 /* 참고 홈페이지의 원장별 일정 화면을 앱 공통 내비게이션 안에 표시합니다. */
-.app-shell:has(.schedule-view){background:#fff}
+.app-shell:has(.schedule-view){background:var(--bg)}
 .schedule-view{color:#171717}
 .schedule-page-top{margin:5px 0 30px}
 .schedule-page-top h1{font-size:21px;letter-spacing:-.8px;margin-bottom:18px}
 .schedule-page-top p{font-size:12px;line-height:1.9;color:#7a818a;margin:0}
-.schedule-calendar-card{background:none;padding:0;margin:0}
-.schedule-calendar-card .calendar-head{justify-content:center;gap:25px;margin-bottom:26px}
+.schedule-calendar-card{background:#fff;padding:25px 16px 20px;margin:0;border-radius:28px}
+.schedule-calendar-card .calendar-head{justify-content:space-between;gap:18px;margin:0 7px 26px}
 .schedule-calendar-card .calendar-head strong{font-size:25px;letter-spacing:-1px}
-.schedule-calendar-card .calendar-head .icon-button{width:23px;height:23px;border:1px solid #a9adb3;border-radius:50%;padding:3px}
-.schedule-calendar-card .calendar-head svg{width:14px;height:14px}
+.schedule-calendar-card .calendar-head .icon-button{width:32px;height:32px;border:0;border-radius:50%;padding:5px}
+.schedule-calendar-card .calendar-head svg{width:22px;height:22px}
 .doctor-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:350px;margin:0 auto}
 .doctor-filter{border:1px solid transparent;border-radius:30px;background:var(--doctor-color,#2d83f5);color:#fff;font-size:12px;font-weight:700;min-height:39px;padding:10px 13px;transition:box-shadow .15s,transform .15s}
 .doctor-filter.all-filter{background:#fff;border-color:#d4d7dd;color:#68717d}
@@ -19,16 +19,18 @@
 .schedule-calendar-card .calendar-key .legend-morning{background:linear-gradient(90deg,#747c84 50%,#fff 50%)}
 .schedule-calendar-card .calendar{display:block}
 .calendar-weekdays,.calendar-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
-.calendar-weekdays{padding:0 0 15px;border-bottom:1px solid #e5e5e8;margin-bottom:12px}
+.calendar-weekdays{padding:0 0 15px;margin-bottom:12px}
 .schedule-calendar-card .calendar .weekday{padding:0;font-size:11px;color:#77838a}
 .schedule-calendar-card .calendar .weekday:first-child{color:#df606d}
 .schedule-calendar-card .calendar .weekday:last-child{color:#2d83f5}
 .calendar-week{position:relative;padding:0 2px 5px;margin-bottom:8px;align-items:stretch}
-.schedule-calendar-card .calendar .calendar-week>button[data-day]:not(.closure-band){grid-row:1;min-height:49px;aspect-ratio:auto;border:1px solid transparent;border-radius:10px;padding:4px 0;background:transparent;position:relative;gap:6px;justify-content:center;color:#171717;font-weight:650}
+.schedule-calendar-card .calendar .calendar-week>button[data-day]:not(.closure-band){grid-row:1;min-height:60px;aspect-ratio:auto;border:0;border-radius:10px;padding:4px 0;background:transparent;position:relative;gap:6px;justify-content:center;color:var(--text);font-weight:500}
 .schedule-calendar-card .calendar .calendar-week>button.sun{color:#df606d}
 .schedule-calendar-card .calendar .calendar-week>button.sat{color:#2d83f5}
-.schedule-calendar-card .calendar .calendar-week>button.selected{background:#dff2ff;border:2px solid #171717;color:#171717}
-.schedule-calendar-card .calendar .calendar-week>button.today>.day-number{background:#0074ff;color:white;border-radius:7px;padding:1px 4px;text-decoration:none}
+.schedule-calendar-card .calendar .calendar-week>button.selected{background:transparent;border:0;color:var(--text)}
+.schedule-calendar-card .calendar .day-number{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:13px}
+.schedule-calendar-card .calendar .calendar-week>button.selected>.day-number{background:var(--blue);color:#fff}
+.schedule-calendar-card .calendar .calendar-week>button.today>.day-number{text-decoration:none;box-shadow:inset 0 0 0 1px var(--blue)}
 .schedule-calendar-card .calendar .calendar-week>button.today:after{display:none}
 .schedule-calendar-card .calendar .today-label{position:absolute;top:-6px;left:50%;transform:translateX(-50%);border-radius:6px;padding:1px 4px;background:#0074ff;color:#fff;font-size:7px;font-weight:600;line-height:1.1;white-space:nowrap}
 .calendar-outside{grid-row:1;display:flex;justify-content:center;align-items:flex-start;padding-top:8px;color:#b9c0ca;font-size:12px}
@@ -38,11 +40,11 @@
 .schedule-calendar-card .calendar .closure-band{height:21px;min-height:21px;border:0;border-radius:0;aspect-ratio:auto;margin:1px 0;padding:2px 1px;background:#ffedf0;color:#171717;font-size:10px;font-weight:400;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;line-height:17px;display:block;z-index:1}
 .schedule-calendar-card .calendar .closure-band.band-start{border-left:2px solid #f3778b;border-radius:6px 0 0 6px}
 .schedule-calendar-card .calendar .closure-band.band-end{border-right:2px solid #f3778b;border-top-right-radius:6px;border-bottom-right-radius:6px}
-.schedule-day-panel{margin:34px 0 0}
+.schedule-day-panel{margin:20px 0 0;background:#fff;border-radius:28px;padding:25px 20px 20px}
 .schedule-day-panel>.section-label{font-size:11px;color:#7a818a;margin:0 0 14px}
 .schedule-day-panel>h2{font-size:24px;letter-spacing:-1px;margin:0 0 25px}
-.schedule-view .schedule-entry{background:#f4f4f5;border:0;border-radius:13px;padding:17px 18px;margin:0 0 13px;min-height:99px}
-.schedule-view .schedule-entry+.schedule-entry{border:0}
+.schedule-view .schedule-entry{background:#fff;border:0;border-radius:0;padding:17px 0;margin:0;min-height:99px}
+.schedule-view .schedule-entry+.schedule-entry{border-top:1px solid var(--line)}
 .schedule-view .schedule-doctor{gap:5px;flex-wrap:wrap}
 .schedule-portrait{width:33px;height:33px;border:1px solid var(--doctor-color);border-radius:50%;object-fit:cover;margin-right:3px;background:#eaf3ff}
 .schedule-doctor>strong{font-size:18px;letter-spacing:-.7px}
@@ -55,9 +57,9 @@
 .schedule-view .schedule-time strong{margin:0;font-weight:500;color:#666b72}
 .schedule-view .closure-time strong{color:#eb384f}
 .closure-time small{font-size:11px;margin-left:3px}
-.schedule-hours-panel{border:1px solid #d8d8dd;border-radius:13px;margin-top:48px;padding:25px 15px 16px}
+.schedule-hours-panel{border:0;border-radius:28px;margin-top:20px;padding:25px 20px 20px;background:#fff}
 .schedule-hours-panel>h2{font-size:17px;margin:0 0 25px}
-.schedule-hours-list{background:#f4f4f5;border-radius:12px;padding:8px 9px;margin:0}
+.schedule-hours-list{background:#fff;padding:0;margin:0}
 .schedule-hours-list>div{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:15px 7px;border-bottom:1px solid #e2e2e5;font-size:12px;line-height:1.6}
 .schedule-hours-list dt{font-weight:700;white-space:nowrap}
 .schedule-hours-list dd{margin:0;color:#536780;white-space:nowrap}
@@ -67,4 +69,4 @@
 .schedule-hours-list .hours-substitute dd{font-size:11px}
 .schedule-hours-list .hours-lunch{border:0}
 .schedule-hours-list dt small{font-size:7px;color:#fff;background:#646d76;padding:3px 4px;border-radius:4px;margin-left:3px;vertical-align:middle}
-@media(max-width:360px){.doctor-filter{padding:9px 11px}.schedule-view .schedule-entry{padding-inline:13px}.schedule-hours-list>div{padding-inline:2px;font-size:11px}.schedule-calendar-card .calendar .closure-band{font-size:9px}}
+@media(max-width:360px){.doctor-filter{padding:9px 11px}.schedule-calendar-card{padding-inline:12px}.schedule-day-panel,.schedule-hours-panel{padding-inline:16px}.schedule-hours-list>div{padding-inline:2px;font-size:11px}.schedule-calendar-card .calendar .closure-band{font-size:9px}}
