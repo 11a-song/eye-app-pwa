@@ -1,0 +1,227 @@
+'use strict';
+const $ = selector => document.querySelector(selector);
+const icons = {
+  home: '<path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/>',
+  hospital: '<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 7h6m-3-3v6m-3 4h1m4 0h1m-6 3h1m4 0h1"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2m-8 3h2"/>',
+  before: '<rect x="5" y="4" width="14" height="17" rx="3"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m9 13 2 2 4-4"/>',
+  after: '<path d="M12 21s-9-5-9-12a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 7-9 12-9 12Z"/><path d="M8 12h3l1-3 2 6 1-3h2"/>',
+  lens: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  faq: '<path d="M21 11a9 9 0 0 1-9 9H4l-1 1v-9a9 9 0 1 1 18-1Z"/><path d="M10 8a2 2 0 0 1 4 0c0 2-2 2-2 4m0 3h.01"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
+  chat: '<path d="M21 11a9 9 0 0 1-9 9H6l-4 2 1-6a9 9 0 1 1 18-5Z"/><path d="M8 11h.01m4 0h.01m4 0h.01"/>',
+  phone: '<path d="m6 3 4 4-2 3a16 16 0 0 0 6 6l3-2 4 4-2 3C10 22 2 14 3 5Z"/>',
+  arrow: '<path d="m9 5 7 7-7 7"/>',
+  back: '<path d="m15 5-7 7 7 7"/>',
+  close: '<path d="m6 6 12 12M6 18 18 6"/>',
+  download: '<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
+  search: '<circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/>',
+  check: '<path d="m5 12 4 4L19 6"/>'
+};
+const icon = (name, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${icons[name] || icons.lens}</svg>`;
+const translations = {
+  '홈':['Home','首页'], '내정보':['My info','我的信息'], '언어선택':['Language','语言'], '문의':['Contact','咨询'],
+  '병원 이용 안내':['Hospital guide','就诊指南'], '원장별 진료 일정':['Doctor schedules','医生出诊安排'],
+  '수술 전':['Before surgery','术前指南'], '수술 후':['After surgery','术后指南'], '드림렌즈':['Dream lenses','角膜塑形镜'],
+  'FAQ 자주묻는 질문':['Frequently asked questions','常见问题'], '진료시간과 내원 안내를 확인하세요':['Hours and visit information','查看门诊时间与就诊须知'],
+  '방문 전 의료진의 일정을 살펴보세요':['Plan your visit with your doctor','就诊前查看医生安排'],
+  '검사와 수술 전, 차근차근 준비해요':['Get ready for your examination and surgery','为检查和手术做好准备'],
+  '수술 후 필요한 안내를 확인하세요':['Find your aftercare information','查看术后护理指南'],
+  '렌즈 상담부터 사용 안내까지':['Consultation and lens care guides','咨询与镜片使用指南'],
+  '궁금한 내용을 빠르게 찾아보세요':['Find answers to your questions','快速查找问题答案'],
+  '이전':['Back','返回'], '앱 설치 안내':['Install app','安装应用'], '문의하기':['Contact us','联系我们'],
+  '편한 방법으로 연세제일안과에 문의하세요.':['Choose how to contact our clinic.','请选择联系方式。'],
+  '카카오톡 상담':['KakaoTalk','KakaoTalk 咨询'], '채팅으로 문의하기':['Chat with our clinic','在线咨询'],
+  '네이버 예약':['Naver booking','Naver 预约'], '예약 페이지로 이동':['Open booking page','前往预约页面'],
+  '전화 상담':['Call our clinic','电话咨询'], '닫기':['Close','关闭'], '검색 결과가 없습니다.':['No results found.','未找到结果。'],
+  '필요한 안내를 한곳에':['Your guide, in one place','所需指南，一站查看'],
+  '연세제일안과와 함께하는':['Here with Yonsei Jeil Eye Clinic','延世第一眼科与您同行'],
+  '더 편안한 눈 건강 관리':['Care for a clearer tomorrow','让眼健康管理更轻松'],
+  '방문 전부터 진료 후까지, 필요한 메뉴를 선택해 주세요.':['Before and after your visit, choose a guide below.','从就诊前到就诊后，请选择所需菜单。'],
+  '당신의 눈을 위한 바른 진료':['Care for your eyes','用心守护您的眼健康'],
+  '언어를 선택해 주세요.':['Choose your language.','请选择语言。'],
+  '기본 메뉴와 화면 안내의 언어를 변경합니다. 병원 원문 안내는 한국어로 제공됩니다.':['Changes menus and basic navigation. Original clinic information is provided in Korean.','更改菜单和基本导航语言。医院原始指南以韩语提供。']
+};
+let language = 'ko';
+try { language = ['ko','en','zh'].includes(localStorage.getItem('clinic-language')) ? localStorage.getItem('clinic-language') : 'ko'; } catch {}
+const t = value => language === 'ko' ? value : translations[value]?.[language === 'en' ? 0 : 1] || value;
+const menus = [
+  ['guide','hospital','병원 이용 안내','진료시간과 내원 안내를 확인하세요'],
+  ['schedule','calendar','원장별 진료 일정','방문 전 의료진의 일정을 살펴보세요'],
+  ['before','before','수술 전','검사와 수술 전, 차근차근 준비해요'],
+  ['after','after','수술 후','수술 후 필요한 안내를 확인하세요'],
+  ['dream','lens','드림렌즈','렌즈 상담부터 사용 안내까지'],
+  ['faq','faq','FAQ 자주묻는 질문','궁금한 내용을 빠르게 찾아보세요']
+];
+const main = $('#main');
+let currentRoute = '';
+let calendarMonth = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Seoul'}));
+let selectedDate = new Date(calendarMonth);
+const todayKey = date => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+let scheduleData = { doctors: [], schedules: [], closures: [] };
+let scheduleState = 'idle';
+let scheduleDoctor = '';
+let scheduleLoadedAt = 0;
+let scheduleRequest;
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const scheduleDateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+const faqs = [
+  ['예약은 어떻게 하나요?','하단 가운데 문의 버튼을 누르면 네이버 예약, 카카오톡 상담, 전화 상담을 선택할 수 있습니다.'],
+  ['병원 진료시간이 궁금해요.','평일 08:30~19:00, 토요일 08:30~17:00입니다. 점심시간은 12:30~14:00입니다. 공휴일 및 원장별 일정은 방문 전 병원에 확인해 주세요.'],
+  ['원장별 진료 일정은 어디에서 확인하나요?','홈 화면의 원장별 진료 일정 메뉴에서 날짜와 원장을 선택하면 홈페이지와 동일한 진료 및 휴진 일정을 확인할 수 있습니다.'],
+  ['수술 일정 변경은 어떻게 하나요?','기존 시력교정 안내에 따라 예약 변경은 최소 하루 전에 병원으로 연락해 주세요. 시력교정수술센터 전화는 064-727-2703입니다.'],
+  ['휴대폰에 앱으로 설치할 수 있나요?','홈 화면 아래 앱 설치 안내를 눌러 주세요. 아이폰은 Safari의 공유 메뉴에서, 안드로이드는 브라우저 메뉴에서 홈 화면에 추가할 수 있습니다.'],
+  ['내 진료 정보가 보이지 않아요.','현재 버전은 병원 안내용 앱입니다. 로그인, 예약 내역, 개인 진료 정보는 아직 연결되어 있지 않습니다.']
+];
+function accordion(title, body) { return `<details class="accordion"><summary>${title}${icon('arrow')}</summary><div class="accordion-body">${body}</div></details>`; }
+function pageTop(title, description) { return `<div class="page-top"><a class="back" href="#/">${icon('back')}${t('이전')}</a><p class="eyebrow">YONSEI JEIL EYE CLINIC</p><h1>${t(title)}</h1><p class="page-description">${t(description)}</p></div>`; }
+function callButton() { return `<a class="primary-button" href="tel:0647272700">${icon('phone')}064-727-2700</a>`; }
+function home() {
+  return `<section class="home-intro"><p class="eyebrow">${t('필요한 안내를 한곳에')}</p><h1>${t('연세제일안과와 함께하는')}<br><em>${t('더 편안한 눈 건강 관리')}</em></h1><p class="intro-text">${t('방문 전부터 진료 후까지, 필요한 메뉴를 선택해 주세요.')}</p></section><div class="menu-list">${menus.map(([id,name,title,description]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span><span class="menu-desc">${t(description)}</span></span>${icon('arrow','menu-arrow')}</a>`).join('')}</div><div class="home-foot"><span>${t('당신의 눈을 위한 바른 진료')}</span><button class="text-button" data-action="install">${icon('download')}${t('앱 설치 안내')}</button></div>`;
+}
+function guide() {
+  return pageTop(menus[0][2],menus[0][3]) + `<section class="card"><h2>진료시간</h2><dl class="hours"><div><dt>월 ~ 금요일</dt><dd>08:30 ~ 19:00</dd></div><div><dt>토요일</dt><dd>08:30 ~ 17:00</dd></div><div><dt>공휴일</dt><dd>08:30 ~ 13:00</dd></div><div><dt>대체공휴일</dt><dd>08:30 ~ 19:00</dd></div><div><dt>점심시간</dt><dd>12:30 ~ 14:00</dd></div></dl><p class="note">기존 홈페이지에 기재된 진료시간입니다. 휴진 및 변경 일정은 방문 전 확인해 주세요.</p></section><section class="card"><img class="clinic-photo" src="assets/clinic.jpg" alt="연세제일안과 병원 내부" loading="lazy"><h2>내원 안내</h2><p>시력교정 검사 및 수술은 3층 시력교정수술센터로 내원해 주세요.</p><p>예약 변경이나 방문 관련 문의는 병원으로 연락해 주세요.</p>${callButton()}</section>`;
+}
+function schedule() {
+  return pageTop(menus[1][2],menus[1][3]) + `<label class="section-label" for="doctor">의료진 선택</label><select class="doctor-picker" id="doctor">${scheduleOptions()}</select><section class="card schedule-calendar-card" style="margin-top:0"><div class="calendar-head"><button class="icon-button" data-month="-1" aria-label="이전 달">${icon('back')}</button><strong id="month-label"></strong><button class="icon-button" data-month="1" aria-label="다음 달">${icon('arrow')}</button></div><div class="calendar" id="calendar" aria-label="날짜 선택"></div><div class="calendar-key"><span><i class="work-dot"></i>진료</span><span><i class="closed-dot"></i>휴진</span></div></section><section class="card"><p class="section-label" id="selected-label" style="margin-top:0"></p><div id="schedule-detail" aria-live="polite"></div></section><section class="card" id="month-closures"></section><p class="note">진료 일정은 변경될 수 있으니 방문 전 확인해 주세요. 일정 미등록은 휴진을 의미하지 않습니다.</p>`;
+}
+function scheduleOptions() {
+  return `<option value="">전체 의료진</option><option value="__closed">휴진 일정</option>` + scheduleData.doctors.map(doctor => `<option value="${escapeHtml(doctor.id)}" ${scheduleDoctor===doctor.id?'selected':''}>${escapeHtml(doctor.name)}</option>`).join('');
+}
+async function loadSchedules(force = false) {
+  if (scheduleRequest) return scheduleRequest;
+  if (!force && scheduleState === 'ready' && Date.now() - scheduleLoadedAt < 60000) return;
+  scheduleState = 'loading';
+  if (currentRoute === 'schedule') calendar();
+  scheduleRequest = (async () => {
+    try {
+      scheduleData = await window.loadDoctorScheduleData();
+      scheduleState = 'ready'; scheduleLoadedAt = Date.now();
+      if (scheduleDoctor && scheduleDoctor !== '__closed' && !scheduleData.doctors.some(doctor => doctor.id === scheduleDoctor)) scheduleDoctor = '';
+    } catch {
+      scheduleState = 'error';
+      scheduleData = { doctors: [], schedules: [], closures: [] };
+    } finally {
+      scheduleRequest = null;
+      if (currentRoute === 'schedule') {
+        $('#doctor').innerHTML = scheduleOptions(); $('#doctor').value = scheduleDoctor;
+        calendar();
+      }
+    }
+  })();
+  return scheduleRequest;
+}
+function doctorColor(doctor) {
+  const colors = {blue:'#2d83f5',amber:'#c48a25',teal:'#22a396',purple:'#9070c8'};
+  return /^#[0-9a-f]{6}$/i.test(doctor?.color || '') ? doctor.color : colors[doctor?.color] || colors.blue;
+}
+function selectedSchedule(date) {
+  const filter = scheduleDoctor === '__closed' ? '' : scheduleDoctor;
+  return { entries: scheduleDoctor === '__closed' ? [] : window.ClinicSchedule.entries(scheduleData,date,filter), closures: window.ClinicSchedule.closuresOn(scheduleData,date,filter) };
+}
+function renderScheduleDetail() {
+  const detail = $('#schedule-detail');
+  const closurePanel = $('#month-closures');
+  closurePanel.hidden = true;
+  if (scheduleState !== 'ready') {
+    const failed = scheduleState === 'error';
+    detail.innerHTML = `<div class="empty">${icon('calendar')}<h2>${failed?'일정을 불러오지 못했습니다':'원장 일정을 불러오는 중입니다'}</h2><p>${failed?'인터넷 연결을 확인한 후 다시 시도해 주세요.':'잠시만 기다려 주세요.'}</p>${failed?'<button class="primary-button" data-schedule-retry>다시 불러오기</button>':''}</div>`;
+    return;
+  }
+  const date = scheduleDateKey(selectedDate), day = selectedSchedule(date);
+  const doctorById = id => scheduleData.doctors.find(doctor => doctor.id === id);
+  const heading = (doctor,closed,label) => `<div class="schedule-doctor"><span class="doctor-marker" style="background:${doctorColor(doctor)}"></span><strong>${escapeHtml(doctor?.name || '의료진')}</strong><span class="period-tag ${closed?'closed-tag':''}">${label}</span></div>`;
+  detail.innerHTML = day.closures.map(closure => `<article class="schedule-entry">${heading(doctorById(closure.doctorId),true,'휴진')}<p class="schedule-time">${escapeHtml(closure.startDate)} ~ ${escapeHtml(closure.endDate)}</p></article>`).join('') + day.entries.map(entry => {
+    const work = window.ClinicSchedule.workHours(entry,date);
+    return `<article class="schedule-entry">${heading(doctorById(entry.doctorId),false,work.label)}<p class="schedule-time">진료시간 <strong>${work.hours}</strong></p></article>`;
+  }).join('');
+  const holiday = window.holidayData?.dates?.[date];
+  if (holiday) detail.innerHTML = `<p class="holiday-notice">${escapeHtml(holiday)}${holiday.includes('대체공휴일')?' · 정상 진료':''}</p>` + detail.innerHTML;
+  if (!day.closures.length && !day.entries.length) detail.innerHTML += `<div class="empty"><p>${!scheduleData.doctors.length?'등록된 원장 정보가 없습니다.':scheduleDoctor==='__closed'?'선택한 날짜에는 휴진 일정이 없습니다.':'등록된 일정이 없습니다.<br>일정 미등록은 휴진을 의미하지 않습니다.'}</p></div>`;
+  const start = scheduleDateKey(new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),1));
+  const end = scheduleDateKey(new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,0));
+  const monthClosures = scheduleData.closures.filter(row => row.startDate <= end && row.endDate >= start && (!scheduleDoctor || scheduleDoctor==='__closed' || row.doctorId===scheduleDoctor));
+  closurePanel.hidden = !monthClosures.length;
+  closurePanel.innerHTML = `<h2>이번 달 휴진 안내</h2>` + monthClosures.map(row => `<article class="schedule-entry">${heading(doctorById(row.doctorId),true,'휴진')}<p class="schedule-time">${escapeHtml(row.startDate)} ~ ${escapeHtml(row.endDate)}</p></article>`).join('');
+}
+function calendar() {
+  const year = calendarMonth.getFullYear(), month = calendarMonth.getMonth();
+  $('#month-label').textContent = new Intl.DateTimeFormat(language === 'ko' ? 'ko-KR' : language === 'zh' ? 'zh-CN' : 'en-US',{year:'numeric',month:'long'}).format(calendarMonth);
+  const weekdays = language === 'en' ? ['S','M','T','W','T','F','S'] : language === 'zh' ? ['日','一','二','三','四','五','六'] : ['일','월','화','수','목','금','토'];
+  let html = weekdays.map(day => `<span class="weekday">${day}</span>`).join('');
+  html += '<span></span>'.repeat(new Date(year,month,1).getDay());
+  for (let day = 1; day <= new Date(year,month+1,0).getDate(); day++) {
+    const date = new Date(year,month,day), selected = todayKey(date) === todayKey(selectedDate);
+    const isToday = todayKey(date) === todayKey(new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'})));
+    const key = scheduleDateKey(date);
+    const state = scheduleState==='ready' ? selectedSchedule(key) : {entries:[],closures:[]};
+    const dots = state.entries.slice(0,5).map(entry=>`<i style="background:${doctorColor(scheduleData.doctors.find(doctor=>doctor.id===entry.doctorId))}"></i>`).join('') + (state.closures.length?'<i class="closed-dot"></i>':'');
+    const holiday = window.holidayData?.dates?.[key];
+    html += `<button data-day="${day}" class="${date.getDay()===0 || holiday?'sun':date.getDay()===6?'sat':''} ${selected?'selected':''} ${isToday?'today':''}" aria-label="${year}년 ${month+1}월 ${day}일${holiday?' '+escapeHtml(holiday):''}${state.entries.length?' 진료 '+state.entries.length+'명':''}${state.closures.length?' 휴진 '+state.closures.length+'명':''}" aria-pressed="${selected}"><span>${day}</span><span class="day-dots" aria-hidden="true">${dots}</span></button>`;
+  }
+  $('#calendar').innerHTML = html;
+  $('#selected-label').textContent = new Intl.DateTimeFormat(language === 'ko' ? 'ko-KR' : language === 'zh' ? 'zh-CN' : 'en-US',{year:'numeric',month:'long',day:'numeric',weekday:'short'}).format(selectedDate);
+  renderScheduleDetail();
+}
+function before() {
+  return pageTop(menus[2][2],menus[2][3]) + `<div class="card blue-card">${icon('before')}<h2>수술 종류에 맞는 안내를 확인하세요</h2><p>기존 홈페이지의 시력교정 안내를 바탕으로 구성했습니다. 개인별 준비 사항은 병원에서 받은 안내를 따라 주세요.</p></div><p class="section-label">시력교정 검사 · 수술</p>` + accordion('검사 및 수술 전 준비','검사와 수술을 앞두고 렌즈를 착용 중이라면 착용 중단 기간을 미리 확인해 주세요. 필요한 기간은 렌즈 종류에 따라 달라집니다. 자세한 일정은 시력교정수술센터에 확인해 주세요.') + accordion('내원 당일 안내','기존 병원 안내에 따라 눈화장은 피하고 신분증을 지참해 주세요. 검사 및 수술 당일은 자가운전이 어려울 수 있으므로 대중교통 이용 또는 보호자 동반 내원을 안내하고 있습니다.') + accordion('검사 시간과 방문 장소','기초검사는 약 2~3시간 소요됩니다. 시력교정수술센터는 3층입니다. 예약 변경은 최소 하루 전에 연락해 주세요.<a class="primary-button" href="tel:0647272703">시력교정수술센터 064-727-2703</a>') + accordion('백내장 · 기타 수술','수술 종류별 상세 안내는 준비 중입니다. 담당 의료진에게 받은 개별 안내를 확인해 주세요.');
+}
+function after() {
+  return pageTop(menus[3][2],menus[3][3]) + `<div class="card blue-card">${icon('after')}<h2>수술 후에도 함께하겠습니다</h2><p>수술 방법과 처방에 따라 관리 방법이 달라집니다. 병원에서 받은 안내문을 먼저 확인해 주세요.</p></div>` + ['스마일라식','퍼스널아이즈 라섹','올레이져 라섹','렌즈삽입술','백내장'].map(name => accordion(`${name} 수술 후 안내`,'수술별 상세 안내는 준비 중입니다. 처방 안약 사용, 다음 내원일과 생활 관리에 관한 내용은 담당 의료진의 안내를 따라 주세요.')).join('') + `<section class="card"><h2>수술 후 문의가 있으신가요?</h2><p>회복 과정에 관한 궁금한 점은 병원에 문의해 주세요.</p>${callButton()}</section>`;
+}
+function dream() {
+  return pageTop(menus[4][2],menus[4][3]) + `<section class="card blue-card">${icon('lens')}<h2>아이의 눈 건강을 위한 안내</h2><p>드림렌즈 상담과 사용에 필요한 정보를 확인하는 공간입니다.</p></section><section class="card"><h2>드림렌즈 진료 과정</h2>${[['상담 및 검사','아이의 눈 상태와 렌즈 사용에 관해 상담합니다.'],['의료진 안내 확인','검사 결과에 따른 렌즈 안내를 받습니다.'],['사용 안내 및 경과 확인','렌즈 사용법과 다음 내원일을 확인합니다.']].map(([title,text],i)=>`<div class="step"><span>0${i+1}</span><div><h3>${title}</h3><p>${text}</p></div></div>`).join('')}<p class="note">화면 구성용 과정 안내입니다. 실제 진료 과정은 병원 확인 후 확정합니다.</p></section>` + accordion('착용 · 세척 · 보관 안내','병원에서 확인한 상세 안내를 준비 중입니다. 현재 사용 중인 렌즈의 관리 방법은 병원에서 받은 안내를 확인해 주세요.') + `<button class="primary-button" data-action="contact">${icon('chat')}드림렌즈 상담 문의</button>`;
+}
+function faq() {
+  return pageTop(menus[5][2],menus[5][3]) + `<div class="search">${icon('search')}<input id="faq-search" type="search" placeholder="궁금한 내용을 검색해 보세요" aria-label="자주 묻는 질문 검색"></div><div id="faq-list">${faqs.map(([q,a])=>accordion(q,a)).join('')}</div><div class="card blue-card"><h2>찾으시는 답변이 없나요?</h2><p>병원에 직접 문의해 주세요.</p><button class="primary-button" data-action="contact">${icon('chat')}${t('문의하기')}</button></div>`;
+}
+function profile() { return pageTop('내정보','나의 진료 안내를 확인하는 공간입니다.') + `<section class="card empty"><div class="profile-icon">${icon('user')}</div><h2>내 진료 정보를 만날 공간</h2><p>로그인 및 개인 진료 정보 연동을 준비 중입니다.<br>현재는 병원 안내 메뉴를 이용해 주세요.</p><a class="primary-button" href="#/">홈으로 돌아가기</a></section><section class="card"><h2>예약 확인이 필요하신가요?</h2><p>네이버에서 예약하신 내역은 네이버 예약 페이지에서 확인할 수 있습니다.</p><button class="primary-button" data-action="contact">${t('문의하기')}</button></section>`; }
+function render(focus = false) {
+  const route = location.hash.replace(/^#\/?/,'').split('?')[0];
+  currentRoute = route;
+  const pages = {guide,schedule,before,after,dream,faq,profile};
+  main.innerHTML = (pages[route] || home)();
+  document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
+  document.title = `${t(menus.find(item => item[0] === route)?.[2] || (route === 'profile' ? '내정보' : '홈'))} · 연세제일안과`;
+  $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${icon('home')}<span>${t('홈')}</span></a><a class="nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${icon('user')}<span>${t('내정보')}</span></a><button class="nav-item contact-trigger" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog"><span class="contact-orb">${icon('chat')}</span><span>${t('문의')}</span></button><button class="nav-item" data-action="language" aria-haspopup="dialog" aria-controls="language-dialog">${icon('globe')}<span>${t('언어선택')}</span></button>`;
+  if (route === 'schedule') { $('#doctor').value = scheduleDoctor; calendar(); loadSchedules(); }
+  if (focus) { window.scrollTo(0,0); main.focus({preventScroll:true}); }
+}
+function sheetHeader(title, id) { return `<div class="sheet-header"><h2 id="${id}">${t(title)}</h2><button class="icon-button" data-close aria-label="${t('닫기')}">${icon('close')}</button></div>`; }
+let deferredInstall;
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstall=event;});
+function openSheet(kind) {
+  const dialog = $(`#${kind}-dialog`);
+  if (kind === 'contact') dialog.innerHTML = sheetHeader('문의하기','contact-title') + `<p>${t('편한 방법으로 연세제일안과에 문의하세요.')}</p><a class="contact-option" href="https://pf.kakao.com/_mRjtn/chat" target="_blank" rel="noopener noreferrer"><span class="channel kakao">${icon('chat')}</span><span><strong>${t('카카오톡 상담')}</strong><small>${t('채팅으로 문의하기')}</small></span>${icon('arrow','menu-arrow')}</a><a class="contact-option" href="https://m.booking.naver.com/booking/13/bizes/1336750?theme=place&lang=ko&area=pll" target="_blank" rel="noopener noreferrer"><span class="channel naver">N</span><span><strong>${t('네이버 예약')}</strong><small>${t('예약 페이지로 이동')}</small></span>${icon('arrow','menu-arrow')}</a><a class="contact-option" href="tel:0647272700"><span class="channel phone">${icon('phone')}</span><span><strong>${t('전화 상담')}</strong><small>064-727-2700</small></span>${icon('arrow','menu-arrow')}</a>`;
+  if (kind === 'language') dialog.innerHTML = sheetHeader('언어선택','language-title') + `<p>${t('언어를 선택해 주세요.')}<br>${t('기본 메뉴와 화면 안내의 언어를 변경합니다. 병원 원문 안내는 한국어로 제공됩니다.')}</p>${[['ko','한국어','Korean'],['en','English','영어'],['zh','简体中文','중국어']].map(([id,label,desc])=>`<button class="language-option ${language===id?'selected':''}" data-language="${id}" lang="${id}" aria-pressed="${language===id}"><span>${label} <small>· ${desc}</small></span>${language===id?icon('check'):''}</button>`).join('')}`;
+  if (kind === 'install') dialog.innerHTML = sheetHeader('앱 설치 안내','install-title') + `<p>홈 화면에서 연세제일안과를 바로 만나보세요.</p><section class="card blue-card"><h3>아이폰 · iPad</h3><p>Safari에서 앱 주소를 연 뒤 공유 버튼 → <strong>홈 화면에 추가</strong>를 선택해 주세요.</p><h3>안드로이드</h3><p>Chrome 메뉴 → <strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong>를 선택해 주세요.</p></section><p>실제 휴대폰 설치에는 HTTPS로 배포된 주소가 필요합니다.</p>${deferredInstall?'<button class="primary-button" data-install>지금 설치하기</button>':''}`;
+  dialog.showModal();
+}
+document.addEventListener('click',async event=>{
+  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry]');
+  if (!button) return;
+  if (button.dataset.action) openSheet(button.dataset.action);
+  if (button.hasAttribute('data-close')) button.closest('dialog').close();
+  if (button.dataset.language) { language = button.dataset.language; try { localStorage.setItem('clinic-language',language); } catch {} $('#language-dialog').close();render(); }
+  if (button.hasAttribute('data-schedule-retry')) loadSchedules(true);
+  if (button.dataset.month) { calendarMonth = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+Number(button.dataset.month),1);selectedDate = new Date(calendarMonth);calendar(); }
+  if (button.dataset.day) { selectedDate = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),Number(button.dataset.day));calendar(); }
+  if (button.hasAttribute('data-install') && deferredInstall) { const prompt = deferredInstall; deferredInstall=null;await prompt.prompt();await prompt.userChoice;$('#install-dialog').close(); }
+});
+document.addEventListener('change',event=>{if(event.target.id==='doctor') { scheduleDoctor=event.target.value; calendar(); }});
+document.addEventListener('input',event=>{
+  if(event.target.id!=='faq-search')return;
+  const query=event.target.value.trim().toLocaleLowerCase();
+  const matches=faqs.filter(item=>item.join(' ').toLocaleLowerCase().includes(query));
+  $('#faq-list').innerHTML=matches.length?matches.map(([q,a])=>accordion(q,a)).join(''):`<p class="faq-empty">${t('검색 결과가 없습니다.')}</p>`;
+});
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{
+  if(event.target!==dialog)return;
+  const bounds=dialog.getBoundingClientRect();
+  if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)dialog.close();
+}));
+window.addEventListener('hashchange',()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());render(true);});
+window.addEventListener('offline',()=>{const toast=$('#toast');toast.textContent='오프라인입니다. 저장된 안내 화면을 표시합니다. 외부 문의 연결은 인터넷이 필요합니다.';toast.classList.add('visible');setTimeout(()=>toast.classList.remove('visible'),5000);});
+if('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(()=>console.warn('오프라인 기능을 시작하지 못했습니다.'));
+render();

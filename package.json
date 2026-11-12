@@ -1,0 +1,6 @@
+{
+  "name": "jeileye-mobile-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": { "dev": "node scripts/serve.cjs", "start": "node scripts/serve.cjs", "check": "node --check app.js && node --check sw.js && node --check scripts/serve.cjs", "test": "node tests/schedule.cjs" }
+}

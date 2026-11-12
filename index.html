@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#F5F5F9">
+  <meta name="description" content="연세제일안과 모바일 안내 앱. 병원 이용 안내, 원장별 진료 일정과 진료 전후 안내를 확인하세요.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>연세제일안과 · 모바일 안내</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script src="scripts/holidays.js" defer></script>
+  <script src="scripts/schedule-source.js" defer></script>
+  <script src="scripts/schedule-model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header"><a href="#/" aria-label="연세제일안과 홈"><img src="assets/logo.svg" alt="연세제일안과" width="224" height="39"></a><span class="header-caption">PATIENT GUIDE</span></header>
+    <main id="main" tabindex="-1"></main>
+    <nav class="bottom-nav" aria-label="하단 메뉴" id="bottom-nav"></nav>
+  </div>
+  <dialog id="contact-dialog" class="sheet contact-sheet" aria-labelledby="contact-title"></dialog>
+  <dialog id="language-dialog" class="sheet" aria-labelledby="language-title"></dialog>
+  <dialog id="install-dialog" class="sheet" aria-labelledby="install-title"></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
