@@ -1,0 +1,41 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file),'utf8');
+for(const file of ['app.js','scripts/admin.js','scripts/admin-model.js','scripts/admin-store.js','scripts/public-content.js','scripts/supabase-config.js','sw.js'])new vm.Script(read(file),{filename:file});
+const adminHtml=read('admin.html');
+for(const match of read('scripts/admin.js').matchAll(/\$\('#([a-z-]+)'\)/g))assert.ok(adminHtml.includes(`id="${match[1]}"`),'missing admin element '+match[1]);
+for(const match of adminHtml.matchAll(/(?:src|href)="((?:scripts|assets)\/[^"#]+|[a-z-]+\.css)"/g))assert.ok(fs.existsSync(path.join(root,match[1])),'missing resource '+match[1]);
+const context=vm.createContext({window:{},URL});
+for(const file of ['scripts/admin-model.js','scripts/admin-store.js'])vm.runInContext(read(file),context);
+const {definitions,payload,safeUrl}=context.window.ClinicAdminModel,store=context.window.ClinicAdminStore;
+assert.equal(safeUrl('javascript:alert(1)'), '');
+assert.equal(safeUrl('data:text/html,test'), '');
+assert.equal(safeUrl('assets/../secret',true), '');
+assert.equal(safeUrl('assets/logo.svg',true),'assets/logo.svg');
+assert.throws(()=>payload(definitions.closures,{doctor_id:1,start_date:'2026-11-20',end_date:'2026-11-10'}),/종료일/);
+assert.throws(()=>payload(definitions.weekly,{doctor_id:'',weekday:1,period:'full',end_time:'19:00',saturday_weeks:'all'}),/원장/);
+assert.throws(()=>payload(definitions.settings,{id:'kakao_url',value:'javascript:alert(1)'}),/HTTPS/);
+const valid={name:'테스트 원장',initial:'T',color:'#2d83f5',photo_url:''};
+assert.equal(payload(definitions.doctors,{...valid,role:'admin'}).role,undefined,'payload whitelist');
+let role='admin',writes=0,fail=false,session=true,identity='user-1';
+const client={auth:{getUser:async()=>({data:{user:session?{id:identity}:null}})},from(table){
+  if(table==='profiles')return {select(){return this;},eq(){return this;},async maybeSingle(){return {data:{id:'user-1',role}};}};
+  return {update(){writes++;return this;},insert(){writes++;return this;},delete(){writes++;return this;},eq(){return this;},select(){return this;},async single(){return fail?{error:Error('DB failure')}:{data:{id:1}};}};
+}};
+(async()=>{
+  await store.save(client,'doctors',valid,null);assert.equal(writes,1);
+  role='user';await assert.rejects(()=>store.save(client,'doctors',valid,{id:1}),/관리자/);assert.equal(writes,1,'role revoked blocks update');
+  await assert.rejects(()=>store.remove(client,'doctors',{id:1}),/관리자/);assert.equal(writes,1,'role revoked blocks delete');
+  role='admin';session=false;await assert.rejects(()=>store.save(client,'doctors',valid,null),/로그인/);assert.equal(writes,1);
+  session=true;identity='other-user';await assert.rejects(()=>store.verify(client),/관리자/);identity='user-1';
+  await assert.rejects(()=>store.save(client,'auth_users',{role:'admin'},null),/허용/);
+  fail=true;await assert.rejects(()=>store.save(client,'doctors',valid,{id:1}),/DB failure/);assert.equal(writes,2);
+  fail=false;await store.remove(client,'doctors',{id:1});assert.equal(writes,3);
+  vm.runInContext(read('scripts/supabase-config.js'),context);assert.equal(context.window.clinicBackend.adminEnabled,false,'new admin writes remain disabled until connected');
+  const sql=read('sql/admin-setup.sql');assert.ok(sql.includes('security invoker'));assert.ok(!/security definer/i.test(sql));assert.ok(sql.includes('enable row level security'));assert.ok(sql.includes('using(is_published)'));assert.ok(!/grant\s+(?:all|insert|update|delete).*on\s+(?:table\s+)?public\.profiles/i.test(sql));
+  const service=read('sw.js');assert.ok(!service.includes("'./admin.html'"),'admin page not precached');
+  const elements=new Map(),events={};
+  function element(key){if(!elements.has(key))elements.set(key,{innerHTML:'',value:'',textContent:'',focus(){}});return elements.get(key);}
+  const appContext=vm.createContext({window:{addEventListener:(key,fn)=>events[key]=fn,scrollTo(){},clinicContent:{status:'ready',pages:[{page_key:'before',title:'<script>alert(1)</script>',content:'<img src=x onerror=alert(1)>'}],settings:{},notices:[],blog:[],profiles:[],equipment:[],doctors:[],hours:[]}},document:{querySelector:element,querySelectorAll:()=>[],documentElement:{},addEventListener(){}},location:{hash:'#/before',protocol:'file:'},navigator:{},localStorage:{getItem:()=>null},URL,console,setTimeout});
+  vm.runInContext(read('app.js'),appContext);assert.ok(element('#main').innerHTML.includes('&lt;script&gt;'));assert.ok(!element('#main').innerHTML.includes('<script>'),'managed content rendered as text');
+  console.log('Admin: role revocation, unauthenticated access, field allowlist, URL validation, failed writes, disabled setup, and content escaping passed. SQL policies reviewed statically; remote setup not executed.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

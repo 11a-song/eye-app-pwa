@@ -9,6 +9,8 @@ Node.js가 설치된 환경에서 `npm run dev`를 실행하고 http://localhost
 
 ## 구성
 
+- 관리자: `admin.html` · [연결 및 설정 안내](ADMIN_SETUP.md)
+
 - 홈과 6개 메뉴 페이지: `#/guide`, `#/schedule`, `#/before`, `#/after`, `#/dream`, `#/faq`
 - 내정보 화면: `#/profile` (개인 진료 정보 및 로그인 미연결)
 - 공통 하단 메뉴: 홈, 내정보, 가운데 원형 문의 버튼, 언어선택

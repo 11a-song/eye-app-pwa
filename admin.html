@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="same-origin">
+  <title>앱 관리 · 연세제일안과</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="admin.css">
+  <script defer src="scripts/supabase-config.js"></script>
+  <script defer src="assets/vendor/supabase-2.119.0.js"></script>
+  <script defer src="scripts/admin-model.js"></script>
+  <script defer src="scripts/admin-store.js"></script>
+  <script defer src="scripts/admin.js"></script>
+</head>
+<body>
+  <header class="admin-header"><a href="index.html"><img src="assets/logo.svg" alt="연세제일안과" width="207" height="36"></a><a class="button" href="index.html" target="_blank" rel="noopener">앱 보기 ↗</a></header>
+  <main class="admin-main">
+    <div class="admin-title"><div><p class="eyebrow">CLINIC MANAGEMENT</p><h1>앱 관리</h1><p>병원의 정보와 진료 안내를 한곳에서 관리하세요.</p></div><button id="logout" class="button" hidden>로그아웃</button></div>
+    <section id="setup-panel" class="panel" hidden><span class="badge">연결 준비</span><h2>새 Supabase 연결을 기다리고 있습니다</h2><p>관리자 화면은 준비되어 있습니다. 새 <strong>app-PWA-eye</strong> 프로젝트에 연결하면 저장과 게시를 시작할 수 있습니다.</p><ol><li>새 계정의 Supabase 플러그인 연결</li><li>데이터 구조와 관리자 권한 설정</li><li>기존 홈페이지 내용 이전 후 앱 연결 전환</li></ol><p class="help">현재 참고 홈페이지의 DB는 이 관리자 페이지에서 수정하지 않습니다.</p></section>
+    <section id="login-panel" class="panel login-panel" hidden><h2>관리자 로그인</h2><p>병원에서 지정한 관리자 계정으로 로그인해 주세요.</p><form id="login-form"><label>이메일<input name="email" type="email" autocomplete="username" required></label><label>비밀번호<input name="password" type="password" autocomplete="current-password" required></label><button class="button primary" type="submit">로그인</button></form></section>
+    <p id="auth-status" class="status" role="status" aria-live="polite"></p>
+    <section id="workspace" class="workspace" hidden>
+      <nav id="admin-nav" class="admin-nav" aria-label="관리 항목"></nav>
+      <section class="panel records-panel"><div class="panel-title"><div><p id="group-label" class="eyebrow"></p><h2 id="section-title"></h2><p id="section-description"></p></div><button id="refresh" class="button">새로고침</button></div><div class="toolbar"><button id="add" class="button primary">새 항목</button><label class="search"><span class="sr-only">현재 목록 전체에서 찾기</span><input id="search" type="search" placeholder="제목과 내용에서 찾기"></label></div><p id="list-status" class="status" role="status" aria-live="polite"></p><div id="records"></div><div id="pagination" class="pagination"></div></section>
+    </section>
+  </main>
+  <dialog id="editor" aria-labelledby="editor-title"><form id="editor-form"><div class="editor-heading"><h2 id="editor-title"></h2><button type="button" class="button" data-editor-close aria-label="편집 닫기">닫기</button></div><p class="help">저장하면 Supabase에 반영됩니다. 게시 항목은 공개 여부를 확인해 주세요.</p><fieldset id="editor-fields"></fieldset><p id="editor-error" class="error" role="alert"></p><div class="editor-actions"><button id="delete" type="button" class="button danger">삭제</button><button class="button" type="button" data-editor-close>취소</button><button class="button primary" type="submit">저장</button></div></form></dialog>
+  <dialog id="delete-confirm" aria-labelledby="delete-title"><h2 id="delete-title">항목을 삭제할까요?</h2><p>저장된 항목을 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p><p id="delete-name" class="help"></p><div class="editor-actions"><button id="delete-cancel" class="button">취소</button><button id="delete-yes" class="button danger">삭제하기</button></div></dialog>
+  <dialog id="preview" aria-labelledby="preview-title"><div class="editor-heading"><h2 id="preview-title"></h2><button class="button" id="preview-close">닫기</button></div><div id="preview-content" class="preview-content"></div></dialog>
+</body>
+</html>

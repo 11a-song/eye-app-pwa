@@ -2,9 +2,10 @@
 (function () {
   'use strict';
   window.loadDoctorScheduleData = async function () {
-    var projectUrl = 'https://yzrpwqkcpkqimfpuexqd.supabase.co';
+    if(Boolean(window.clinicBackend?.url)!==Boolean(window.clinicBackend?.publishableKey))throw new Error('새 프로젝트의 공개 연결 설정을 확인해 주세요.');
+    var projectUrl = window.clinicBackend?.url || 'https://yzrpwqkcpkqimfpuexqd.supabase.co';
     // 기존 홈페이지와 동일한 브라우저 공개용 키입니다. 인증 및 환자 정보는 사용하지 않습니다.
-    var publishableKey = 'sb_publishable_XWXSCiDaDlkwRd4lsFquCw_4dBJKEKK';
+    var publishableKey = window.clinicBackend?.publishableKey || 'sb_publishable_XWXSCiDaDlkwRd4lsFquCw_4dBJKEKK';
 
     // 날짜별 일정이 늘어나도 기본 조회 건수 제한으로 누락되지 않게 나눠 읽습니다.
     async function readRows(table, columns) {
