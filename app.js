@@ -84,10 +84,11 @@ function guide() {
   return pageTop(menus[0][2],menus[0][3]) + `<section class="card"><h2>진료시간</h2><dl class="hours"><div><dt>월 ~ 금요일</dt><dd>08:30 ~ 19:00</dd></div><div><dt>토요일</dt><dd>08:30 ~ 17:00</dd></div><div><dt>공휴일</dt><dd>08:30 ~ 13:00</dd></div><div><dt>대체공휴일</dt><dd>08:30 ~ 19:00</dd></div><div><dt>점심시간</dt><dd>12:30 ~ 14:00</dd></div></dl><p class="note">기존 홈페이지에 기재된 진료시간입니다. 휴진 및 변경 일정은 방문 전 확인해 주세요.</p></section><section class="card"><img class="clinic-photo" src="assets/clinic.jpg" alt="연세제일안과 병원 내부" loading="lazy"><h2>내원 안내</h2><p>시력교정 검사 및 수술은 3층 시력교정수술센터로 내원해 주세요.</p><p>예약 변경이나 방문 관련 문의는 병원으로 연락해 주세요.</p>${callButton()}</section>`;
 }
 function schedule() {
-  return pageTop(menus[1][2],menus[1][3]) + `<label class="section-label" for="doctor">의료진 선택</label><select class="doctor-picker" id="doctor">${scheduleOptions()}</select><section class="card schedule-calendar-card" style="margin-top:0"><div class="calendar-head"><button class="icon-button" data-month="-1" aria-label="이전 달">${icon('back')}</button><strong id="month-label"></strong><button class="icon-button" data-month="1" aria-label="다음 달">${icon('arrow')}</button></div><div class="calendar" id="calendar" aria-label="날짜 선택"></div><div class="calendar-key"><span><i class="work-dot"></i>진료</span><span><i class="closed-dot"></i>휴진</span></div></section><section class="card"><p class="section-label" id="selected-label" style="margin-top:0"></p><div id="schedule-detail" aria-live="polite"></div></section><section class="card" id="month-closures"></section><p class="note">진료 일정은 변경될 수 있으니 방문 전 확인해 주세요. 일정 미등록은 휴진을 의미하지 않습니다.</p>`;
+  return `<div class="schedule-page-top"><a class="back" href="#/">${icon('back')}${t('이전')}</a><h1>${t('원장별 진료 일정')}</h1><p>휴진 일정은 최대한 신속히 안내드리고 있으나, 갑작스러운 사정으로 변경될 수 있으니 내원 전 다시 한번 확인 부탁드립니다.</p></div><section class="schedule-calendar-card"><div class="calendar-head"><button class="icon-button" data-month="-1" aria-label="이전 달">${icon('back')}</button><strong id="month-label"></strong><button class="icon-button" data-month="1" aria-label="다음 달">${icon('arrow')}</button></div><div class="doctor-filters" id="doctor-filters" role="group" aria-label="원장별 일정 필터"></div><div class="calendar-key"><span><i class="legend-full"></i>종일 진료(5시/7시)</span><span><i class="legend-morning"></i>오전 진료</span></div><div class="calendar" id="calendar" aria-label="날짜 선택"></div></section><section class="schedule-day-panel"><p class="section-label">선택한 날짜의 일정</p><h2 id="selected-label"></h2><div id="schedule-detail" aria-live="polite"></div></section><section class="schedule-hours-panel"><h2>병원 진료시간</h2><dl class="schedule-hours-list" id="schedule-hours"></dl></section>`;
 }
 function scheduleOptions() {
-  return `<option value="">전체 의료진</option><option value="__closed">휴진 일정</option>` + scheduleData.doctors.map(doctor => `<option value="${escapeHtml(doctor.id)}" ${scheduleDoctor===doctor.id?'selected':''}>${escapeHtml(doctor.name)}</option>`).join('');
+  const button = (id,label,cls='',style='') => `<button type="button" class="doctor-filter ${cls}" style="${style}" data-schedule-doctor="${escapeHtml(id)}" aria-pressed="${scheduleDoctor===id}">${escapeHtml(label)}</button>`;
+  return button('','전체','all-filter') + button('__closed','휴진','closure-filter') + scheduleData.doctors.map(doctor=>button(doctor.id,doctor.name.replace(/\s*원장\s*$/,''),'',`--doctor-color:${doctorColor(doctor)}`)).join('');
 }
 async function loadSchedules(force = false) {
   if (scheduleRequest) return scheduleRequest;
@@ -105,7 +106,6 @@ async function loadSchedules(force = false) {
     } finally {
       scheduleRequest = null;
       if (currentRoute === 'schedule') {
-        $('#doctor').innerHTML = scheduleOptions(); $('#doctor').value = scheduleDoctor;
         calendar();
       }
     }
@@ -122,8 +122,6 @@ function selectedSchedule(date) {
 }
 function renderScheduleDetail() {
   const detail = $('#schedule-detail');
-  const closurePanel = $('#month-closures');
-  closurePanel.hidden = true;
   if (scheduleState !== 'ready') {
     const failed = scheduleState === 'error';
     detail.innerHTML = `<div class="empty">${icon('calendar')}<h2>${failed?'일정을 불러오지 못했습니다':'원장 일정을 불러오는 중입니다'}</h2><p>${failed?'인터넷 연결을 확인한 후 다시 시도해 주세요.':'잠시만 기다려 주세요.'}</p>${failed?'<button class="primary-button" data-schedule-retry>다시 불러오기</button>':''}</div>`;
@@ -131,37 +129,92 @@ function renderScheduleDetail() {
   }
   const date = scheduleDateKey(selectedDate), day = selectedSchedule(date);
   const doctorById = id => scheduleData.doctors.find(doctor => doctor.id === id);
-  const heading = (doctor,closed,label) => `<div class="schedule-doctor"><span class="doctor-marker" style="background:${doctorColor(doctor)}"></span><strong>${escapeHtml(doctor?.name || '의료진')}</strong><span class="period-tag ${closed?'closed-tag':''}">${label}</span></div>`;
-  detail.innerHTML = day.closures.map(closure => `<article class="schedule-entry">${heading(doctorById(closure.doctorId),true,'휴진')}<p class="schedule-time">${escapeHtml(closure.startDate)} ~ ${escapeHtml(closure.endDate)}</p></article>`).join('') + day.entries.map(entry => {
+  const heading = (doctor,closed,label) => {
+    const photo = /^https?:\/\//i.test(doctor?.photoUrl || '') ? doctor.photoUrl : 'assets/doctor-placeholder.svg';
+    return `<div class="schedule-doctor"><img class="schedule-portrait" src="${escapeHtml(photo)}" alt="" style="--doctor-color:${doctorColor(doctor)}"><strong>${escapeHtml((doctor?.name || '의료진').replace(/\s*원장\s*$/,''))}</strong><span class="doctor-title">원장</span><span class="period-tag ${closed?'closed-tag':label==='오전'?'morning-tag':''}">${label}</span></div>`;
+  };
+  detail.innerHTML = day.closures.map(closure => `<article class="schedule-entry">${heading(doctorById(closure.doctorId),true,'휴진')}<p class="schedule-time closure-time"><span>| 휴진일 |</span> <strong>${formatClosureDates(closure)}</strong></p></article>`).join('') + day.entries.map(entry => {
     const work = window.ClinicSchedule.workHours(entry,date);
-    return `<article class="schedule-entry">${heading(doctorById(entry.doctorId),false,work.label)}<p class="schedule-time">진료시간 <strong>${work.hours}</strong></p></article>`;
+    return `<article class="schedule-entry">${heading(doctorById(entry.doctorId),false,work.label)}<p class="schedule-time"><span>| 진료시간 |</span> <strong>${work.hours.split(' ~ ').map(formatClinicTime).join(' ~ ')}</strong></p></article>`;
   }).join('');
   const holiday = window.holidayData?.dates?.[date];
   if (holiday) detail.innerHTML = `<p class="holiday-notice">${escapeHtml(holiday)}${holiday.includes('대체공휴일')?' · 정상 진료':''}</p>` + detail.innerHTML;
   if (!day.closures.length && !day.entries.length) detail.innerHTML += `<div class="empty"><p>${!scheduleData.doctors.length?'등록된 원장 정보가 없습니다.':scheduleDoctor==='__closed'?'선택한 날짜에는 휴진 일정이 없습니다.':'등록된 일정이 없습니다.<br>일정 미등록은 휴진을 의미하지 않습니다.'}</p></div>`;
-  const start = scheduleDateKey(new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),1));
-  const end = scheduleDateKey(new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,0));
-  const monthClosures = scheduleData.closures.filter(row => row.startDate <= end && row.endDate >= start && (!scheduleDoctor || scheduleDoctor==='__closed' || row.doctorId===scheduleDoctor));
-  closurePanel.hidden = !monthClosures.length;
-  closurePanel.innerHTML = `<h2>이번 달 휴진 안내</h2>` + monthClosures.map(row => `<article class="schedule-entry">${heading(doctorById(row.doctorId),true,'휴진')}<p class="schedule-time">${escapeHtml(row.startDate)} ~ ${escapeHtml(row.endDate)}</p></article>`).join('');
+}
+function formatClinicTime(value) {
+  const [hour,minute] = String(value).split(':').map(Number);
+  return `${hour<12?'오전':'오후'} ${hour%12||12}:${String(minute).padStart(2,'0')}`;
+}
+function formatClosureDates(closure) {
+  const parse = value => value.split('-').map(Number);
+  const a=parse(closure.startDate),b=parse(closure.endDate),week=['일','월','화','수','목','금','토'];
+  const label = parts => `${parts[2]}일(${week[new Date(parts[0],parts[1]-1,parts[2]).getDay()]})`;
+  const prefix = `${a[0]}년 ${a[1]}월 `;
+  if(closure.startDate===closure.endDate)return prefix+label(a);
+  const endPrefix=a[0]!==b[0]?`${b[0]}년 ${b[1]}월 `:a[1]!==b[1]?`${b[1]}월 `:'';
+  const duration=Math.round((Date.UTC(b[0],b[1]-1,b[2])-Date.UTC(a[0],a[1]-1,a[2]))/86400000)+1;
+  return `${prefix}${label(a)} ~ ${endPrefix}${label(b)} <small>${duration}일간</small>`;
+}
+function renderScheduleHours() {
+  const rows=[['weekday','월 ~ 금요일','08:30','19:00'],['saturday','토요일','08:30','17:00'],['holiday','공휴일','08:30','13:00'],['substitute','대체공휴일','08:30','19:00'],['lunch','점심시간','12:30','14:00']];
+  $('#schedule-hours').innerHTML=rows.map(([id,label,start,end])=>{
+    const stored=scheduleData.clinicHours?.find(row=>row.id===id);
+    const valid=value=>/^\d{2}:\d{2}(:\d{2})?$/.test(value||'');
+    if(valid(stored?.start_time)&&valid(stored?.end_time)){start=stored.start_time;end=stored.end_time;}
+    return `<div class="hours-${id}"><dt>${label}${id==='holiday'?'<small>오전진료</small>':''}</dt><dd>${formatClinicTime(start)} ~ ${formatClinicTime(end)}</dd></div>`;
+  }).join('');
 }
 function calendar() {
   const year = calendarMonth.getFullYear(), month = calendarMonth.getMonth();
+  $('#doctor-filters').innerHTML = scheduleOptions();
+  renderScheduleHours();
   $('#month-label').textContent = new Intl.DateTimeFormat(language === 'ko' ? 'ko-KR' : language === 'zh' ? 'zh-CN' : 'en-US',{year:'numeric',month:'long'}).format(calendarMonth);
   const weekdays = language === 'en' ? ['S','M','T','W','T','F','S'] : language === 'zh' ? ['日','一','二','三','四','五','六'] : ['일','월','화','수','목','금','토'];
-  let html = weekdays.map(day => `<span class="weekday">${day}</span>`).join('');
-  html += '<span></span>'.repeat(new Date(year,month,1).getDay());
-  for (let day = 1; day <= new Date(year,month+1,0).getDate(); day++) {
+  let html = `<div class="calendar-weekdays">${weekdays.map(day => `<span class="weekday">${day}</span>`).join('')}</div>`;
+  const firstDay=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate();
+  const weeks=Math.ceil((firstDay+days)/7),start=scheduleDateKey(new Date(year,month,1)),end=scheduleDateKey(new Date(year,month+1,0));
+  const monthClosures=scheduleState==='ready'?scheduleData.closures.filter(row=>row.startDate<=end&&row.endDate>=start&&(!scheduleDoctor||scheduleDoctor==='__closed'||row.doctorId===scheduleDoctor)):[];
+  const segments=monthClosures.map(closure=>{
+    const from=closure.startDate<start?1:Number(closure.startDate.slice(-2)),to=closure.endDate>end?days:Number(closure.endDate.slice(-2));
+    const list=[];
+    for(let week=0;week<weeks;week++){
+      const weekStart=week*7-firstDay+1,a=Math.max(weekStart,from),b=Math.min(weekStart+6,to);
+      if(a<=b)list.push({week,start:a-weekStart+1,end:b-weekStart+1,from:a,to:b});
+    }
+    const longest=list.reduce((best,row)=>!best||row.end-row.start>best.end-best.start?row:best,null);
+    return {closure,list,longest};
+  });
+  for(let week=0;week<weeks;week++){
+    const weekStart=week*7-firstDay+1;
+    let cells='';
+    for(let column=0;column<7;column++){
+    const day=weekStart+column;
+    if(day<1||day>days){cells+=`<span class="calendar-outside" aria-hidden="true">${new Date(year,month,day).getDate()}</span>`;continue;}
     const date = new Date(year,month,day), selected = todayKey(date) === todayKey(selectedDate);
     const isToday = todayKey(date) === todayKey(new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'})));
     const key = scheduleDateKey(date);
     const state = scheduleState==='ready' ? selectedSchedule(key) : {entries:[],closures:[]};
-    const dots = state.entries.slice(0,5).map(entry=>`<i style="background:${doctorColor(scheduleData.doctors.find(doctor=>doctor.id===entry.doctorId))}"></i>`).join('') + (state.closures.length?'<i class="closed-dot"></i>':'');
+    const dots = state.entries.map(entry=>{
+      const morning=window.ClinicSchedule.workHours(entry,key).label==='오전';
+      return `<i class="${morning?'morning-dot':'full-dot'}" style="--doctor-color:${doctorColor(scheduleData.doctors.find(doctor=>doctor.id===entry.doctorId))}"></i>`;
+    }).join('');
     const holiday = window.holidayData?.dates?.[key];
-    html += `<button data-day="${day}" class="${date.getDay()===0 || holiday?'sun':date.getDay()===6?'sat':''} ${selected?'selected':''} ${isToday?'today':''}" aria-label="${year}년 ${month+1}월 ${day}일${holiday?' '+escapeHtml(holiday):''}${state.entries.length?' 진료 '+state.entries.length+'명':''}${state.closures.length?' 휴진 '+state.closures.length+'명':''}" aria-pressed="${selected}"><span>${day}</span><span class="day-dots" aria-hidden="true">${dots}</span></button>`;
+    cells += `<button data-day="${day}" class="${date.getDay()===0 || holiday?'sun':date.getDay()===6?'sat':''} ${selected?'selected':''} ${isToday?'today':''}" ${isToday?'aria-current="date"':''} aria-label="${year}년 ${month+1}월 ${day}일${holiday?' '+escapeHtml(holiday):''}${state.entries.length?' 진료 '+state.entries.length+'명':''}${state.closures.length?' 휴진 '+state.closures.length+'명':''}" aria-pressed="${selected}">${isToday?'<small class="today-label">오늘</small>':''}<span class="day-number">${day}</span><span class="day-dots" aria-hidden="true">${dots}</span></button>`;
+    }
+    const lanes=[];let bands='';
+    for(const segment of segments){
+      const part=segment.list.find(row=>row.week===week);if(!part)continue;
+      let lane=lanes.findIndex(list=>list.every(row=>row.end<part.start||row.start>part.end));
+      if(lane<0){lane=lanes.length;lanes.push([]);}lanes[lane].push(part);
+      const closure=segment.closure,doctor=scheduleData.doctors.find(row=>row.id===closure.doctorId);
+      const label=`(휴)${doctor?.name||closure.doctorName} ${Number(closure.startDate.slice(5,7))}.${Number(closure.startDate.slice(8))}~${closure.startDate.slice(0,7)===closure.endDate.slice(0,7)?'':Number(closure.endDate.slice(5,7))+'.'}${Number(closure.endDate.slice(8))}`;
+      const description=`${doctor?.name||closure.doctorName} 휴진 ${closure.startDate} ~ ${closure.endDate}`;
+      bands+=`<button class="closure-band ${part.from===Number(closure.startDate.slice(8))?'band-start':''} ${part.to===Number(closure.endDate.slice(8))?'band-end':''}" style="grid-column:${part.start}/${part.end+1};grid-row:${lane+2}" data-day="${part.from}" aria-label="${escapeHtml(description)}" title="${escapeHtml(description)}">${segment.longest===part?escapeHtml(label):'&nbsp;'}</button>`;
+    }
+    html+=`<div class="calendar-week">${cells}${bands}</div>`;
   }
   $('#calendar').innerHTML = html;
-  $('#selected-label').textContent = new Intl.DateTimeFormat(language === 'ko' ? 'ko-KR' : language === 'zh' ? 'zh-CN' : 'en-US',{year:'numeric',month:'long',day:'numeric',weekday:'short'}).format(selectedDate);
+  $('#selected-label').textContent = new Intl.DateTimeFormat(language === 'ko' ? 'ko-KR' : language === 'zh' ? 'zh-CN' : 'en-US',{month:'long',day:'numeric',weekday:'short'}).format(selectedDate);
   renderScheduleDetail();
 }
 function before() {
@@ -182,10 +235,11 @@ function render(focus = false) {
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile};
   main.innerHTML = (pages[route] || home)();
+  main.className = route === 'schedule' ? 'schedule-view' : '';
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
   document.title = `${t(menus.find(item => item[0] === route)?.[2] || (route === 'profile' ? '내정보' : '홈'))} · 연세제일안과`;
   $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${icon('home')}<span>${t('홈')}</span></a><a class="nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${icon('user')}<span>${t('내정보')}</span></a><button class="nav-item contact-trigger" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog"><span class="contact-orb">${icon('chat')}</span><span>${t('문의')}</span></button><button class="nav-item" data-action="language" aria-haspopup="dialog" aria-controls="language-dialog">${icon('globe')}<span>${t('언어선택')}</span></button>`;
-  if (route === 'schedule') { $('#doctor').value = scheduleDoctor; calendar(); loadSchedules(); }
+  if (route === 'schedule') { calendar(); loadSchedules(); }
   if (focus) { window.scrollTo(0,0); main.focus({preventScroll:true}); }
 }
 function sheetHeader(title, id) { return `<div class="sheet-header"><h2 id="${id}">${t(title)}</h2><button class="icon-button" data-close aria-label="${t('닫기')}">${icon('close')}</button></div>`; }
@@ -199,17 +253,19 @@ function openSheet(kind) {
   dialog.showModal();
 }
 document.addEventListener('click',async event=>{
-  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry]');
+  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry],[data-schedule-doctor]');
   if (!button) return;
   if (button.dataset.action) openSheet(button.dataset.action);
   if (button.hasAttribute('data-close')) button.closest('dialog').close();
   if (button.dataset.language) { language = button.dataset.language; try { localStorage.setItem('clinic-language',language); } catch {} $('#language-dialog').close();render(); }
   if (button.hasAttribute('data-schedule-retry')) loadSchedules(true);
+  if (button.hasAttribute('data-schedule-doctor')) { scheduleDoctor=button.dataset.scheduleDoctor;calendar(); }
   if (button.dataset.month) { calendarMonth = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+Number(button.dataset.month),1);selectedDate = new Date(calendarMonth);calendar(); }
   if (button.dataset.day) { selectedDate = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),Number(button.dataset.day));calendar(); }
   if (button.hasAttribute('data-install') && deferredInstall) { const prompt = deferredInstall; deferredInstall=null;await prompt.prompt();await prompt.userChoice;$('#install-dialog').close(); }
 });
 document.addEventListener('change',event=>{if(event.target.id==='doctor') { scheduleDoctor=event.target.value; calendar(); }});
+document.addEventListener('error',event=>{if(event.target.matches?.('.schedule-portrait')&&!event.target.src.endsWith('/assets/doctor-placeholder.svg'))event.target.src='assets/doctor-placeholder.svg';},true);
 document.addEventListener('input',event=>{
   if(event.target.id!=='faq-search')return;
   const query=event.target.value.trim().toLocaleLowerCase();

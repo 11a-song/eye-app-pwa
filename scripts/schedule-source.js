@@ -40,7 +40,9 @@
       readRows('doctors', 'id,name,initial,color,photo_url'),
       readRows('doctor_weekly_schedules', 'id,doctor_id,weekday,period,end_time,saturday_weeks'),
       readRows('doctor_date_schedules', 'id,doctor_id,schedule_date,period,end_time'),
-      readRows('doctor_closures', 'id,doctor_id,start_date,end_date')
+      readRows('doctor_closures', 'id,doctor_id,start_date,end_date'),
+      // 진료시간 테이블이 아직 없는 환경에서도 원장별 일정 조회는 유지합니다.
+      readRows('clinic_hours', 'id,start_time,end_time').catch(function () { return []; })
     ]);
     // 기존 달력의 표시 형태로 변환하여 디자인과 근무 구분을 유지합니다.
     var doctors = result[0].map(function (doctor) {
@@ -64,6 +66,6 @@
       var doctor = doctors.find(function (item) { return item.id === String(row.doctor_id); });
       return doctor ? { doctorId: doctor.id, doctorName: doctor.name, startDate: row.start_date, endDate: row.end_date } : null;
     }).filter(Boolean);
-    return { doctors: doctors, schedules: schedules, closures: closures };
+    return { doctors: doctors, schedules: schedules, closures: closures, clinicHours: result[4] };
   };
 }());

@@ -31,6 +31,7 @@ if (process.argv.includes('--live')) (async()=>{
   const result = await context.window.loadDoctorScheduleData();
   assert.ok(result.doctors.length > 0,'live doctors returned');
   assert.ok(result.doctors.some(d=>d.weeklySchedules.length),'live weekly schedules returned');
+  assert.ok(result.clinicHours.length > 0,'admin-managed clinic hours returned');
   // Compare with the reference homepage's actual scheduling functions.
   const sourceRoot = 'C:/Users/2025w/OneDrive/Desktop/Git-song22/song-22';
   const original = fs.readFileSync(path.join(sourceRoot,'js/home.js'),'utf8');
@@ -59,9 +60,13 @@ if (process.argv.includes('--live')) (async()=>{
   await vm.runInContext('loadSchedules()',app);
   vm.runInContext('calendarMonth=new Date(2026,10,1);selectedDate=new Date(2026,10,12);calendar()',app);
   assert.equal(vm.runInContext('scheduleState',app),'ready');
-  assert.ok(element('#doctor').innerHTML.includes(result.doctors[0].name),'live doctor options');
+  assert.ok(element('#doctor-filters').innerHTML.includes(result.doctors[0].name.replace(/\s*원장\s*$/,'')),'live doctor filter buttons');
   assert.ok(element('#schedule-detail').innerHTML.includes('schedule-entry'),'selected date cards');
-  assert.equal((element('#calendar').innerHTML.match(/data-day=/g)||[]).length,30);
+  assert.equal((element('#calendar').innerHTML.match(/data-day="\d+" class=/g)||[]).length,30);
+  assert.ok(element('#calendar').innerHTML.includes('closure-band'),'closure range bands');
+  assert.ok(element('#calendar').innerHTML.includes('morning-dot'),'half-filled morning markers');
+  assert.ok(element('#schedule-detail').innerHTML.includes('schedule-portrait'),'doctor photos');
+  assert.ok(element('#schedule-hours').innerHTML.includes('대체공휴일'),'clinic hours');
   app.window.loadDoctorScheduleData=async()=>{throw Error('offline');};
   await vm.runInContext('loadSchedules(true)',app);
   assert.ok(element('#schedule-detail').innerHTML.includes('다시 불러오기'),'retry on failure');
