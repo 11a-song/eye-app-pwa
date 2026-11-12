@@ -4,7 +4,7 @@
    home-design.css: 월 제목 clamp(25px,5vw,30px), 진료시간 14~16
    vision-design.css: 수술 안내 본문 17, 아코디언 제목 18
    앱 전용 탐색 요소는 같은 역할의 메뉴/보조 문구 크기에 맞춥니다. */
-:root{--type-body:16px;--type-description:13px;--type-menu:20px;--type-section:21px;--type-caption:12px}
+:root{--type-body:16px;--type-description:13px;--type-menu:23px;--type-section:21px;--type-caption:12px}
 body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
 .home-intro h1{font-size:32px;line-height:1.4}
 .eyebrow{font-size:11px}

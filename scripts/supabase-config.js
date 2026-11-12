@@ -1,8 +1,8 @@
-// 새 app-PWA-eye 연결을 확인한 뒤 이 파일에 공개용 URL/Publishable Key를 설정합니다.
+// app-PWA-eye: 공개용 연결 설정. 관리자 계정은 Supabase에서 별도로 만듭니다.
 // Secret Key, service_role 또는 비밀번호를 넣지 마세요.
-// 준비 전에는 기존 공개 진료 일정만 유지하며 관리자 쓰기는 비활성화합니다.
+// 앱과 관리자 페이지는 같은 프로젝트를 사용하며 DB RLS로 쓰기 권한을 검사합니다.
 window.clinicBackend = Object.freeze({
-  url: '',
-  publishableKey: '',
-  adminEnabled: false
+  url: 'https://issyhftzmzpudoeidoum.supabase.co',
+  publishableKey: 'sb_publishable_CbpJX_u72nTaGtas8OtX1g_Esh3bXAA',
+  adminEnabled: true
 });

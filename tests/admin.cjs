@@ -30,12 +30,15 @@ const client={auth:{getUser:async()=>({data:{user:session?{id:identity}:null}})}
   await assert.rejects(()=>store.save(client,'auth_users',{role:'admin'},null),/허용/);
   fail=true;await assert.rejects(()=>store.save(client,'doctors',valid,{id:1}),/DB failure/);assert.equal(writes,2);
   fail=false;await store.remove(client,'doctors',{id:1});assert.equal(writes,3);
-  vm.runInContext(read('scripts/supabase-config.js'),context);assert.equal(context.window.clinicBackend.adminEnabled,false,'new admin writes remain disabled until connected');
+  vm.runInContext(read('scripts/supabase-config.js'),context);
+  assert.equal(context.window.clinicBackend.url,'https://issyhftzmzpudoeidoum.supabase.co');
+  assert.match(context.window.clinicBackend.publishableKey,/^sb_publishable_/);
+  assert.equal(context.window.clinicBackend.adminEnabled,true,'new project connection enabled; RLS still requires admin role');
   const sql=read('sql/admin-setup.sql');assert.ok(sql.includes('security invoker'));assert.ok(!/security definer/i.test(sql));assert.ok(sql.includes('enable row level security'));assert.ok(sql.includes('using(is_published)'));assert.ok(!/grant\s+(?:all|insert|update|delete).*on\s+(?:table\s+)?public\.profiles/i.test(sql));
   const service=read('sw.js');assert.ok(!service.includes("'./admin.html'"),'admin page not precached');
   const elements=new Map(),events={};
   function element(key){if(!elements.has(key))elements.set(key,{innerHTML:'',value:'',textContent:'',focus(){}});return elements.get(key);}
   const appContext=vm.createContext({window:{addEventListener:(key,fn)=>events[key]=fn,scrollTo(){},clinicContent:{status:'ready',pages:[{page_key:'before',title:'<script>alert(1)</script>',content:'<img src=x onerror=alert(1)>'}],settings:{},notices:[],blog:[],profiles:[],equipment:[],doctors:[],hours:[]}},document:{querySelector:element,querySelectorAll:()=>[],documentElement:{},addEventListener(){}},location:{hash:'#/before',protocol:'file:'},navigator:{},localStorage:{getItem:()=>null},URL,console,setTimeout});
   vm.runInContext(read('app.js'),appContext);assert.ok(element('#main').innerHTML.includes('&lt;script&gt;'));assert.ok(!element('#main').innerHTML.includes('<script>'),'managed content rendered as text');
-  console.log('Admin: role revocation, unauthenticated access, field allowlist, URL validation, failed writes, disabled setup, and content escaping passed. SQL policies reviewed statically; remote setup not executed.');
+  console.log('Admin: role revocation, unauthenticated access, field allowlist, URL validation, failed writes, project config, and content escaping passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

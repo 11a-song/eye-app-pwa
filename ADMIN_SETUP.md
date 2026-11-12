@@ -4,14 +4,19 @@
 
 ## 현재 상태
 
-새 `app-PWA-eye` 프로젝트가 연결된 계정 목록에서 아직 확인되지 않아 관리자 연결은 비활성화했습니다. 준비 안내만 표시하고 로그인·관리 데이터 조회·저장을 실행하지 않습니다. 기존 홈페이지 DB에는 쓰기 작업을 하지 않습니다. 일반 앱의 기존 공개 진료 일정은 유지합니다.
+2026-11-12, Supabase `pwa웹앱` 연결에서 새 `app-PWA-eye` (`issyhftzmzpudoeidoum`, 서울 리전)의 접근·SQL 권한을 확인했습니다. 초기 DB 설정과 공개 콘텐츠 이전을 완료했으며 앱과 관리자 페이지 모두 새 프로젝트를 사용합니다. 기존 홈페이지 DB와 원본 파일은 변경하지 않았습니다.
 
-## 새 프로젝트 연결
+이전 결과: 의료진 5명, 정기 일정 24건, 휴진 3건, 진료시간 5건, 의료진 소개 5건, 장비 41건, 공지 2건, 블로그 4건, 안내문·FAQ 13건, 앱 설정 5건입니다. 날짜별 변경 일정은 원본에 0건입니다. 수술 전후 안내는 참고 홈페이지 `vision.html` 원문을 일반 텍스트로 이전했습니다. 드림렌즈는 확정된 상세 원문이 없어 준비 안내를 유지합니다.
 
-1. Supabase 플러그인을 새 계정으로 연결하고 `app-PWA-eye`의 프로젝트 ID를 확인합니다.
-2. 기존 테이블과 정책을 검사합니다. **비어 있는 새 프로젝트**라면 [sql/admin-setup.sql](sql/admin-setup.sql)을 SQL Editor에서 실행합니다. 아직 원격 DB에 실행하지 않았습니다. 기존 홈페이지 DB에는 실행하지 마세요. 이 파일은 새 프로젝트 전용 초기 설정으로 재실행용 마이그레이션이 아닙니다.
-3. Supabase Authentication → Users에서 병원 관리자 계정을 만들고 UUID를 확인합니다.
-4. DB 관리자가 아래 SQL로 해당 계정에 관리자 역할을 부여합니다. 일반 앱과 관리자 페이지에서는 역할을 바꿀 수 없습니다.
+이미지 24개는 `assets/imported/`에 독립 복사했습니다. 기존 Storage URL은 앱에서 사용하지 않습니다. 공개 업로드용 `clinic-assets` 버킷과 관리자 쓰기 정책도 준비했습니다. 이전 이미지는 앱 파일에 포함되며 Storage 자료실 목록에는 표시되지 않습니다. 환자 정보와 기존 Auth 계정은 이전하지 않았습니다. 2026-11-12 사용자가 지정한 새 Auth 계정의 이메일 확인 완료 상태와 `profiles.role = 'admin'` 설정을 DB에서 확인했습니다.
+
+## 관리자 설정 절차 (계정 생성·역할 부여 완료)
+
+현재는 5번 로그인과 6번 저장·업로드 확인부터 진행하면 됩니다. 1~4번은 추가 관리자 설정 시 참고용입니다.
+
+1. [새 프로젝트 대시보드](https://supabase.com/dashboard/project/issyhftzmzpudoeidoum)에 로그인합니다. 프로젝트 이름이 `app-PWA-eye`인지 확인합니다.
+2. **Authentication → Users → Add user → Create new user**에서 관리자용 이메일·비밀번호로 사용자를 만듭니다. 이메일 확인을 완료하거나 직접 생성 시 이메일 확인 옵션을 켭니다. 생성된 사용자의 **User UID(UUID)**를 복사합니다. Supabase 대시보드 로그인 계정이 자동으로 앱 사용자가 되는 것은 아닙니다.
+3. 같은 프로젝트의 **SQL Editor**에서 아래 UUID를 실제 값으로 바꿔 실행합니다. 일반 앱과 관리자 페이지에서는 역할을 바꿀 수 없습니다.
 
 ```sql
 insert into public.profiles (id, role)
@@ -19,9 +24,13 @@ values ('관리자-계정-UUID', 'admin')
 on conflict (id) do update set role = excluded.role;
 ```
 
-5. 기존 홈페이지 콘텐츠와 이미지를 새 프로젝트에 이전합니다. 아직 이전하지 않았습니다. 환자 정보와 기존 Auth 계정은 공개 홈페이지 콘텐츠와 별도로 검토해야 합니다.
-6. `scripts/supabase-config.js`의 `url`, `publishableKey`를 새 프로젝트의 HTTPS URL과 `sb_publishable_...` 키로 설정하고 `adminEnabled`를 `true`로 변경합니다. Secret Key·service_role·비밀번호를 코드에 넣지 마세요.
-7. 새 프로젝트에서 공개 조회, 관리자 로그인·저장, 일반 계정 쓰기 거부, 비공개 콘텐츠 차단을 검증한 뒤 배포합니다. 앱과 관리자가 같은 새 프로젝트를 사용합니다.
+4. `select id, role from public.profiles where id = '관리자-계정-UUID';`로 `role`이 `admin`인지 확인합니다.
+5. 앱의 **내정보 → 병원 관리자 로그인**으로 이동해 2번에서 만든 이메일·비밀번호로 로그인합니다. 새로고침하면 다시 로그인해야 합니다.
+6. 안내문·FAQ에 비공개 테스트 글을 작성해 저장 후 목록에 유지되는지 확인합니다. 일반 앱에서 비공개 글이 보이지 않는지 확인한 다음 테스트 글을 삭제합니다. 이미지 자료실에서 JPG/PNG 업로드도 확인합니다. 이 단계가 실제 관리자 로그인·저장·업로드의 최종 확인입니다.
+
+`scripts/supabase-config.js`는 이미 새 URL·Publishable Key·`adminEnabled: true`로 설정했습니다. 비밀번호나 Secret Key·service_role을 파일에 넣을 필요가 없습니다. [sql/admin-setup.sql](sql/admin-setup.sql)은 이미 적용했으므로 다시 실행하지 마세요. [sql/import-public-content.sql](sql/import-public-content.sql)도 실행 완료했으며 중복 실행을 막는 빈 테이블 검사가 있습니다.
+
+공개 배포는 아직 수행하지 않았습니다. 기존 홈페이지 수정 사항이 PWA로 자동 동기화되지는 않으며 앞으로 앱 콘텐츠는 이 관리자 페이지에서 관리합니다.
 
 ## 관리 기능
 
@@ -47,4 +56,11 @@ on conflict (id) do update set role = excluded.role;
 
 `npm test`: 일정 계산, 권한 회수·로그아웃에 따른 쓰기 거부, 허용 필드, 안전한 URL, 저장 실패, 미연결 상태와 공개 콘텐츠 HTML 이스케이프를 모의 응답으로 검사합니다.
 
-새 프로젝트의 실제 로그인·저장·RLS·Storage 업로드는 연결 후 확인해야 합니다. 화면과 설정 파일 준비는 원격 DB 설정이나 콘텐츠 이전 완료를 의미하지 않습니다.
+완료한 실제 검증:
+
+- `node tests/public-content-live.cjs`: 8개 공개 조회, 이전 본문·설정 및 독립 이미지 파일 확인
+- `node tests/schedule.cjs --live`: 새 프로젝트 일정 조회, 원본 일정 계산과 180개 비교, 앱 렌더링 및 조회 실패 처리 확인
+- [sql/verify-access.sql](sql/verify-access.sql): 익명·일반 사용자 쓰기 거부, 비공개 글 차단, user_metadata 관리자 사칭·역할 변경 거부, 일반 사용자 Storage 업로드 거부 확인. 테스트 데이터는 롤백
+- Supabase 보안 Advisor 지적 사항 0건
+
+관리자 역할 부여와 DB 재조회 검증은 완료했습니다. 실제 비밀번호 로그인·관리자 저장·Storage 업로드 성공은 위 5~6번 절차에서 확인해야 합니다.

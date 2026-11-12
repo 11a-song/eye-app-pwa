@@ -1,5 +1,5 @@
-const CACHE = 'jeileye-app-v8';
-const SHELL = ['./', './index.html', './styles.css', './fonts.css', './typography.css', './assets/fonts/PretendardVariable.woff2', './schedule.css', './app.js', './scripts/supabase-config.js', './scripts/public-content.js', './scripts/holidays.js', './scripts/schedule-source.js', './scripts/schedule-model.js', './manifest.webmanifest', './assets/logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/clinic.jpg', './assets/doctor-placeholder.svg'];
+const CACHE = 'jeileye-app-v12';
+const SHELL = ['./', './index.html', './styles.css', './fonts.css', './typography.css', './assets/fonts/PretendardVariable.woff2', './schedule.css', './guide.css', './app.js', './scripts/supabase-config.js', './scripts/public-content.js', './scripts/holidays.js', './scripts/schedule-source.js', './scripts/schedule-model.js', './scripts/guide-reference.js', './scripts/guide.js', './manifest.webmanifest', './assets/logo.svg', './assets/veterans-logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/clinic.jpg', './assets/doctor-placeholder.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
 });

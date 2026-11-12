@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root,file),'utf8');
 for (const file of ['app.js','sw.js','scripts/schedule-source.js','scripts/schedule-model.js','scripts/holidays.js']) new vm.Script(read(file),{filename:file});
 const context = vm.createContext({window:{},fetch,URLSearchParams,AbortSignal});
-for (const file of ['scripts/holidays.js','scripts/schedule-model.js','scripts/schedule-source.js']) vm.runInContext(read(file),context);
+for (const file of ['scripts/supabase-config.js','scripts/holidays.js','scripts/schedule-model.js','scripts/schedule-source.js']) vm.runInContext(read(file),context);
 const model = context.window.ClinicSchedule;
 const doctor = {id:'1',name:'검증용',weekdays:[1,6],weeklySchedules:[{weekday:1,period:'full'},{weekday:6,period:'morning',saturday_weeks:'first_third'}]};
 const data = {doctors:[doctor],schedules:[],closures:[]};

@@ -1,0 +1,694 @@
+{
+  "doctors": [
+    {
+      "id": 4,
+      "name": "최한솔 원장",
+      "initial": "D",
+      "color": "#d86fa1",
+      "photo_url": "assets/imported/f48b747d465108a9c2903874.jpg"
+    },
+    {
+      "id": 1,
+      "name": "정진호 원장",
+      "initial": "A",
+      "color": "#00b3ff",
+      "photo_url": "assets/imported/d67c7bee8bb40e266228f0e2.jpg"
+    },
+    {
+      "id": 2,
+      "name": "이택관 원장",
+      "initial": "B",
+      "color": "#e27865",
+      "photo_url": "assets/imported/5ef6669cb6f27ba2dcb8a71a.jpg"
+    },
+    {
+      "id": 3,
+      "name": "심종우 원장",
+      "initial": "C",
+      "color": "#00c2b5",
+      "photo_url": "assets/imported/37af130e733396f19fc24a2c.jpg"
+    },
+    {
+      "id": 5,
+      "name": "이정진 원장",
+      "initial": "E",
+      "color": "#673fc6",
+      "photo_url": null
+    }
+  ],
+  "doctor_weekly_schedules": [
+    {
+      "doctor_id": 2,
+      "weekday": 1,
+      "period": "full",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 2,
+      "weekday": 2,
+      "period": "full",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 2,
+      "weekday": 4,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 3,
+      "weekday": 5,
+      "period": "full",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 1,
+      "weekday": 6,
+      "period": "full",
+      "end_time": "17:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 5,
+      "weekday": 1,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 5,
+      "weekday": 2,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 5,
+      "weekday": 3,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 5,
+      "weekday": 4,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 5,
+      "weekday": 5,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 5,
+      "weekday": 6,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "first_third"
+    },
+    {
+      "doctor_id": 2,
+      "weekday": 6,
+      "period": "full",
+      "end_time": "17:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 3,
+      "weekday": 3,
+      "period": "morning",
+      "end_time": null,
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 3,
+      "weekday": 4,
+      "period": "full",
+      "end_time": "19:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 3,
+      "weekday": 6,
+      "period": "full",
+      "end_time": "17:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 4,
+      "weekday": 1,
+      "period": "full",
+      "end_time": "19:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 4,
+      "weekday": 2,
+      "period": "full",
+      "end_time": "19:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 4,
+      "weekday": 3,
+      "period": "full",
+      "end_time": "19:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 4,
+      "weekday": 4,
+      "period": "full",
+      "end_time": "19:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 4,
+      "weekday": 5,
+      "period": "full",
+      "end_time": "19:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 2,
+      "weekday": 3,
+      "period": "full",
+      "end_time": "17:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 2,
+      "weekday": 5,
+      "period": "full",
+      "end_time": "17:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 3,
+      "weekday": 1,
+      "period": "full",
+      "end_time": "17:00:00",
+      "saturday_weeks": "all"
+    },
+    {
+      "doctor_id": 3,
+      "weekday": 2,
+      "period": "full",
+      "end_time": "17:00:00",
+      "saturday_weeks": "all"
+    }
+  ],
+  "doctor_date_schedules": [],
+  "doctor_closures": [
+    {
+      "doctor_id": 2,
+      "start_date": "2026-11-20",
+      "end_date": "2026-11-26"
+    },
+    {
+      "doctor_id": 3,
+      "start_date": "2026-11-09",
+      "end_date": "2026-11-14"
+    },
+    {
+      "doctor_id": 4,
+      "start_date": "2026-11-05",
+      "end_date": "2026-11-06"
+    }
+  ],
+  "clinic_hours": [
+    {
+      "id": "weekday",
+      "start_time": "08:30:00",
+      "end_time": "19:00:00"
+    },
+    {
+      "id": "saturday",
+      "start_time": "08:30:00",
+      "end_time": "17:00:00"
+    },
+    {
+      "id": "holiday",
+      "start_time": "08:30:00",
+      "end_time": "13:00:00"
+    },
+    {
+      "id": "substitute",
+      "start_time": "08:30:00",
+      "end_time": "19:00:00"
+    },
+    {
+      "id": "lunch",
+      "start_time": "12:30:00",
+      "end_time": "14:00:00"
+    }
+  ],
+  "doctor_about_profiles": [
+    {
+      "doctor_id": 1,
+      "greeting": "진료와 연구를 통해 쌓아온 경험과 지식을 바탕으로 눈 건강에 대한 올바른 해답을 전하고 싶습니다. 환자 한 분 한 분에게 깊이 있는 진료로 다가가겠습니다.",
+      "career": [
+        "서울대학교 의과대학 의학박사",
+        "서울 아산병원 안과 전공의",
+        "서울대학교병원 안과 각막/외안부 전임의",
+        "인천광역시의료원 안과 과장 역임",
+        "제주대학교 의과대학 안과학교실 주임교수",
+        "실명예방재단 제주지역 지부장",
+        "듀크대학병원 안과 방문교수(2016)",
+        "현) 제주대학교병원 안과 교수"
+      ],
+      "activities": [
+        "대한안과학회 정회원",
+        "외안부학회 정회원",
+        "대한안과학회지 편집위원",
+        "대한검안학회 학술이사 역임",
+        "한국 콘택트렌즈학회 홍보이사",
+        "한국 백내장굴절수술학회 교육이사",
+        "한국 각막학회 기획이사",
+        "한국 건성안학회 교육이사",
+        "한국 근시학회 기획이사",
+        "복지부장관 표창(2023)",
+        "안과 전문의 자격시험 고시위원회 위원 (2024–2027)",
+        "한국 근시학회 기획이사"
+      ],
+      "specialties": [
+        "시력교정",
+        "각막",
+        "백내장",
+        "소아안과",
+        "망막질환",
+        "녹내장",
+        "일반 안질환"
+      ],
+      "profile_photo_url": "assets/imported/8a1646ad606e651197efdf5f.jpg",
+      "is_visible": true
+    },
+    {
+      "doctor_id": 2,
+      "greeting": "눈 건강은 삶의 질과 밀접하게 연결되어 있습니다. 환자분들의 소중한 일상을 이해하고, 그에 맞는 진료를 함께 고민하겠습니다.",
+      "career": [
+        "충남대학교 의과대학 졸업",
+        "영등포 김안과병원 레지던트 수료",
+        "서울삼성병원 안과 녹내장 전임의",
+        "UCLA Jules Stein Eye Institute 녹내장 전임의",
+        "한라병원 안과 과장(전)",
+        "대전보건대학 임상강사(전)"
+      ],
+      "activities": [
+        "대한안과학회 정회원",
+        "미국 안과학회(AAO) 정회원",
+        "미국백내장굴절수술학회(ASCRS) 정회원",
+        "한국녹내장학회 정회원",
+        "한라병원 장기이식위원회 위원(전)",
+        "제주도 의료자문위원회 위원(전)"
+      ],
+      "specialties": [
+        "녹내장",
+        "백내장",
+        "일반 안질환",
+        "망막질환",
+        "소아안과"
+      ],
+      "profile_photo_url": "assets/imported/c433e465d1090db984d6ec7e.jpg",
+      "is_visible": true
+    },
+    {
+      "doctor_id": 4,
+      "greeting": "환자의 작은 불편함도 지나치지 않고, 개개인의 눈 상태에 맞는 최선의 진료를 위해 항상 고민하겠습니다.",
+      "career": [
+        "순천향대학교 의과대학 졸업",
+        "순천향대학교 부속 부천병원 인턴 수석수료",
+        "순천향대학교 부속 부천병원 레지던트 수료",
+        "순천향대학교 의과대학 안과학 석사과정 수료",
+        "서울리더스안과 원장(전)"
+      ],
+      "activities": [
+        "대한안과학회 정회원",
+        "한국 콘택트렌즈학회(KCLS) 정회원",
+        "한국 백내장굴절수술학회(KSCRS) 정회원",
+        "대한 검안학회 정회원"
+      ],
+      "specialties": [
+        "안구건조",
+        "소아근시",
+        "망막질환",
+        "일반 안질환",
+        "드림렌즈"
+      ],
+      "profile_photo_url": "assets/imported/d363715b02505058584037d5.jpg",
+      "is_visible": true
+    },
+    {
+      "doctor_id": 5,
+      "greeting": "소중한 눈을 맡겨주시는 환자분들의 마음을 늘 기억하겠습니다. 따뜻한 관심과 책임감 있는 진료로 오랫동안 믿고 찾을 수 있는 안과가 되겠습니다.",
+      "career": [],
+      "activities": [],
+      "specialties": [
+        "각막",
+        "백내장"
+      ],
+      "profile_photo_url": null,
+      "is_visible": true
+    },
+    {
+      "doctor_id": 3,
+      "greeting": "좋은 진료는 환자의 이야기를 듣는 것에서 시작된다고 생각합니다. 작은 불편함에도 귀 기울이며 편안하게 찾을 수 있는 주치의가 되겠습니다.",
+      "career": [
+        "연세대학교 의과대학 졸업",
+        "일본 게이오 의과대학 한일 교류협력단 대표",
+        "미국 California UCSF 기초의학 연구원 연수",
+        "세브란스병원 안과 전문의",
+        "미국 Harvard Medical school 안과학교실 공동 연구원",
+        "제주특별자치도 제주시 서부보건소 공중보건의 복무",
+        "Dr. Argawal’s Eye Hospital, Chennai, India 연수",
+        "평택 김안과 병원 원장(전)",
+        "종로 새안안과 병원 원장(전)",
+        "현) 연세대학교 의과대학 안과학교실 외래교수"
+      ],
+      "activities": [
+        "대한안과학회 정회원",
+        "미국 안과학회(AAO) 정회원",
+        "미국 시과학 연구회(ARVO) 정회원",
+        "한국백내장굴절수술학회(KSCRS) 정회원",
+        "한국 콘택트렌즈 연구회(KCLS) 정회원"
+      ],
+      "specialties": [
+        "시력교정",
+        "백내장",
+        "망막질환",
+        "소아안과",
+        "드림렌즈",
+        "녹내장",
+        "안구건조증"
+      ],
+      "profile_photo_url": "assets/imported/ff71a35a75096ac34c967bda.jpg",
+      "is_visible": true
+    }
+  ],
+  "equipment": [
+    {
+      "category": "exam",
+      "title": "CALLISTO eye",
+      "description": "디지털 난시 정렬 보조 장치",
+      "image_url": "assets/imported/e0af7e67c7f4084cc1de39f9.png"
+    },
+    {
+      "category": "exam",
+      "title": "InnovEyes_sightmap",
+      "description": "맞춤형 시력교정수술을 위한 3차원 정밀분석장비",
+      "image_url": "assets/imported/724f0ea874c56aa56812cfaf.jpg"
+    },
+    {
+      "category": "exam",
+      "title": "Topolyzer VARIO",
+      "description": "초정밀 분석용 각막지형도 검사 장비",
+      "image_url": "assets/imported/4e8a9c4fd544bb7801228d9c.jpg"
+    },
+    {
+      "category": "exam",
+      "title": "Zeiss slit lamp",
+      "description": "고해상도 광학계 탑재 정밀 세극등 현미경",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Zeiss Cirrus OCT 6000",
+      "description": "초정밀 3D 망막 및 녹내장 조기 진단기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "CSO PERSEUS Specular Microscope",
+      "description": "비접촉식 각막 내피세포 정밀 분석기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "CSO Topo",
+      "description": "3D 각막 지형 및 안구건조증 검사기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Canon ARK",
+      "description": "빠르고 정확한 지능형 자동 시력 측정기",
+      "image_url": "assets/imported/25f233714fc051bafef10eb7.png"
+    },
+    {
+      "category": "exam",
+      "title": "NCT",
+      "description": "비접촉 자동 안압 측정기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Canon CR-2",
+      "description": "무산동 디지털 안저카메라",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Quantel medical Aviso a/b scan",
+      "description": "프리미엄 안구 초음파 진단기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Quantel Medical Pocket III",
+      "description": "무선 네트워크 시스템을 갖춘 초정밀 각막 측정기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Quantel Medical Pocket II",
+      "description": "초정밀 각막 두께 측정기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "ZEISS Humphrey Field Analyzer 3",
+      "description": "녹내장 조기 발견을 위한 표준 정밀 시야 검사기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Welch Allyn Spot Vision Screener",
+      "description": "영유아 전용 자동 시력 선별 검사기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Shin-Nippon XL-1",
+      "description": "어디서든 정밀 검사가 가능한 휴대용 현미경",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Shin-Nippon SL-203",
+      "description": "선명하고 정밀한 안질환 진단용 현미경",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Keeler All Pupil II",
+      "description": "고성능 무선 정밀 검안경",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Nikon Optos Daytona",
+      "description": "초광각 망막 정밀 검사기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "LipiView",
+      "description": "안구건조증 원인 정밀 분석 및 기름샘 촬영기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Canon FAG CX-1",
+      "description": "실시간 망막 혈관 흐름 정밀 조영 진단기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "iCare 안압계",
+      "description": "휴대용 무마취 안압계",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Diopsys ARGOS ERG/VEP",
+      "description": "차세대 망막 및 시신경 전기생리 검사기",
+      "image_url": null
+    },
+    {
+      "category": "exam",
+      "title": "Tracey iTrace",
+      "description": "복합 안구 광학 분석 장비",
+      "image_url": "assets/imported/22b948dde4148034d1f22847.jpg"
+    },
+    {
+      "category": "exam",
+      "title": "Alcon ARGOS",
+      "description": "백내장 수술을 위한 초정밀 안축장 측정기",
+      "image_url": "assets/imported/294034398ba8f25d6948d4b5.png"
+    },
+    {
+      "category": "surgery",
+      "title": "Visumax 500",
+      "description": "정밀한 펨토초 레이저 기술의 시력교정 수술장비",
+      "image_url": "assets/imported/e1aabbadc7d206a5b71fe97b.png"
+    },
+    {
+      "category": "surgery",
+      "title": "Artevo 750",
+      "description": "디지털+광학 성능 결합 차세대 수술 현미경",
+      "image_url": "assets/imported/9617f8243b05d8c7dcfc50bb.png"
+    },
+    {
+      "category": "surgery",
+      "title": "Alcon EX500",
+      "description": "초고속·고정밀 시력교정수술 레이저 장비",
+      "image_url": "assets/imported/2833e82e6fcd500852e068d9.jpg"
+    },
+    {
+      "category": "treatment",
+      "title": "LipiFlow",
+      "description": "안구건조증 열구동 치료기",
+      "image_url": null
+    },
+    {
+      "category": "treatment",
+      "title": "Lumenis M22",
+      "description": "안구건조증 전문 IPL 레이저",
+      "image_url": null
+    },
+    {
+      "category": "treatment",
+      "title": "A.R.C. Q-Las",
+      "description": "저에너지 정밀 야그 레이저",
+      "image_url": null
+    },
+    {
+      "category": "treatment",
+      "title": "Norlase LEAF SLT",
+      "description": "스마트 녹내장 레이저",
+      "image_url": null
+    },
+    {
+      "category": "treatment",
+      "title": "Vitra PDT",
+      "description": "황반변성 및 망막 특수 레이저",
+      "image_url": null
+    },
+    {
+      "category": "treatment",
+      "title": "A.R.C. Q-las Classic (Argon Laser)",
+      "description": "망막 질환 치료를 위한 고성능 광응고 레이저",
+      "image_url": null
+    },
+    {
+      "category": "surgery",
+      "title": "Verion Digital marker",
+      "description": "디지털 수술 가이드 시스템",
+      "image_url": "assets/imported/183ec299f058fefb257d78ac.png"
+    },
+    {
+      "category": "surgery",
+      "title": "Centurion® Vision System - Gold Edition",
+      "description": "프리미엄 지능형 백내장 수술 장비",
+      "image_url": "assets/imported/8c01c9fb1b6e4c3bb1cdd202.jpg"
+    },
+    {
+      "category": "surgery",
+      "title": "Alcon Constellation Vision System",
+      "description": "고난도 망막·유리체 수술을 위한 첨단 통합 시스템",
+      "image_url": "assets/imported/e98d98b3ce438604477ec697.jpg"
+    },
+    {
+      "category": "exam",
+      "title": "IOL-m700",
+      "description": "레이저 안구 정밀 측정기",
+      "image_url": "assets/imported/8cabff76ff9d41631fcca025.jpg"
+    },
+    {
+      "category": "surgery",
+      "title": "Ocutron",
+      "description": "고주파 결막이완증 치료 시스템",
+      "image_url": "assets/imported/d05b0a1781072f44f3149447.png"
+    },
+    {
+      "category": "surgery",
+      "title": "Lumera 700",
+      "description": "미세한 오차까지 잡아내는 프리미엄 수술 현미경",
+      "image_url": "assets/imported/a082227d5cbc998ecf85b168.jpg"
+    },
+    {
+      "category": "surgery",
+      "title": "Alcon Unity V.C.S",
+      "description": "백내장과 망막 수술의 경계를 허무는 가장 진보된 수술 시스템",
+      "image_url": "assets/imported/837f3bada4fabb8de0a81ef5.jpg"
+    }
+  ],
+  "notices": [
+    {
+      "notice_date": "2026-10-30",
+      "title": "test",
+      "content": "test",
+      "image_url": null,
+      "is_published": true
+    },
+    {
+      "notice_date": "2026-10-29",
+      "title": "공지사항 테스트",
+      "content": "테스트",
+      "image_url": null,
+      "is_published": true
+    }
+  ],
+  "blog_posts": [
+    {
+      "post_date": "2026-11-02",
+      "title": "정상안압 녹내장, 레이저치료(SLT)가 도움이 될까?",
+      "content": "녹내장은 눈에서 받아들인 시각 정보를 뇌로 전달하는 시신경이 손상되는 질환입니다. 일반적으로 안압이 높을수록 녹내장 발생 위험이 커지지만, 정상 범위의 안압에서도 시신경 손상이 발생할 수 있습니다. 이를 정상안압 녹내장이라고 합니다.\n사람마다 시신경이 견딜 수 있는 압력이 다르기 때문에 안압이 정상이라고 해서 반드시 안전한 것은 아닙니다. 따라서 정상안압 녹내장 환자도 시신경의 추가 손상을 늦추기 위해 안압을 더 낮추는 치료가 필요할 수 있습니다.\n이때 고려할 수 있는 치료 방법 중 하나가 **SLT(선택적 레이저 섬유주성형술)**입니다.\n\n\nSLT 레이저 치료는 어떤 원리인가요?\n\n\n우리 눈 안에는 눈의 형태를 유지하고 영양분을 공급하는 '방수'라는 투명한 액체가 있습니다. 방수는 지속적으로 생성되고 배출되며, 배출이 원활하지 않으면 안압이 높아질 수 있습니다.\nSLT는 방수가 빠져나가는 통로인 '섬유주'에 레이저를 조사하여 방수 배출을 돕고 안압을 낮추는 치료입니다. 구체적인 작용 과정은 아직 연구 중입니다. 이미 손상된 시신경이나 시력을 회복시키는 치료는 아니며, 안압을 낮춰 녹내장의 진행을 늦추는 것이 목적인 치료입니다.\n\n\n실제 연구에서는 안압이 얼마나 낮아졌을까요?\n\n\n2025년 발표된 일본 26개 의료기관의 연구에서는 정상안압 녹내장 환자 230명의 한쪽 눈씩을 분석했습니다.\n이 중 SLT를 첫 치료로 받은 148명의 평균 안압은 치료 전 약 17mmHg에서 2년 후 약 14mmHg로 감소했습니다. 이는 정상 범위의 안압도 SLT를 통해 추가로 낮출 수 있음을 보여줍니다. 다만 모든 환자에게 같은 효과가 나타나는 것은 아닙니다.\n또한 이 연구는 과거 진료 기록을 분석한 관찰연구이므로, 안압 감소가 실제 시야 손상의 진행을 얼마나 늦추는지까지 단정할 수는 없습니다.\n\n\nSLT 치료 후 녹내장 안약을 중단할 수 있나요?\n\n\nSLT 치료 후 안압이 충분히 낮아지면 안약 사용을 줄이거나 일부 환자는 안약 없이 관리할 수도 있습니다.\n하지만 치료 효과와 유지 기간은 개인마다 다릅니다. 레이저 치료 후에도 안약을 계속 사용하거나 추가 치료가 필요한 경우가 있습니다. 따라서 치료 후 안압이 낮아졌더라도 담당 의사의 지시 없이 안약을 중단해서는 안 됩니다.\n\n\n정상안압 녹내장, 중요한 것은 시신경 보호입니다.\n\n\nSLT 치료 후에는 일시적인 안압 상승이나 염증이 발생할 수 있어 정기적인 검사가 필요합니다. 정상안압 녹내장의 치료 목표는 단순히 정상 안압을 유지하는 것이 아니라, 환자의 시신경을 보호할 수 있는 수준까지 안압을 조절하는 것입니다.\nSLT는 이를 위한 치료 선택지 중 하나입니다. 시신경 손상 정도와 시야검사 결과, 녹내장 진행 속도 등을 종합적으로 고려하여 전문의와 치료 방향을 결정하는 것이 중요합니다.",
+      "source": "American Academy of Ophthalmology · Ophthalmology · Gedde SJ et al. Primary Open-Angle Glaucoma Preferred Practice Pattern® (2025판, 2026 게재)",
+      "source_url": "https://www.aao.org/education/preferred-practice-pattern/primary-open-angle-glaucoma-ppp",
+      "is_published": true
+    },
+    {
+      "post_date": "2026-11-05",
+      "title": "백내장 수술 때 절개 위치를 바꾸면 난시도 줄어들까?",
+      "content": "백내장 수술시, 각막 절개는 난시에도 영향을 줄 수 있습니다. 최근 발표된 국내 연구에서 각막의 가파른 축을 따라 절개하고 봉합하는 방법으로 난시 감소 효과를 측정해 보았습니다.\n\n\n백내장 수술과 난시는 어떤 관계가 있을까요?\n\n\n난시는 눈앞이 흐릿하거나 사물이 겹쳐 보이는 원인 중 하나입니다. 눈의 가장 앞쪽에 있는 투명한 조직인 각막이 방향에 따라 굽은 정도가 다르면 빛이 한곳에 정확하게 모이지 못해 발생합니다.\n백내장 수술에서는 뿌옇게 변한 수정체를 제거하기 위해 각막에 작은 절개를 합니다. 이때 각막이 가장 많이 굽어 있는 방향으로 절개하면 해당 부위가 조금 평평해지면서 난시가 줄어들 수 있습니다.\n그래서 수술 전 난시가 있는 환자에게 이러한 절개 방법을 활용하기도 합니다.\n\n\n실제 연구에서는 어떤 결과가 나왔을까요?\n\n\n국내 연구진은 백내장 수술을 받은 눈 345개를 분석했습니다.\n연구 대상자는 각막을 절개한 뒤 실로 봉합하고, 수술 1주 후 실을 제거한 환자들이었습니다. 그 결과, 난시가 심한 방향으로 절개했는데도 기대했던 난시 감소 효과가 나타나지 않았습니다.\n오히려 절개한 방향의 각막이 조금 더 굽어지는 경향이 나타났고, 난시의 방향도 달라지는 것으로 확인됐습니다.\n또한 수술 후 난시 변화의 정도는 환자마다 차이가 컸습니다.\n\n\n하지만 모든 백내장 수술에 같은 결론이라고는 할 수 없습니다.\n\n\n이 결과를 '절개 위치 조절은 효과가 없다'는 결론으로 넓혀서는 안 됩니다. 한 의사의 봉합된 절개만 분석한 후향 연구이며, 봉합하지 않은 절개와 직접 비교하지 않았기 때문입니다. 봉합 자체가 결과에 얼마나 영향을 주었는지도 확인이 더 필요합니다. 환자가 알아둘 핵심은 절개 위치 조절과 난시가 원하는 만큼 줄어드는 결과가 같은 말은 아니라는 점입니다.",
+      "source": "Korean journal of ophthalmology : KJO · Jung EJ, Kim YS, Eom Y. Loss of the Steep-Axis Flattening Effect in Sutured Clear Corneal Incisions: A Single-Surgeon Vector Analysis. 2026.01",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/42978378/",
+      "is_published": true
+    },
+    {
+      "post_date": "2026-11-09",
+      "title": "비만 치료제와 시력 변화, 정말 눈 건강에 위험할까?",
+      "content": "최신 연구에 따르면 비만 치료제가 시력을 직접 손상시킨다는 증거는 부족합니다. 특정 신경 질환 우려가 보고되나, 이는 약물보다는 눈의 구조적 특성이 더 큰 원인입니다. 불안감에 치료를 임의 중단하기보다 전문의와 상담하십시오.\n\n약물과 시력, 막연한 불안\n체중 감량 효과가 뛰어난 'GLP-1 수용체 작용제'가 최근 주목받으며 눈 건강에 미칠 영향도 궁금해하는 분들이 많습니다. 하지만 7만 3천 명 이상을 대상으로 한 2025년 메타분석 결과, 이 약물이 일반적인 안구 질환이나 당뇨 망막병증 위험을 높인다는 근거는 발견되지 않았습니다. 오히려 체중 관리로 얻는 전신 건강 개선이 눈 건강 보호에 더 긍정적일 수 있습니다.\n\n시신경병증과 눈의 구조\n시신경으로 가는 혈류가 일시적으로 부족해 생기는 '비동맥성 전방 허혈성 시신경병증(NAION)'에 대한 우려가 있습니다. 하지만 최근의 비교 연구를 보면, 이 질환은 약물 사용 여부와 관계없이 '시신경 유두'가 선천적으로 좁은 구조를 가진 환자에게 주로 발생했습니다. 즉, 약물이 직접 원인이기보다 환자 본래의 눈 구조가 질환 발생의 핵심 요인일 가능성이 큽니다.\n\n데이터 신고와 임상적 진실\n일부 데이터베이스에 비만 치료제 사용 후 안과적 증상을 신고한 사례가 보고되었습니다. 이는 환자가 느낀 불편함을 수치화한 '연관성' 자료일 뿐, 약물이 직접 눈을 손상했다는 '인과관계'를 뜻하진 않습니다. 단순히 신고 숫자가 있다고 해서 약물이 눈을 위협한다고 단정 짓는 것은 과학적으로 신중한 접근이 필요하며, 개별 환자의 상황을 모두 대변하지는 않습니다.\n\n약물 복용 시 시신경 문제 발생 가능성이 있다는 말이 있는데 사실인가요?\n언급되는 시신경 관련 증상은 약물이 아닌 선천적으로 좁은 시신경 유두 구조를 가진 사람들에게서 주로 발생합니다. 이러한 눈의 구조적 특성이 질환 발생의 핵심 요인이므로, 약물이 시신경 손상의 직접적인 원인이라고 보기는 어렵습니다.\n\n안전한 치료를 위한 조언\n현재까지의 학술적 데이터는 비만 치료제가 시력을 직접적으로 위협한다는 결론을 내리지 않습니다. 평소와 다른 시력 변화를 느낀다면 약물 복용을 임의로 중단하기보다, 본인의 기저 질환 관리 상태와 눈의 구조적 특징을 안과 전문의와 점검하는 것이 우선입니다. 약물 치료의 이득과 안전을 결정하는 것은 정확한 검사를 통한 판단임을 기억하십시오.",
+      "source": "JAMA ophthalmology · Natividade GR, Spiazzi BF, Baumgarten MW. Ocular Adverse Events With Semaglutide: A Systematic Review and Meta-Analysis.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/40810985/",
+      "is_published": true
+    },
+    {
+      "post_date": "2026-11-06",
+      "title": "당뇨가 있어도 눈이 조용한 이유: 망막의 침묵",
+      "content": "초기 당뇨 망막병증 환자의 73.9%는 자각 증상을 느끼지 못합니다. 증상이 없을 때 검진하는 이유는 눈이 통증 없이 미세혈관 손상을 겪기 때문이며, 이는 녹내장 위험 상승 및 전신 혈관 건강의 지표가 될 수 있습니다.\n\n통증 없는 질환, 망막병증의 역설\n당뇨 망막병증은 초기 단계에서 통증이나 시력 저하가 거의 없습니다. 연구 결과 망막병증 환자의 약 73.9%가 본인의 질환을 인지하지 못했습니다. 망막의 미세혈관 손상이 중심 시력을 담당하는 부위인 황반을 비껴갈 때 환자는 시력 변화를 느끼지 못하기 때문입니다. 증상을 느낄 때쯤이면 치료 시기를 놓치기 쉽기에 불편함은 검진의 기준이 될 수 없습니다.\n\n망막 너머의 위험, 녹내장 발생률\n당뇨는 망막뿐만 아니라 시신경 전체의 건강을 위협합니다. 당뇨 망막병증이 있는 환자는 그렇지 않은 사람에 비해 녹내장이나 안압 상승의 위험이 최대 5배까지 높다는 보고가 있습니다. 높은 혈당이 망막 혈관을 손상시키고 시신경 주변의 혈류 환경까지 악화시키기 때문입니다. 따라서 망막 검사는 단순 시력 유지를 넘어 실명을 유발하는 또 다른 질환인 녹내장 조기 발견의 안전망입니다.\n\n눈으로 읽는 전신 혈관 건강\n망막병증의 진행 정도는 전신 미세혈관 손상과 밀접하게 연관됩니다. 연구에 따르면 망막병증이 심할수록 인지 기능 저하나 치매의 위험 역시 높아집니다. 이는 눈이 우리 몸의 혈관 건강을 보여주는 거울과 같다는 뜻입니다. 정기적인 망막 검진은 눈 건강을 지키는 것은 물론, 당뇨가 신체 전반의 혈관과 뇌 건강에 미치는 영향을 파악하는 정밀한 경로가 됩니다.\n\n불편함이 없어도 검진해야 하는 이유\n당뇨 환자가 불편함을 느끼고 내원하면 이미 질환이 상당히 진행되었을 가능성이 큽니다. 안과 검진은 시력 확인뿐 아니라 혈압 관리 등 전신 상태를 점검하는 기회이기도 합니다. 실제로 당뇨 환자 중 고혈압을 인지하지 못하는 경우도 많습니다. 지금 불편함이 없다는 것은 질환이 없다는 신호가 아니라, 몸이 조용히 위험을 알리고 있는 신호일 수 있으니 정기적인 검진이 필요합니다.",
+      "source": "Eye (London, England) · Keskini C, Coleman AL, Harris A. Prevalence of and risk factors for diabetic retinopathy: The Thessaloniki Eye Study.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/42393291/",
+      "is_published": true
+    }
+  ]
+}

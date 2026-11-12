@@ -15,23 +15,27 @@
   <link rel="stylesheet" href="fonts.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="schedule.css">
+  <link rel="stylesheet" href="guide.css">
   <link rel="stylesheet" href="typography.css">
   <script src="scripts/supabase-config.js" defer></script>
   <script src="scripts/public-content.js" defer></script>
   <script src="scripts/holidays.js" defer></script>
   <script src="scripts/schedule-source.js" defer></script>
   <script src="scripts/schedule-model.js" defer></script>
+  <script src="scripts/guide-reference.js" defer></script>
+  <script src="scripts/guide.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
   <div class="app-shell">
-    <header class="app-header"><a href="#/" aria-label="연세제일안과 홈"><img src="assets/logo.svg" alt="연세제일안과" width="224" height="39"></a><span class="header-caption">PATIENT GUIDE</span></header>
+    <header class="app-header"><a href="#/" aria-label="연세제일안과 홈"><img src="assets/logo.svg" alt="연세제일안과" width="224" height="39"></a><nav class="header-language" id="header-language" aria-label="언어 선택"></nav></header>
     <main id="main" tabindex="-1"></main>
     <nav class="bottom-nav" aria-label="하단 메뉴" id="bottom-nav"></nav>
   </div>
   <dialog id="contact-dialog" class="sheet contact-sheet" aria-labelledby="contact-title"></dialog>
   <dialog id="language-dialog" class="sheet" aria-labelledby="language-title"></dialog>
   <dialog id="install-dialog" class="sheet" aria-labelledby="install-title"></dialog>
+  <dialog id="veterans-dialog" class="guide-modal" aria-labelledby="veterans-title"></dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

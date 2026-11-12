@@ -5,8 +5,8 @@ const icons = {
   hospital: '<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 7h6m-3-3v6m-3 4h1m4 0h1m-6 3h1m4 0h1"/>',
   calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2m-8 3h2"/>',
   before: '<rect x="5" y="4" width="14" height="17" rx="3"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m9 13 2 2 4-4"/>',
-  after: '<path d="M12 21s-9-5-9-12a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 7-9 12-9 12Z"/><path d="M8 12h3l1-3 2 6 1-3h2"/>',
-  lens: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  after: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  lens: '<ellipse cx="12" cy="8" rx="9" ry="4"/><path d="M3 8c0 7 4 12 9 12s9-5 9-12"/><path d="M6 9c1.5 1.3 3.6 2 6 2"/>',
   faq: '<path d="M21 11a9 9 0 0 1-9 9H4l-1 1v-9a9 9 0 1 1 18-1Z"/><path d="M10 8a2 2 0 0 1 4 0c0 2-2 2-2 4m0 3h.01"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
   globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
@@ -75,7 +75,7 @@ const faqs = [
   ['내 진료 정보가 보이지 않아요.','현재 버전은 병원 안내용 앱입니다. 로그인, 예약 내역, 개인 진료 정보는 아직 연결되어 있지 않습니다.']
 ];
 function accordion(title, body) { return `<details class="accordion"><summary>${title}${icon('arrow')}</summary><div class="accordion-body">${body}</div></details>`; }
-function pageTop(title, description) { return `<div class="page-top"><a class="back" href="#/">${icon('back')}${t('이전')}</a><p class="eyebrow">YONSEI JEIL EYE CLINIC</p><h1>${t(title)}</h1><p class="page-description">${t(description)}</p></div>`; }
+function pageTop(title, description) { return `<div class="page-top"><p class="eyebrow">YONSEI JEIL EYE CLINIC</p><h1>${t(title)}</h1><p class="page-description">${t(description)}</p></div>`; }
 function clinicPhone(){const phone=window.clinicContent?.settings?.phone;return /^[+\d\s()-]{5,30}$/.test(phone||'')?phone:'064-727-2700';}
 function callButton() { const phone=clinicPhone();return `<a class="primary-button" href="tel:${phone.replace(/[^\d+]/g,'')}">${icon('phone')}${escapeHtml(phone)}</a>`; }
 function safeContentUrl(value){if(/^assets\/[\w./-]+$/.test(value||'')&&!value.includes('..'))return value;try{const url=new URL(value);return url.protocol==='https:'?url.href:'';}catch{return '';}}
@@ -95,20 +95,15 @@ function managedPage(key){
   return html;
 }
 function activeFaqs(){const content=window.clinicContent;return !content||content.status==='disabled'?faqs:content.status==='ready'?content.pages.filter(row=>row.page_key==='faq').map(row=>[row.title,row.content]):[];}
-function publicHomeContent(){
-  const content=window.clinicContent;if(content?.status!=='ready')return '';
-  return (content.notices.length?'<section class="card"><h2>공지사항</h2>'+content.notices.map(row=>accordion(escapeHtml(row.title),`<p class="note">${escapeHtml(row.notice_date)}</p>`+contentImage(row.image_url)+`<div class="managed-text">${escapeHtml(row.content)}</div>`)).join('')+'</section>':'')+(content.blog.length?'<a class="menu-bar" href="#/blog"><span class="menu-copy"><span class="menu-title">병원 블로그</span><span class="menu-desc">눈 건강에 관한 이야기를 확인하세요.</span></span>'+icon('arrow')+'</a>':'');
-}
 function blogPage(){const content=window.clinicContent;return pageTop('병원 블로그','병원이 전하는 눈 건강 이야기')+(content?.status==='ready'?content.blog.map(row=>accordion(escapeHtml(row.title),`<p class="note">${escapeHtml(row.post_date)}</p>`+contentImage(row.image_url)+`<div class="managed-text">${escapeHtml(row.content)}</div>`+(safeContentUrl(row.source_url)?`<a class="text-button" href="${escapeHtml(safeContentUrl(row.source_url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.source||'출처 보기')} ↗</a>`:''))).join(''):'<section class="card"><p>블로그를 불러오는 중입니다.</p></section>');}
 function home() {
-  return `<section class="home-intro"><p class="eyebrow">${t('필요한 안내를 한곳에')}</p><h1>${t('연세제일안과와 함께하는')}<br><em>${t('더 편안한 눈 건강 관리')}</em></h1><p class="intro-text">${t('방문 전부터 진료 후까지, 필요한 메뉴를 선택해 주세요.')}</p></section><div class="menu-list">${menus.map(([id,name,title,description]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span><span class="menu-desc">${t(description)}</span></span>${icon('arrow','menu-arrow')}</a>`).join('')}</div><div class="home-foot"><span>${t('당신의 눈을 위한 바른 진료')}</span><button class="text-button" data-action="install">${icon('download')}${t('앱 설치 안내')}</button></div>`;
+  return `<section class="home-intro"><h1>${t('연세제일안과와 함께하는')}<br><em>${t('더 편안한 눈 건강 관리')}</em></h1></section><div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span></span></a>`).join('')}</div><div class="home-foot"><span>${t('당신의 눈을 위한 바른 진료')}</span><button class="text-button" data-action="install">${icon('download')}${t('앱 설치 안내')}</button></div>`;
 }
 function guide() {
-  const managed=managedPage('guide');if(managed!==null)return managed;
-  return pageTop(menus[0][2],menus[0][3]) + `<section class="card"><h2>진료시간</h2><dl class="hours"><div><dt>월 ~ 금요일</dt><dd>08:30 ~ 19:00</dd></div><div><dt>토요일</dt><dd>08:30 ~ 17:00</dd></div><div><dt>공휴일</dt><dd>08:30 ~ 13:00</dd></div><div><dt>대체공휴일</dt><dd>08:30 ~ 19:00</dd></div><div><dt>점심시간</dt><dd>12:30 ~ 14:00</dd></div></dl><p class="note">기존 홈페이지에 기재된 진료시간입니다. 휴진 및 변경 일정은 방문 전 확인해 주세요.</p></section><section class="card"><img class="clinic-photo" src="assets/clinic.jpg" alt="연세제일안과 병원 내부" loading="lazy"><h2>내원 안내</h2><p>시력교정 검사 및 수술은 3층 시력교정수술센터로 내원해 주세요.</p><p>예약 변경이나 방문 관련 문의는 병원으로 연락해 주세요.</p>${callButton()}</section>`;
+  return pageTop(menus[0][2],'병원 안내와 진료에 필요한 정보를 확인하세요.') + window.ClinicGuide.render(window.clinicContent,scheduleData,scheduleState);
 }
 function schedule() {
-  return `<div class="schedule-page-top"><a class="back" href="#/">${icon('back')}${t('이전')}</a><h1>${t('원장별 진료 일정')}</h1><p>휴진 일정은 최대한 신속히 안내드리고 있으나, 갑작스러운 사정으로 변경될 수 있으니 내원 전 다시 한번 확인 부탁드립니다.</p></div><section class="schedule-calendar-card"><div class="calendar-head"><button class="icon-button" data-month="-1" aria-label="이전 달">${icon('back')}</button><strong id="month-label"></strong><button class="icon-button" data-month="1" aria-label="다음 달">${icon('arrow')}</button></div><div class="doctor-filters" id="doctor-filters" role="group" aria-label="원장별 일정 필터"></div><div class="calendar-key"><span><i class="legend-full"></i>종일 진료(5시/7시)</span><span><i class="legend-morning"></i>오전 진료</span></div><div class="calendar" id="calendar" aria-label="날짜 선택"></div></section><section class="schedule-day-panel"><p class="section-label">선택한 날짜의 일정</p><h2 id="selected-label"></h2><div id="schedule-detail" aria-live="polite"></div></section><section class="schedule-hours-panel"><h2>병원 진료시간</h2><dl class="schedule-hours-list" id="schedule-hours"></dl></section>`;
+  return `<div class="schedule-page-top"><h1>${t('원장별 진료 일정')}</h1><p>휴진 일정은 최대한 신속히 안내드리고 있으나, 갑작스러운 사정으로 변경될 수 있으니 내원 전 다시 한번 확인 부탁드립니다.</p></div><section class="schedule-calendar-card"><div class="calendar-head"><button class="icon-button" data-month="-1" aria-label="이전 달">${icon('back')}</button><strong id="month-label"></strong><button class="icon-button" data-month="1" aria-label="다음 달">${icon('arrow')}</button></div><div class="doctor-filters" id="doctor-filters" role="group" aria-label="원장별 일정 필터"></div><div class="calendar-key"><span><i class="legend-full"></i>종일 진료(5시/7시)</span><span><i class="legend-morning"></i>오전 진료</span></div><div class="calendar" id="calendar" aria-label="날짜 선택"></div></section><section class="schedule-day-panel"><p class="section-label">선택한 날짜의 일정</p><h2 id="selected-label"></h2><div id="schedule-detail" aria-live="polite"></div></section><section class="schedule-hours-panel"><h2>병원 진료시간</h2><dl class="schedule-hours-list" id="schedule-hours"></dl></section>`;
 }
 function scheduleOptions() {
   const button = (id,label,cls='',style='') => `<button type="button" class="doctor-filter ${cls}" style="${style}" data-schedule-doctor="${escapeHtml(id)}" aria-pressed="${scheduleDoctor===id}">${escapeHtml(label)}</button>`;
@@ -129,9 +124,8 @@ async function loadSchedules(force = false) {
       scheduleData = { doctors: [], schedules: [], closures: [] };
     } finally {
       scheduleRequest = null;
-      if (currentRoute === 'schedule') {
-        calendar();
-      }
+      if (currentRoute === 'schedule') calendar();
+      else if (currentRoute === 'guide' && window.ClinicGuide?.active === 'director') render();
     }
   })();
   return scheduleRequest;
@@ -154,7 +148,7 @@ function renderScheduleDetail() {
   const date = scheduleDateKey(selectedDate), day = selectedSchedule(date);
   const doctorById = id => scheduleData.doctors.find(doctor => doctor.id === id);
   const heading = (doctor,closed,label) => {
-    const photo = /^https?:\/\//i.test(doctor?.photoUrl || '') ? doctor.photoUrl : 'assets/doctor-placeholder.svg';
+    const photo = safeContentUrl(doctor?.photoUrl) || 'assets/doctor-placeholder.svg';
     return `<div class="schedule-doctor"><img class="schedule-portrait" src="${escapeHtml(photo)}" alt="" style="--doctor-color:${doctorColor(doctor)}"><strong>${escapeHtml((doctor?.name || '의료진').replace(/\s*원장\s*$/,''))}</strong><span class="doctor-title">원장</span><span class="period-tag ${closed?'closed-tag':label==='오전'?'morning-tag':''}">${label}</span></div>`;
   };
   detail.innerHTML = day.closures.map(closure => `<article class="schedule-entry">${heading(doctorById(closure.doctorId),true,'휴진')}<p class="schedule-time closure-time"><span>| 휴진일 |</span> <strong>${formatClosureDates(closure)}</strong></p></article>`).join('') + day.entries.map(entry => {
@@ -261,8 +255,10 @@ function render(focus = false) {
   const route = location.hash.replace(/^#\/?/,'').split('?')[0];
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile,blog:blogPage};
-  main.innerHTML = (pages[route] || home)() + (!route ? publicHomeContent() : route === 'profile' ? '<a class="admin-login-link" href="admin.html">병원 관리자 로그인</a>' : '');
-  main.className = route === 'schedule' ? 'schedule-view' : ['before','after'].includes(route) ? 'surgery-view' : '';
+  const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
+  main.innerHTML = (pages[route] || home)() + (route === 'profile' ? '<a class="admin-login-link" href="admin.html">병원 관리자 로그인</a>' : '');
+  if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
+  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after'].includes(route) ? 'surgery-view' : '';
   const settings=window.clinicContent?.settings||{};
   const headerLogo=$('.app-header img');
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);
@@ -270,8 +266,10 @@ function render(focus = false) {
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
   document.title = `${t(menus.find(item => item[0] === route)?.[2] || (route === 'profile' ? '내정보' : '홈'))} · 연세제일안과`;
   if(settings.clinic_name)document.title=document.title.replace('연세제일안과',settings.clinic_name);
-  $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${icon('home')}<span>${t('홈')}</span></a><a class="nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${icon('user')}<span>${t('내정보')}</span></a><button class="nav-item contact-trigger" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog"><span class="contact-orb">${icon('chat')}</span><span>${t('문의')}</span></button><button class="nav-item" data-action="language" aria-haspopup="dialog" aria-controls="language-dialog">${icon('globe')}<span>${t('언어선택')}</span></button>`;
+  $('#header-language').innerHTML = [['ko','KR','한국어'],['en','EN','English'],['zh','CN','简体中文']].map(([id,label,name])=>`<button type="button" data-language="${id}" lang="${id}" aria-label="${name}" aria-pressed="${language===id}">${label}</button>`).join('<span aria-hidden="true">|</span>');
+  $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${icon('home')}<span>${t('홈')}</span></a><button class="nav-item contact-trigger" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog"><span class="contact-orb">${icon('chat')}</span><span>${t('문의')}</span></button><a class="nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${icon('user')}<span>${t('내정보')}</span></a>`;
   if (route === 'schedule') { calendar(); loadSchedules(); }
+  if (route === 'guide' && window.ClinicGuide.active === 'director' && ['idle','ready'].includes(scheduleState)) loadSchedules();
   if (focus) { window.scrollTo(0,0); main.focus({preventScroll:true}); }
 }
 function sheetHeader(title, id) { return `<div class="sheet-header"><h2 id="${id}">${t(title)}</h2><button class="icon-button" data-close aria-label="${t('닫기')}">${icon('close')}</button></div>`; }
@@ -279,6 +277,7 @@ let deferredInstall;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstall=event;});
 function openSheet(kind) {
   const dialog = $(`#${kind}-dialog`);
+  if (kind === 'veterans') dialog.innerHTML = window.ClinicGuide.veterans();
   if (kind === 'contact') dialog.innerHTML = sheetHeader('문의하기','contact-title') + `<p>${t('편한 방법으로 연세제일안과에 문의하세요.')}</p><a class="contact-option" href="https://pf.kakao.com/_mRjtn/chat" target="_blank" rel="noopener noreferrer"><span class="channel kakao">${icon('chat')}</span><span><strong>${t('카카오톡 상담')}</strong><small>${t('채팅으로 문의하기')}</small></span>${icon('arrow','menu-arrow')}</a><a class="contact-option" href="https://m.booking.naver.com/booking/13/bizes/1336750?theme=place&lang=ko&area=pll" target="_blank" rel="noopener noreferrer"><span class="channel naver">N</span><span><strong>${t('네이버 예약')}</strong><small>${t('예약 페이지로 이동')}</small></span>${icon('arrow','menu-arrow')}</a><a class="contact-option" href="tel:0647272700"><span class="channel phone">${icon('phone')}</span><span><strong>${t('전화 상담')}</strong><small>064-727-2700</small></span>${icon('arrow','menu-arrow')}</a>`;
   if (kind === 'language') dialog.innerHTML = sheetHeader('언어선택','language-title') + `<p>${t('언어를 선택해 주세요.')}<br>${t('기본 메뉴와 화면 안내의 언어를 변경합니다. 병원 원문 안내는 한국어로 제공됩니다.')}</p>${[['ko','한국어','Korean'],['en','English','영어'],['zh','简体中文','중국어']].map(([id,label,desc])=>`<button class="language-option ${language===id?'selected':''}" data-language="${id}" lang="${id}" aria-pressed="${language===id}"><span>${label} <small>· ${desc}</small></span>${language===id?icon('check'):''}</button>`).join('')}`;
   if (kind === 'install') dialog.innerHTML = sheetHeader('앱 설치 안내','install-title') + `<p>홈 화면에서 연세제일안과를 바로 만나보세요.</p><section class="card blue-card"><h3>아이폰 · iPad</h3><p>Safari에서 앱 주소를 연 뒤 공유 버튼 → <strong>홈 화면에 추가</strong>를 선택해 주세요.</p><h3>안드로이드</h3><p>Chrome 메뉴 → <strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong>를 선택해 주세요.</p></section><p>실제 휴대폰 설치에는 HTTPS로 배포된 주소가 필요합니다.</p>${deferredInstall?'<button class="primary-button" data-install>지금 설치하기</button>':''}`;
@@ -291,8 +290,19 @@ function openSheet(kind) {
   dialog.showModal();
 }
 document.addEventListener('click',async event=>{
-  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry],[data-schedule-doctor]');
+  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry]');
   if (!button) return;
+  if (button.dataset.guideTab) {
+    window.ClinicGuide.select(button.dataset.guideTab);render();
+    $(`#guide-tab-${window.ClinicGuide.active}`).focus({preventScroll:true});
+    $(`#guide-tab-${window.ClinicGuide.active}`).scrollIntoView({block:'nearest',inline:'nearest'});
+    $('#guide-tabs').scrollIntoView({block:'start'});return;
+  }
+  if (button.hasAttribute('data-guide-retry')) { window.reloadClinicContent?.();return; }
+  if (button.hasAttribute('data-guide-gallery')) {
+    const gallery=$(`#guide-gallery-${button.dataset.guideGallery}`);
+    gallery.scrollBy({left:Number(button.dataset.direction)*(gallery.clientWidth*.9+12),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});return;
+  }
   if (button.dataset.action) openSheet(button.dataset.action);
   if (button.hasAttribute('data-close')) button.closest('dialog').close();
   if (button.dataset.language) { language = button.dataset.language; try { localStorage.setItem('clinic-language',language); } catch {} $('#language-dialog').close();render(); }
@@ -303,6 +313,13 @@ document.addEventListener('click',async event=>{
   if (button.hasAttribute('data-install') && deferredInstall) { const prompt = deferredInstall; deferredInstall=null;await prompt.prompt();await prompt.userChoice;$('#install-dialog').close(); }
 });
 document.addEventListener('change',event=>{if(event.target.id==='doctor') { scheduleDoctor=event.target.value; calendar(); }});
+document.addEventListener('keydown',event=>{
+  const tab=event.target.closest?.('[data-guide-tab]');
+  if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();const tabs=window.ClinicGuide.tabs,index=tabs.findIndex(([id])=>id===tab.dataset.guideTab);
+  const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+  window.ClinicGuide.select(tabs[next][0]);render();$(`#guide-tab-${tabs[next][0]}`).focus({preventScroll:true});$(`#guide-tab-${tabs[next][0]}`).scrollIntoView({block:'nearest',inline:'nearest'});
+});
 document.addEventListener('error',event=>{if(event.target.matches?.('.schedule-portrait')&&!event.target.src.endsWith('/assets/doctor-placeholder.svg'))event.target.src='assets/doctor-placeholder.svg';},true);
 document.addEventListener('input',event=>{
   if(event.target.id!=='faq-search')return;

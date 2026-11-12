@@ -1,4 +1,4 @@
--- 새 app-PWA-eye 전용 초기 설정. 아직 원격 DB에 실행하지 않았습니다.
+-- 새 app-PWA-eye 전용 초기 설정. 2026-11-12 issyhftzmzpudoeidoum에 적용 완료. 재실행 금지.
 -- 기존 홈페이지 DB에 실행하지 마세요. 테이블이 이미 있다면 구조/정책을 먼저 검토하세요.
 begin;
 create schema if not exists private;
