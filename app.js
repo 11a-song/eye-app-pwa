@@ -235,7 +235,7 @@ function render(focus = false) {
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile};
   main.innerHTML = (pages[route] || home)();
-  main.className = route === 'schedule' ? 'schedule-view' : '';
+  main.className = route === 'schedule' ? 'schedule-view' : ['before','after'].includes(route) ? 'surgery-view' : '';
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
   document.title = `${t(menus.find(item => item[0] === route)?.[2] || (route === 'profile' ? '내정보' : '홈'))} · 연세제일안과`;
   $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${icon('home')}<span>${t('홈')}</span></a><a class="nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${icon('user')}<span>${t('내정보')}</span></a><button class="nav-item contact-trigger" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog"><span class="contact-orb">${icon('chat')}</span><span>${t('문의')}</span></button><button class="nav-item" data-action="language" aria-haspopup="dialog" aria-controls="language-dialog">${icon('globe')}<span>${t('언어선택')}</span></button>`;

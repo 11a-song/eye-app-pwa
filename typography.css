@@ -1,0 +1,58 @@
+/* 참고 홈페이지 모바일 기준:
+   style.css: 본문 16, 메뉴 20, 보조 설명 13, 달력 날짜 14/요일 12
+   calendar-grid.css: 의료진 19, 원장 호칭 13, 선택 날짜 24
+   home-design.css: 월 제목 clamp(25px,5vw,30px), 진료시간 14~16
+   vision-design.css: 수술 안내 본문 17, 아코디언 제목 18
+   앱 전용 탐색 요소는 같은 역할의 메뉴/보조 문구 크기에 맞춥니다. */
+:root{--type-body:16px;--type-description:13px;--type-menu:20px;--type-section:21px;--type-caption:12px}
+body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+.home-intro h1{font-size:32px;line-height:1.4}
+.eyebrow{font-size:11px}
+.intro-text,.page-description{font-size:16px;line-height:1.7}
+.menu-title{font-size:var(--type-menu);line-height:1.4}
+.menu-desc{font-size:var(--type-description);line-height:1.6}
+.menu-copy{min-width:0}
+.menu-bar{min-height:88px}
+.page-top h1{font-size:38px;line-height:1.35}
+.card h2{font-size:var(--type-section);line-height:1.4}
+.card h3,.step h3{font-size:18px;line-height:1.5}
+.card p,.card li,.accordion-body{font-size:var(--type-body);line-height:1.8}
+.accordion summary{font-size:18px;line-height:1.5}
+.surgery-view .card p,.surgery-view .card li,.surgery-view .accordion-body{font-size:17px;line-height:1.8}
+.note{font-size:13px!important}
+.section-label,.back{font-size:13px}
+.hours>div{font-size:clamp(14px,3.8vw,16px);flex-wrap:wrap}
+.primary-button{font-size:15px;line-height:1.5}
+.nav-item{font-size:12px;line-height:1.4}
+.home-foot,.text-button{font-size:13px}
+.sheet h2{font-size:23px;line-height:1.4}
+.sheet>p{font-size:13px;line-height:1.7}
+.contact-option strong,.language-option{font-size:15px}
+.contact-option small,.language-option small{font-size:13px}
+.search input{font-size:16px}
+.empty h2{font-size:18px}
+.empty p,.faq-empty{font-size:13px}
+.schedule-page-top h1{font-size:22px}
+.schedule-page-top p{font-size:13px;line-height:1.7}
+.schedule-calendar-card .calendar-head strong{font-size:clamp(25px,5vw,30px)}
+.doctor-filter{font-size:12px;line-height:1.4}
+.doctor-filter[aria-pressed=true]{font-size:15px}
+.schedule-calendar-card .calendar-key{font-size:11px}
+.schedule-calendar-card .calendar .weekday{font-size:12px}
+.schedule-calendar-card .calendar .day-number,.calendar-outside{font-size:14px}
+.schedule-calendar-card .calendar .today-label{font-size:8px}
+.schedule-calendar-card .calendar .closure-band{font-size:11px}
+.schedule-day-panel>.section-label{font-size:12px}
+.schedule-day-panel>h2{font-size:24px}
+.schedule-doctor>strong{font-size:19px}
+.schedule-doctor .doctor-title{font-size:13px}
+.schedule-view .period-tag{font-size:10px}
+.schedule-view .schedule-time{font-size:16px;line-height:1.8}
+.schedule-time>span{font-size:11px}
+.closure-time small{font-size:12px}
+.schedule-hours-panel>h2{font-size:18px}
+.schedule-hours-list>div{display:grid;grid-template-columns:minmax(72px,.8fr) minmax(0,1.3fr);font-size:clamp(14px,3.8vw,16px);padding-inline:0}
+.schedule-hours-list dd{white-space:normal;text-align:right}
+.schedule-hours-list .hours-substitute dt,.schedule-hours-list .hours-substitute dd{font-size:clamp(13px,3.5vw,15px)}
+.schedule-hours-list dt small{font-size:9px;display:inline-block;margin-left:0}
+@media(max-width:360px){.schedule-calendar-card .calendar .closure-band{font-size:11px}}
