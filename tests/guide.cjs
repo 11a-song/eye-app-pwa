@@ -17,6 +17,9 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   assert.equal((el('#main').innerHTML.match(/role="tab" /g)||[]).length,5);
   assert.ok(!el('#main').innerHTML.includes('class="back"'));
   assert.match(el('#main').innerHTML,/국가유공자 및 국가유공자의 유가족/);
+  assert.match(el('#main').innerHTML,/유족 및 며느리 카드 소지자<small class="guide-support-note">\(1954\.12\.31 이전 출생자\)<\/small>/);
+  assert.ok(!el('#main').innerHTML.includes('병원 진료시간'));
+  assert.ok(!el('#main').innerHTML.includes('<h2>내원 안내</h2>'));
   await click({action:'veterans'});
   const modal=el('#veterans-dialog');assert.equal(modal.open,true);
   assert.match(modal.innerHTML,/2026년 1월/);assert.ok(!modal.innerHTML.includes('2025년 1월'));
@@ -26,6 +29,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   await handlers.click({target:{closest:()=>({dataset:{},hasAttribute:name=>name==='data-close',closest:()=>modal})}});assert.equal(modal.open,false);
   await click({guideTab:'facility'});assert.equal(guide.active,'facility');
   assert.equal((el('#main').innerHTML.match(/<figure>/g)||[]).length,19);
+  assert.ok(el('#main').innerHTML.indexOf('병원 진료시간')>el('#main').innerHTML.lastIndexOf('</figure>'));
   assert.equal(reference.facilities.length,2);
   for(const floor of reference.facilities)for(const photo of floor.photos)assert.ok(fs.existsSync(path.join(root,photo.src)),photo.src);
   await click({guideGallery:'0',direction:'1'});assert.ok(el('#guide-gallery-0').lastScroll.left>0);
