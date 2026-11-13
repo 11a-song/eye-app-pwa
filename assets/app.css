@@ -1492,7 +1492,7 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 .medication-tracker .medication-day-content{border-radius:0 0 19px 19px}
 .medication-tracker .medication-day-photos figcaption,.medication-tracker .medication-dose-name{font-weight:700}
 .medication-tracker .medication-day-doses{border-left:0;padding-left:0}
-.medication-dose-grid label:has(input[data-cataract-dose]:checked) .medication-dose-label{text-decoration-line:line-through;text-decoration-thickness:1.5px;text-decoration-color:currentColor}
+.medication-dose-grid label:has(input[data-cataract-dose]:checked) .medication-dose-label{text-decoration-line:line-through;text-decoration-thickness:1px;text-decoration-color:currentColor}
 /* 수술 당일 구간은 기존 너비의 절반, 남는 너비는 앞의 세 구간에 배분합니다. */
 .medication-progress-steps{grid-template-columns:repeat(3,minmax(0,7fr)) minmax(0,3fr)}
 .medication-progress-step .medication-step-date{display:flex;align-items:flex-end;justify-content:center;min-height:34px;white-space:normal;line-height:1.3}
@@ -1501,6 +1501,11 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 .medication-arrival-notices{text-align:left;line-height:1.45;margin-top:14px}
 .medication-arrival-notices p{margin:3px 0}
 .medication-tracker>.medication-storage-note{text-align:center}
+.medication-progress-step:last-child .medication-step-date{white-space:nowrap;width:max-content;position:relative;left:50%;transform:translateX(-50%);font-size:12px}
+.medication-tracker .medication-dose-grid label:has(input[data-cataract-dose]:checked),.medication-tracker .medication-day[data-past="true"] .medication-dose-grid label:has(input[data-cataract-dose]:checked){background:#e8ebef;border-color:#d8dee6;color:#7d8794}
+.medication-tracker input[data-cataract-dose]:checked{accent-color:#8b95a3}
+.medication-tracker .medication-time-title,.medication-tracker .medication-day[data-past="true"]:not(:has(input[data-cataract-dose]:not(:checked))) .medication-time-title{color:#111}
+.medication-tracker>#medication-check-status{border-top:0;padding-top:0}
 /* eye-drops-guide.css */
 .eye-drops-page .eye-guide-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
 .eye-drops-page .eye-guide-nav { position: sticky; top: var(--eye-header-height, 70px); z-index: 5; width: 80%; margin: 0 auto; background: #f2f2f2; transition: width .35s ease; }

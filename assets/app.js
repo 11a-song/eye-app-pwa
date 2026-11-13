@@ -937,7 +937,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
         total++;if(store.checks[doseKey(store.plan,date,m.id,i)]===true)done++;
       }
       const state=done===total?'complete':done?'active':'pending';
-      return `<div class="medication-progress-step" data-progress-date="${date}" data-state="${state}"><span class="medication-step-date">${index===3?'수술 당일':`${3-index}일 전`}</span><div class="medication-step-track"><progress max="${total}" value="${done}" aria-label="${label(date)} 안약 체크 ${done}/${total}회"></progress>${state==='complete'?'<span class="medication-stage-stamp">완료</span>':''}</div></div>`;
+      return `<div class="medication-progress-step" data-progress-date="${date}" data-state="${state}"><span class="medication-step-date">${index===3?'수술당일':`${3-index}일 전`}</span><div class="medication-step-track"><progress max="${total}" value="${done}" aria-label="${label(date)} 안약 체크 ${done}/${total}회"></progress>${state==='complete'?'<span class="medication-stage-stamp">완료</span>':''}</div></div>`;
     }).join('');
   }
   function renderMedicationProgress(store){
