@@ -60,9 +60,7 @@
       return `<details class="guide-equipment-group" name="guide-equipment" data-guide-detail="equipment-${category}"><summary><span>${title}<small>${rows.length}종</small></span><svg class="guide-expand" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary><div class="guide-equipment-list">${rows.map(r=>`<article><div class="guide-equipment-photo">${image(r.image_url,r.title+' 장비')}</div><div class="guide-equipment-copy"><small>${esc(title.replace(/\s/g,''))}</small><h3>${esc(r.title)}</h3><p>${esc(r.description||'')}</p></div></article>`).join('')||'<p>장비 안내를 준비 중입니다.</p>'}</div></details>`;
     }).join('');
   }
-  function history(){
-    return `<ol class="guide-history">${reference.history.map((row,index)=>`<li><div class="guide-history-heading"><h3>${esc(row.year)}</h3>${index===0?`<strong class="guide-history-tagline">제주 안과의 '최초'를 선도해온 기록</strong>`:''}</div>${list(row.items)}</li>`).join('')}</ol>`;
-  }
+  function history(){return reference.historyMarkup;}
   function render(content,schedule,scheduleState){
     const panes={support:()=>support(content),facility:()=>facilities(content),director:()=>doctors(content,schedule,scheduleState),equipment:()=>equipment(content),history};
     return `<div class="guide-sticky-header" id="guide-sticky-header"><header class="guide-topbar"><a class="guide-home-logo" href="#/" aria-label="연세제일안과 홈"><img src="${esc(safeUrl(content?.settings?.logo_url)||'assets/logo.svg')}" alt="연세제일안과" width="140" height="25"></a><h1>병원 이용 안내</h1></header><div class="guide-tabs" id="guide-tabs" role="tablist" aria-label="병원 이용 안내 항목">${tabs.map(([id,label])=>`<button type="button" role="tab" id="guide-tab-${id}" data-guide-tab="${id}" aria-controls="guide-panel" aria-selected="${active===id}" tabindex="${active===id?'0':'-1'}">${label}</button>`).join('')}</div></div><section id="guide-panel" class="guide-panel" role="tabpanel" tabindex="0" aria-labelledby="guide-tab-${active}">${panes[active]()}</section>`;

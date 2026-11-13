@@ -314,3 +314,6 @@ window.clinicGuideReference = {
     }
   ]
 };
+
+// Original history chapter from the reference website.
+window.clinicGuideReference.historyMarkup = "<h3 class=\"about-history-intro\">제주 안과의 '최초'를 선도해온 기록</h3>\r\n      <ol class=\"about-history-list guide-history\">\r\n        <li class=\"about-history-year\"><h4>2017</h4><ul><li><strong>연세제일안과 개원</strong><span>이도이동 중앙로 337</span></li><li><strong>제주도내 로컬 안과병원 최초 광각안저 촬영기 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2019</h4><ul><li><strong>안구건조증 치료를 위한 루메니스<br>M22 IPL 레이저 도내 최초 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2020</h4><ul><li><strong>안과 전문 진료 차트 선제적 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2022</h4><ul><li><strong>제주 유일 황반변성 특수 레이저<br>vitra PDT 레이저 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2025</h4><ul><li><strong>난시 및 고위수차 분석 장비<br>i-trace 최초 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2026</h4><ul><li><strong>제주지역 안과 최초 <span class=\"history-accent\">보훈위탁병원</span> 지정</strong></li><li><strong>최신 백내장·망막 수술 장비<br>알콘 유니티 VCS 신규 도입</strong></li><li><strong>현위치 확장이전</strong><span>도남동 연북로 449</span></li></ul></li>\r\n      </ol>";

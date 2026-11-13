@@ -52,7 +52,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   assert.match(html,/약력/);assert.match(html,/학회활동/);assert.match(html,/guide-weekly/);
   await click({guideTab:'equipment'});assert.equal((el('#main').innerHTML.match(/<article>/g)||[]).length,41);
   assert.ok(el('#main').innerHTML.indexOf('수술 장비')<el('#main').innerHTML.indexOf('검진 장비'));
-  await click({guideTab:'history'});for(const year of ['2017','2019','2020','2022','2025','2026'])assert.ok(el('#main').innerHTML.includes('<h3>'+year+'</h3>'));
+  await click({guideTab:'history'});for(const year of ['2017','2019','2020','2022','2025','2026'])assert.ok(el('#main').innerHTML.includes('<h4>'+year+'</h4>'));
   await handlers.keydown({key:'Home',preventDefault(){},target:{closest:()=>({dataset:{guideTab:'history'}})}});assert.equal(guide.active,'support');
   content.status='error';guide.select('equipment');vm.runInContext('render()',context);assert.match(el('#main').innerHTML,/다시 불러오기/);assert.ok(!el('#main').innerHTML.includes('<article>'));
   content.status='ready';content.profiles[0].greeting='<img src=x onerror=alert(1)>';guide.select('director');vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('&lt;img src=x'));assert.ok(!el('#main').innerHTML.includes('<img src=x'));
