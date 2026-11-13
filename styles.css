@@ -69,3 +69,4 @@
   .home-view .menu-icon{display:none}
   .home-view .menu-title{font-size:16px;line-height:1.2}
 }
+.install-copy-button{display:block;width:100%;min-height:44px;border:1px solid var(--blue);border-radius:14px;background:#fff;color:var(--blue);font-size:15px;font-weight:600;margin-top:10px;padding:10px}.install-external-status{font-size:13px;line-height:1.7;color:var(--muted);margin:14px 0 0}.install-external-status:empty{display:none}.install-url{width:100%;padding:12px;margin-top:10px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:var(--bg);color:var(--text)}
