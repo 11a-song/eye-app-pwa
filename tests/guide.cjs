@@ -10,7 +10,7 @@ function el(key){
 let scheduleCalls=0,scheduleFails=false;
 const schedule={doctors:data.doctors.map(d=>({...d,id:String(d.id),weeklySchedules:data.doctor_weekly_schedules.filter(r=>r.doctor_id===d.id)})),schedules:[],closures:[],clinicHours:data.clinic_hours};
 const context=vm.createContext({window:{clinicContent:content,addEventListener:(name,fn)=>windowHandlers[name]=fn,scrollTo(){},matchMedia:()=>({matches:true}),loadDoctorScheduleData:async()=>{scheduleCalls++;if(scheduleFails)throw Error('offline');return schedule;}},document:{querySelector:el,querySelectorAll:()=>[],documentElement:{},addEventListener:(name,fn)=>handlers[name]=fn},location:{hash:'#/guide',protocol:'file:'},navigator:{},localStorage:{getItem:()=>null,setItem(){}},URL,console,setTimeout});
-for(const file of ['scripts/guide-reference.js','scripts/guide.js','scripts/holidays.js','scripts/schedule-model.js','scripts/vision-before.js','app.js'])vm.runInContext(read(file),context,{filename:file});
+for(const file of ['scripts/guide-reference.js','scripts/guide.js','scripts/holidays.js','scripts/schedule-model.js','scripts/vision-before.js','scripts/cataract-before.js','app.js'])vm.runInContext(read(file),context,{filename:file});
 const reference=context.window.clinicGuideReference,guide=context.window.ClinicGuide;
 const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:name=>Object.hasOwn(dataset,name.replace(/^data-/,'').replace(/-([a-z])/g,(_,c)=>c.toUpperCase()))})}});
 (async()=>{
@@ -79,6 +79,10 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
     context.location.hash='#/before/cataract/'+id;vm.runInContext('render()',context);
     assert.ok(el('#main').innerHTML.includes('<h2>'+title+'</h2>'));
     assert.ok(el('#main').innerHTML.includes('href="#/before/cataract"'));
+    if(id==='precautions'){
+      assert.equal((el('#main').innerHTML.match(/class="cataract-preop-card"/g)||[]).length,3);
+      for(const text of ['혈전억제제(예: 아스피린)','수술 3일 전','수술 1달 후','아침식사는 간단히!','반드시 보호자와 함께 동행','보청기'])assert.ok(el('#main').innerHTML.includes(text));
+    }else assert.ok(!el('#main').innerHTML.includes('cataract-precautions'));
   }
   for(const resource of ['guide.css','scripts/guide.js','scripts/guide-reference.js','assets/veterans-logo.svg'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
   console.log('Guide: tab navigation, 19 facility photos, source ordering, 12 benefit groups, modal close, 2026 correction, managed content escaping, offline handling and back-link removal passed.');
