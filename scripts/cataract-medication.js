@@ -186,6 +186,7 @@
     document.querySelector('#medication-progress').textContent=`${done} / ${total}회 완료`;
     document.querySelector('#medication-progress-bar').value=done;
     status.textContent='저장되었습니다.';
+    if(input.checked)showSavedToast('저장 되었습니다.');
   });
   function renderProfileLinks(){
     const {plans}=read();
