@@ -147,3 +147,5 @@
 .medication-arrival-notices{margin:16px 0 22px;color:#111;font-size:14px;line-height:1.7}.medication-arrival-notices p{margin:6px 0}.medication-arrival-notices strong{font-weight:700}
 
 .medication-tracker .medication-title-icon{width:28px;height:30px;align-self:center;flex-shrink:0;color:var(--blue);stroke-width:1.6}.medication-tracker.is-archived .medication-title-icon{color:#929aa7}
+
+.medication-arrival-notices{text-align:center;font-weight:400}.medication-arrival-notices strong{font-weight:400}.medication-check-icon{color:inherit;fill:none;stroke:currentColor;stroke-width:1.6}
