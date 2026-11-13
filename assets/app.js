@@ -934,7 +934,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     const store=read(),plan=store.plan;
     if(!plan)return `<section class="medication-empty"><h2>백내장 수술 전</h2><p>수술할 눈과 수술일을 입력하면 안약 사용 일정을 체크할 수 있습니다.</p><a class="primary-button" href="#/before/cataract">약 사용 일정 설정</a></section>`;
     const {done,total}=totals(store);
-    return `<div class="medication-tracker${plan.archived?' is-archived':''}"><p class="medication-tracker-hint medication-check-intro">안약을 넣은 후 체크해 주세요.</p>${renderPlanSummary(plan)}<section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은 <strong>수술 후</strong>에 드셔야 합니다.</p></section><p class="medication-tracker-hint">안약과 안약 사이에는 5분 이상 간격으로 넣어주세요.</p>${renderMedicationProgress(done,total)}${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}${renderArrivalCard()}<p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에만 저장됩니다.</p></div>`;
+    return `<div class="medication-tracker${plan.archived?' is-archived':''}"><section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은 <strong>수술 후</strong>에 드셔야 합니다.</p></section><p class="medication-tracker-hint medication-check-intro">안약을 넣은 후 체크해 주세요.</p>${renderPlanSummary(plan)}<p class="medication-tracker-hint">안약과 안약 사이에는 5분 이상 간격으로 넣어주세요.</p>${renderMedicationProgress(done,total)}${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}${renderArrivalCard()}<p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에만 저장됩니다.</p></div>`;
   }
   function showSavedToast(message='저장되었습니다.'){
     const toast=document.querySelector('#toast');
@@ -1401,8 +1401,8 @@ function eyeDropsGuide() {
 function profile() {
   const section=location.hash.replace(/^#\/?/,'').split('?')[0].split('/')[1];
   const header=emptyMenuPage('내정보');
-  if(section==='cataract-before')return header+'<a class="surgery-detail-back profile-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a>'+window.CataractMedication.renderSchedule();
-  if(section==='cataract-after')return header+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a><h2>백내장 수술 후</h2></section>';
+  if(section==='cataract-before')return header+window.CataractMedication.renderSchedule();
+  if(section==='cataract-after')return header+'<section class="surgery-detail-page"><h2>백내장 수술 후</h2></section>';
   return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'</div>';
 }
 function resetNavigationState() {

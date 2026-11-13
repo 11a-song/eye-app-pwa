@@ -292,8 +292,8 @@ function eyeDropsGuide() {
 function profile() {
   const section=location.hash.replace(/^#\/?/,'').split('?')[0].split('/')[1];
   const header=emptyMenuPage('내정보');
-  if(section==='cataract-before')return header+'<a class="surgery-detail-back profile-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a>'+window.CataractMedication.renderSchedule();
-  if(section==='cataract-after')return header+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a><h2>백내장 수술 후</h2></section>';
+  if(section==='cataract-before')return header+window.CataractMedication.renderSchedule();
+  if(section==='cataract-after')return header+'<section class="surgery-detail-page"><h2>백내장 수술 후</h2></section>';
   return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'</div>';
 }
 function resetNavigationState() {

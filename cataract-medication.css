@@ -129,3 +129,5 @@
 .medication-tracker .medication-tracker-progress progress::-webkit-progress-bar{background:#e9edf3;border-radius:999px}
 .medication-tracker .medication-tracker-progress progress::-webkit-progress-value{background:#2d83f5;border-radius:999px}
 .medication-tracker .medication-tracker-progress progress::-moz-progress-bar{background:#2d83f5;border-radius:999px}
+.medication-tracker .medication-tracker-reference{margin:0 0 20px;padding:0 0 20px;border-bottom:1px solid #dce2ea}
+.medication-tracker .medication-tracker-reference .medication-oral-note{text-align:center;margin:0}
