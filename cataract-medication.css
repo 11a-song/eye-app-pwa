@@ -149,3 +149,7 @@
 .medication-tracker .medication-title-icon{width:28px;height:30px;align-self:center;flex-shrink:0;color:var(--blue);stroke-width:1.6}.medication-tracker.is-archived .medication-title-icon{color:#929aa7}
 
 .medication-arrival-notices{text-align:center;font-weight:400}.medication-arrival-notices strong{font-weight:400}.medication-check-icon{color:inherit;fill:none;stroke:currentColor;stroke-width:1.6}
+
+.medication-progress-step .medication-step-date{margin-bottom:14px}
+.medication-step-track{position:relative;margin-bottom:10px}
+.medication-stage-stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-8deg);display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:24px;padding:1px 5px;border:3px double #1265b9;border-radius:4px;background:#fff;color:#1265b9;font-size:12px;font-weight:750;line-height:1;white-space:nowrap;pointer-events:none}
