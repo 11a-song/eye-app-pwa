@@ -2,6 +2,7 @@
   'use strict';
   const KEY='jeileye-cataract-preop-v1';
   let toastTimer;
+  const doseFeedbackTimers=new WeakMap();
   let cardSequence=0,planSequence=0;
   const newPlanId=()=>`plan-${Date.now().toString(36)}-${++planSequence}`;
   const eyes={left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'};
@@ -111,7 +112,7 @@
   }
   function renderScheduleDay(plan,store,date,index){
     const slots=dailySlots(plan,date),today=key(new Date()),isToday=date===today;
-    return `<details class="medication-day" data-medication-date="${date}" data-past="${date<today}" ${isToday?'open':''}><summary class="medication-day-summary"><span class="medication-day-summary-date"><strong>${label(date,false)}</strong><small class="medication-day-weekday">(${weekday(date)})</small></span><span class="medication-day-summary-phase">${index===3?'수술 당일':`수술 ${3-index}일 전`}</span><svg class="medication-day-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary><div class="medication-day-content"><header class="medication-day-date"><div class="medication-day-photos">${medicines.map(m=>`<figure class="${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="76" height="84" loading="lazy"><figcaption>${m.name}</figcaption></figure>`).join('')}</div></header><div class="medication-day-doses">${slots.map(slot=>`<div class="medication-time-group" role="group" aria-label="${slot}"><h4 class="medication-time-title">${timeIcon(slot)}${slot}</h4><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<label><span class="medication-dose-name"><i class="medication-dose-dot ${m.id}" aria-hidden="true"></i>${m.name}</span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''} ${plan.archived?'disabled':''}></label>`;}).join('')}</div></div>`).join('')}</div></div></details>`;
+    return `<details class="medication-day" data-medication-date="${date}" data-past="${date<today}" ${isToday?'open':''}><summary class="medication-day-summary"><span class="medication-day-summary-date"><strong>${label(date,false)}</strong><small class="medication-day-weekday">(${weekday(date)})</small></span><span class="medication-day-summary-phase">${index===3?'수술 당일':`수술 ${3-index}일 전`}</span><svg class="medication-day-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary><div class="medication-day-content"><header class="medication-day-date"><div class="medication-day-photos">${medicines.map(m=>`<figure class="${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="76" height="84" loading="lazy"><figcaption>${m.name}</figcaption></figure>`).join('')}</div></header><div class="medication-day-doses">${slots.map(slot=>`<div class="medication-time-group" role="group" aria-label="${slot}"><h4 class="medication-time-title">${timeIcon(slot)}${slot}</h4><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<label><span class="medication-dose-name"><i class="medication-dose-dot ${m.id}" aria-hidden="true"></i>${m.name}</span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''} ${plan.archived?'disabled':''}></label><span class="medication-dose-feedback" data-dose-feedback role="status" aria-live="polite" hidden></span>`;}).join('')}</div></div>`).join('')}</div></div></details>`;
   }
   function renderPlanSummary(plan,done,total){
     return `<section class="medication-plan-summary"><header class="medication-summary-header"><h2>백내장 수술 전</h2>${plan.archived?'':'<a class="medication-summary-edit" href="#/before/cataract">수정</a>'}</header><div class="medication-summary-body"><span class="medication-plan-eye">${eyes[plan.eye]||'수술할 눈 미선택'}</span><dl><div><dt>수술일</dt><dd>${plan.surgeryDate.slice(0,4)}년 ${label(plan.surgeryDate)}</dd></div><div><dt>내원시간</dt><dd>${timeLabel(plan)||'미입력'}</dd></div></dl>${plan.archived?'<p class="medication-readonly-note">이전 수술 기록 · 조회 전용</p>':''}<p id="medication-progress" role="status">${done} / ${total}회 완료</p><progress id="medication-progress-bar" max="${total}" value="${done}" aria-label="안약 사용 완료 횟수"></progress></div></section>`;
@@ -126,6 +127,14 @@
     const toast=document.querySelector('#toast');
     clearTimeout(toastTimer);toast.textContent=message;toast.classList.add('visible');
     toastTimer=setTimeout(()=>toast.classList.remove('visible'),3000);
+  }
+  function showDoseFeedback(input){
+    const feedback=input.closest?.('label')?.nextElementSibling;
+    if(!feedback?.hasAttribute?.('data-dose-feedback'))return;
+    clearTimeout(doseFeedbackTimers.get(feedback));
+    feedback.textContent=input.checked?'저장 되었습니다.':'취소 되었습니다.';
+    feedback.hidden=false;
+    doseFeedbackTimers.set(feedback,setTimeout(()=>{feedback.hidden=true;doseFeedbackTimers.delete(feedback);},2500));
   }
   function saveAppointment(form){
     const status=form.querySelector?.('.appointment-status')||document.querySelector('#appointment-status'),plan=formPlan(form);
@@ -185,8 +194,8 @@
     const {done,total}=totals(store);
     document.querySelector('#medication-progress').textContent=`${done} / ${total}회 완료`;
     document.querySelector('#medication-progress-bar').value=done;
-    status.textContent='저장되었습니다.';
-    if(input.checked)showSavedToast('저장 되었습니다.');
+    status.textContent='체크 기록은 현재 기기에만 저장됩니다.';
+    showDoseFeedback(input);
   });
   function renderProfileLinks(){
     const {plans}=read();

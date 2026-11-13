@@ -226,4 +226,12 @@ const pastSurgery=new Date(deviceToday);pastSurgery.setDate(pastSurgery.getDate(
 const pastForm=form('left',pastSurgery.getFullYear(),pastSurgery.getMonth()+1,pastSurgery.getDate(),'pm',2,0);pastForm.dataset={planId:''};handlers.submit({target:pastForm,preventDefault(){}});
 const pastTags=context.window.CataractMedication.renderSchedule().match(/<details class="medication-day"[^>]*>/g)||[];
 assert.equal(pastTags.filter(tag=>tag.includes('data-past="true"')).length,4,'past-day styling uses the device-local calendar date');
+const feedback={hidden:true,textContent:'',hasAttribute:name=>name==='data-dose-feedback'};
+const localDose=context.window.CataractMedication.renderSchedule().match(/data-cataract-dose="([^"]+)"/)[1];
+const localInput={checked:true,dataset:{cataractDose:localDose},matches:()=>true,closest:selector=>selector==='label'?{nextElementSibling:feedback}:null};
+const globalToastBefore=element('#toast').textContent;
+handlers.change({target:localInput});assert.equal(feedback.hidden,false);assert.equal(feedback.textContent,'저장 되었습니다.');
+assert.equal(element('#toast').textContent,globalToastBefore,'checkbox feedback appears below its own item instead of in the global toast');
+localInput.checked=false;handlers.change({target:localInput});assert.equal(feedback.textContent,'취소 되었습니다.');
+assert.equal(element('#medication-check-status').textContent,'체크 기록은 현재 기기에만 저장됩니다.');
 console.log('Cataract medication: automatic appointment fill, arrival time, morning/afternoon surgery limits, date validation, persistence and failed storage passed.');

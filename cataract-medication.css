@@ -97,3 +97,5 @@
 .medication-day-summary-date{display:flex;align-items:center;gap:6px;white-space:nowrap}.medication-day-summary-date>strong{display:inline;font-size:20px}.medication-day-summary-date>.medication-day-weekday{display:inline;margin:0;font-size:14px}.medication-day-content{background:#fff}.medication-tracker .medication-day[data-past="true"]:not(:has(input[data-cataract-dose]:not(:checked)))>.medication-day-content{background:#34383f}@media(max-width:360px){.medication-day-summary{gap:8px;padding-inline:16px}.medication-day-summary-phase{font-size:12px}}
 
 .medication-tracker>#medication-check-status{margin-top:22px;padding-top:16px;border-top:1px solid #dfe4eb}
+
+.medication-dose-feedback{display:block;width:min(100%,168px);padding:8px 10px;margin-top:-2px;border-radius:8px;background:#364052;color:#fff;font-size:13px;font-weight:500;line-height:1.6;text-align:center}.medication-dose-feedback[hidden]{display:none}
