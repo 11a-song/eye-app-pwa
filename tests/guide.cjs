@@ -88,7 +88,8 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   for(const resource of ['guide.css','scripts/guide.js','scripts/guide-reference.js','assets/veterans-logo.svg'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
   context.location.hash='#/profile';vm.runInContext('render()',context);
   assert.ok(!el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
-  assert.ok(el('#main').innerHTML.includes('href="#/profile/cataract-after"'));
+  assert.ok(!el('#main').innerHTML.includes('class="surgery-category-button"'));
+  assert.ok(!el('#main').innerHTML.includes('admin-login-link'));
   context.localStorage.getItem=key=>key==='jeileye-cataract-preop-v1'?JSON.stringify({appointment:{surgeryDate:'2027-01-02',period:'pm',hour:2,minute:30},checks:{}}):null;
   vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
   context.localStorage.getItem=()=>null;

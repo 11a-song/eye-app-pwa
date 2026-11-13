@@ -267,14 +267,14 @@ function profile() {
   const header=emptyMenuPage('내정보');
   if(section==='cataract-before')return header+'<a class="surgery-detail-back profile-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a>'+window.CataractMedication.renderSchedule();
   if(section==='cataract-after')return header+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a><h2>백내장 수술 후</h2></section>';
-  return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'<a class="surgery-category-button" href="#/profile/cataract-after"><span>백내장 수술 후</span>'+icon('arrow','menu-arrow')+'</a></div>';
+  return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'</div>';
 }
 function render(focus = false) {
   const [route,categoryId,sectionId] = location.hash.replace(/^#\/?/,'').split('?')[0].split('/');
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile,blog:blogPage};
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
-  main.innerHTML = (['before','after'].includes(route)&&categoryId?surgeryDetail(route,categoryId,sectionId):(pages[route] || home)()) + (route === 'profile' ? '<a class="admin-login-link" href="admin.html">병원 관리자 로그인</a>' : '');
+  main.innerHTML = (['before','after'].includes(route)&&categoryId?surgeryDetail(route,categoryId,sectionId):(pages[route] || home)());
   if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
   main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq','profile'].includes(route) ? 'plain-menu-view' : '';
   const settings=window.clinicContent?.settings||{};
