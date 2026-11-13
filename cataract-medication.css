@@ -62,3 +62,5 @@
 .cataract-saved-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}.cataract-saved-heading>strong{font-size:22px;font-weight:700;line-height:1.4;color:#1265b9}.cataract-disease-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:999px;background:#404650;color:#fff;font-size:12px;font-weight:600;line-height:1.5;white-space:nowrap}.cataract-saved-card.is-archived .cataract-saved-heading>strong{color:#858c97}
 
 .medication-saved-plan dd.medication-eye-value{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+
+.cataract-saved-card.is-archived .cataract-disease-badge,.medication-saved-plan.is-archived .cataract-disease-badge,.medication-tracker.is-archived .cataract-disease-badge{background:#c9ced6;color:#858c97}.medication-day:not(:has(input[data-cataract-dose]:not(:checked))) .cataract-disease-badge{background:#626b78;color:#c2c9d3}
