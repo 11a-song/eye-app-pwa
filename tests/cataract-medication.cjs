@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const source=fs.readFileSync(path.join(__dirname,'../scripts/cataract-medication.js'),'utf8');
+const data=new Map(),elements=new Map(),handlers={};let failWrite=false;
+const element=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:0});return elements.get(selector);};
+function session(){
+  const context=vm.createContext({window:{},location:{hash:''},document:{querySelector:element,addEventListener:(type,handler)=>handlers[type]=handler},localStorage:{getItem:key=>data.get(key)||null,setItem:(key,value)=>{if(failWrite)throw Error('storage blocked');data.set(key,value);}},Intl,Date,console});
+  vm.runInContext(source,context);return context;
+}
+let context=session();
+const form=(eye,year,month,day)=>({id:'cataract-medication-form',elements:{namedItem:name=>({value:{eye,year,month,day}[name]})}});
+function save(eye,year,month,day){handlers.submit({preventDefault(){},target:form(eye,year,month,day)});}
+assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
+for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderGuide().includes('value="'+eye+'"'));
+save('left',2027,2,30);assert.equal(data.size,0,'invalid dates must not create a schedule');
+save('left',2027,1,2);assert.equal(context.location.hash,'#/profile/cataract-before');
+let html=context.window.CataractMedication.renderSchedule();
+assert.equal((html.match(/type="checkbox"/g)||[]).length,24,'four days, four antibiotic and two anti-inflammatory doses daily');
+assert.ok(html.includes('12월 30일'));assert.ok(html.includes('1월 2일'));assert.ok(html.includes('왼쪽 눈'));
+const dose=html.match(/data-cataract-dose="([^"]+)"/)[1];
+const input={checked:true,dataset:{cataractDose:dose},closest:()=>null,matches:()=>true};
+handlers.change({target:input});assert.equal(element('#medication-progress').textContent,'1 / 24회 완료');
+context=session();html=context.window.CataractMedication.renderSchedule();
+assert.ok(html.includes('data-cataract-dose="'+dose+'" checked'),'dose completion persists after reload');
+save('right',2027,1,2);assert.ok(context.window.CataractMedication.renderSchedule().includes('0 / 24회 완료'),'different eyes keep separate checks');
+save('left',2027,1,2);assert.ok(context.window.CataractMedication.renderSchedule().includes('1 / 24회 완료'));
+input.checked=false;handlers.change({target:input});assert.ok(context.window.CataractMedication.renderSchedule().includes('0 / 24회 완료'));
+failWrite=true;input.checked=true;handlers.change({target:input});assert.equal(input.checked,false,'failed writes revert checkboxes');
+assert.ok(element('#medication-check-status').textContent.includes('저장하지 못했습니다'));
+save('both',2027,3,4);assert.ok(element('#medication-form-status').textContent.includes('저장하지 못했습니다'));
+console.log('Cataract medication: date validation, cross-year four-day plan, 24 doses, per-eye persistence, uncheck and failed storage passed.');

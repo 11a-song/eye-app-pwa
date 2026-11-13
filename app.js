@@ -250,7 +250,7 @@ function surgeryDetail(stage,categoryId,sectionId) {
   const title=stage==='before'?'수술 전':'수술 후';
   if(stage==='before'&&categoryId==='cataract'){
     const section=cataractPreopSections.find(([id])=>id===sectionId);
-    if(section)return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before/cataract">'+icon('back')+'백내장 목록</a><h2>'+t(sectionId==='precautions'?'백내장 수술 전 주의사항':section[1])+'</h2>'+(sectionId==='precautions'?window.renderCataractPrecautions():'')+'</section>';
+    if(section)return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before/cataract">'+icon('back')+'백내장 목록</a><h2>'+t(sectionId==='precautions'?'백내장 수술 전 주의사항':section[1])+'</h2>'+(sectionId==='precautions'?window.renderCataractPrecautions():window.CataractMedication.renderGuide())+'</section>';
     return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before">'+icon('back')+'수술 전 목록</a><h2>백내장</h2><div class="surgery-category-list">'+cataractPreopSections.map(([id,label])=>'<a class="surgery-category-button" href="#/before/cataract/'+id+'"><span>'+t(label)+'</span>'+icon('arrow','menu-arrow')+'</a>').join('')+'</div></section>';
   }
   return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/'+stage+'">'+icon('back')+t(title)+' 목록</a>'+(stage==='before'&&categoryId==='vision'?'':'<h2>'+t(category[1])+'</h2>')+(stage==='before'&&categoryId==='vision'?'<div class="surgery-vision-before">'+window.clinicVisionBeforeHtml+'</div>':'')+'</section>';
@@ -262,7 +262,13 @@ function emptyMenuPage(title) {
 }
 function dream() { return emptyMenuPage(menus[4][2]); }
 function faq() { return emptyMenuPage(menus[5][2]); }
-function profile() { return pageTop('내정보','나의 진료 안내를 확인하는 공간입니다.') + `<section class="card empty"><div class="profile-icon">${icon('user')}</div><h2>내 진료 정보를 만날 공간</h2><p>로그인 및 개인 진료 정보 연동을 준비 중입니다.<br>현재는 병원 안내 메뉴를 이용해 주세요.</p><a class="primary-button" href="#/">홈으로 돌아가기</a></section><section class="card"><h2>예약 확인이 필요하신가요?</h2><p>네이버에서 예약하신 내역은 네이버 예약 페이지에서 확인할 수 있습니다.</p><button class="primary-button" data-action="contact">${t('문의하기')}</button></section>`; }
+function profile() {
+  const section=location.hash.replace(/^#\/?/,'').split('?')[0].split('/')[1];
+  const header=emptyMenuPage('내정보');
+  if(section==='cataract-before')return header+'<a class="surgery-detail-back profile-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a>'+window.CataractMedication.renderSchedule();
+  if(section==='cataract-after')return header+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a><h2>백내장 수술 후</h2></section>';
+  return header+'<div class="surgery-category-list"><a class="surgery-category-button" href="#/profile/cataract-before"><span>백내장 수술 전</span>'+icon('arrow','menu-arrow')+'</a><a class="surgery-category-button" href="#/profile/cataract-after"><span>백내장 수술 후</span>'+icon('arrow','menu-arrow')+'</a></div>';
+}
 function render(focus = false) {
   const [route,categoryId,sectionId] = location.hash.replace(/^#\/?/,'').split('?')[0].split('/');
   currentRoute = route;
@@ -270,7 +276,7 @@ function render(focus = false) {
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
   main.innerHTML = (['before','after'].includes(route)&&categoryId?surgeryDetail(route,categoryId,sectionId):(pages[route] || home)()) + (route === 'profile' ? '<a class="admin-login-link" href="admin.html">병원 관리자 로그인</a>' : '');
   if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
-  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq'].includes(route) ? 'plain-menu-view' : '';
+  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq','profile'].includes(route) ? 'plain-menu-view' : '';
   const settings=window.clinicContent?.settings||{};
   const headerLogo=$('.app-header img');
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);
