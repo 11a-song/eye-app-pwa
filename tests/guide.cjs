@@ -78,6 +78,8 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   assert.ok(el('#main').innerHTML.indexOf('href="#/before/cataract/medication"')<el('#main').innerHTML.indexOf('class="cataract-appointment-panel"'));
   for(const [id,title] of [['precautions','수술 전 주의사항'],['medication','수술 전 약 사용법']]){
     context.location.hash='#/before/cataract/'+id;vm.runInContext('render()',context);
+    assert.ok(el('#main').innerHTML.includes('class="cataract-detail-nav"'));
+    assert.ok(el('#main').innerHTML.includes('href="#/before/cataract/'+id+'" aria-current="page"'));
     assert.ok(el('#main').innerHTML.includes('<h2>'+(id==='precautions'?'백내장 수술 전 주의사항':title)+'</h2>'));
     assert.ok(el('#main').innerHTML.includes('href="#/before/cataract"'));
     if(id==='precautions'){

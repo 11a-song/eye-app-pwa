@@ -250,15 +250,18 @@ function surgeryDetail(stage,categoryId,sectionId) {
   const title=stage==='before'?'수술 전':'수술 후';
   if(stage==='before'&&categoryId==='cataract'){
     const section=cataractPreopSections.find(([id])=>id===sectionId);
-    if(section)return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before/cataract">'+icon('back')+'백내장 목록</a><h2>'+t(sectionId==='precautions'?'백내장 수술 전 주의사항':section[1])+'</h2>'+(sectionId==='precautions'?window.renderCataractPrecautions():window.CataractMedication.renderGuide())+'</section>';
+    if(section){
+      const nav='<nav class="cataract-detail-nav" aria-label="백내장 수술 전 안내">'+cataractPreopSections.map(([id,label])=>'<a href="#/before/cataract/'+id+'"'+(id===sectionId?' aria-current="page"':'')+'>'+t(id==='precautions'?'주의사항':label)+'</a>').join('')+'</nav>';
+      return emptyMenuPage(title,nav)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before/cataract">'+icon('back')+'백내장 목록</a><h2>'+t(sectionId==='precautions'?'백내장 수술 전 주의사항':section[1])+'</h2>'+(sectionId==='precautions'?window.renderCataractPrecautions():window.CataractMedication.renderGuide())+'</section>';
+    }
     return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before">'+icon('back')+'수술 전 목록</a><h2>백내장 수술 전</h2><div class="surgery-category-list cataract-menu-bars">'+cataractPreopSections.map(([id,label])=>'<a class="surgery-category-button" href="#/before/cataract/'+id+'"><span>'+t(id==='precautions'?'주의사항':label)+'</span>'+icon('arrow','menu-arrow')+'</a>').join('')+'</div><aside class="cataract-arrival-notice" aria-label="내원 시 주의사항"><p>*수술실 입실까지 약 1시간 정도 대기시간이 있습니다.</p><p>*내원시간 이후 도착 시 수술 순서가 변경될 수 있습니다.</p></aside>'+window.CataractMedication.renderSetup()+'</section>';
   }
   return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/'+stage+'">'+icon('back')+t(title)+' 목록</a>'+(stage==='before'&&categoryId==='vision'?'':'<h2>'+t(category[1])+'</h2>')+(stage==='before'&&categoryId==='vision'?'<div class="surgery-vision-before">'+window.clinicVisionBeforeHtml+'</div>':'')+'</section>';
 }
 function before() { return surgeryMenu('before'); }
 function after() { return surgeryMenu('after'); }
-function emptyMenuPage(title) {
-  return `<div class="guide-sticky-header"><header class="guide-topbar"><a class="guide-home-logo" href="#/" aria-label="연세제일안과 홈"><img src="${escapeHtml(safeContentUrl(window.clinicContent?.settings?.logo_url)||'assets/logo.svg')}" alt="연세제일안과" width="140" height="25"></a><h1>${t(title)}</h1></header></div>`;
+function emptyMenuPage(title,subnav='') {
+  return `<div class="guide-sticky-header"><header class="guide-topbar"><a class="guide-home-logo" href="#/" aria-label="연세제일안과 홈"><img src="${escapeHtml(safeContentUrl(window.clinicContent?.settings?.logo_url)||'assets/logo.svg')}" alt="연세제일안과" width="140" height="25"></a><h1>${t(title)}</h1></header>${subnav}</div>`;
 }
 function dream() { return emptyMenuPage(menus[4][2]); }
 function faq() { return emptyMenuPage(menus[5][2]); }
