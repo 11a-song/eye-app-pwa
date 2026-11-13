@@ -25,3 +25,5 @@ body:has(.guide-modal[open]){overflow:hidden}
 .guide-veterans .guide-support-note{font-size:14px}
 
 .guide-floor>header{flex-wrap:wrap;gap:12px;align-items:flex-start}.guide-floor-heading{display:flex;align-items:flex-start;gap:12px;min-width:0;flex:1 1 260px}.guide-floor-heading h3{flex-shrink:0}.guide-floor-copy{display:grid;gap:3px;min-width:0}.guide-floor-copy strong{font-size:20px;font-weight:700;line-height:1.5;word-break:keep-all}.guide-floor-copy a{font-size:14px;line-height:1.6;color:var(--muted);width:fit-content}.guide-floor .guide-gallery-controls{margin-left:auto;flex-shrink:0}
+
+.guide-floor-contact{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}.guide-floor-phone-label{font-size:14px;color:var(--muted)}.guide-floor-copy .guide-floor-phone{font-size:18px;font-weight:700;white-space:nowrap;color:var(--text)}.guide-floor-copy .guide-call-button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:5px 12px;border:1px solid var(--blue);border-radius:999px;background:#fff;color:var(--blue);font-size:14px;font-weight:600;white-space:nowrap}
