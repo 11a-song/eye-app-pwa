@@ -102,3 +102,18 @@ html[data-install-welcome] .app-shell{display:none}
 .home-view .menu-bar:active{transform:translateY(2px);border-bottom-width:1px;background:linear-gradient(180deg,#f0f4fa,#fff);box-shadow:none}
 .home-view .menu-arrow{width:16px;height:20px;color:var(--blue);margin-left:auto;flex-shrink:0}
 @media(max-height:480px){.home-view .menu-list{--home-rows:3}}
+/* 평면 홈 메뉴와 아이콘 옆에 이름을 놓는 하단 탐색 바 */
+.home-view .menu-bar{background:#fff;border:1px solid #e3e8f1;box-shadow:none;transition:background .12s}
+.home-view .menu-bar:active{background:var(--soft);border:1px solid #e3e8f1;transform:none;box-shadow:none}
+.app-shell:has(.home-view){--home-nav-height:72px}
+.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{height:calc(72px + env(safe-area-inset-bottom));padding:8px 12px calc(8px + env(safe-area-inset-bottom));grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);gap:8px;background:#fff;border-radius:18px 18px 0 0}
+.app-shell .bottom-nav .nav-item{min-width:0;min-height:44px;flex-direction:row;justify-content:center;align-items:center;gap:6px;padding:4px 0;font-size:14px;line-height:1.3;text-align:left}
+.app-shell .bottom-nav .nav-item>svg{width:22px;height:22px}
+.app-shell .bottom-nav .nav-item>span{min-width:0}
+.app-shell .bottom-nav .schedule-nav-item{font-size:clamp(12px,3.3vw,14px)}
+.app-shell .bottom-nav .schedule-nav-item>span{word-break:keep-all;overflow-wrap:normal}
+.app-shell .bottom-nav .contact-trigger{align-self:start;margin:-18px 0 0;padding:0;justify-content:center}
+.app-shell .bottom-nav .contact-orb{box-sizing:border-box;width:60px;height:60px;border:4px solid var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#fff;background:var(--blue);box-shadow:none;font-size:12px;line-height:1.1;text-align:center}
+.app-shell .bottom-nav .contact-orb svg{width:21px;height:21px}
+@media(max-width:360px){.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{padding-inline:8px;gap:4px;grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr)}.app-shell .bottom-nav .nav-item{font-size:13px;gap:4px}.app-shell .bottom-nav .schedule-nav-item{font-size:12px}.app-shell .bottom-nav .nav-item>svg{width:20px;height:20px}}
+@media(max-height:480px){.app-shell:has(.home-view){--home-nav-height:64px}.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{height:calc(64px + env(safe-area-inset-bottom));padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}.app-shell .bottom-nav .contact-trigger{margin-top:-12px}.app-shell .bottom-nav .contact-orb{width:54px;height:54px}}
