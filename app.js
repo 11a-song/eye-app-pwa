@@ -97,7 +97,7 @@ function managedPage(key){
 function activeFaqs(){const content=window.clinicContent;return !content||content.status==='disabled'?faqs:content.status==='ready'?content.pages.filter(row=>row.page_key==='faq').map(row=>[row.title,row.content]):[];}
 function blogPage(){const content=window.clinicContent;return pageTop('병원 블로그','병원이 전하는 눈 건강 이야기')+(content?.status==='ready'?content.blog.map(row=>accordion(escapeHtml(row.title),`<p class="note">${escapeHtml(row.post_date)}</p>`+contentImage(row.image_url)+`<div class="managed-text">${escapeHtml(row.content)}</div>`+(safeContentUrl(row.source_url)?`<a class="text-button" href="${escapeHtml(safeContentUrl(row.source_url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.source||'출처 보기')} ↗</a>`:''))).join(''):'<section class="card"><p>블로그를 불러오는 중입니다.</p></section>');}
 function home() {
-  return `<section class="home-intro"><h1>${t('연세제일안과와 함께하는')}<br><em>${t('더 편안한 눈 건강 관리')}</em></h1></section><div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span></span></a>`).join('')}</div><div class="home-foot"><span>${t('당신의 눈을 위한 바른 진료')}</span><button class="text-button" data-action="install">${icon('download')}${t('앱 설치 안내')}</button></div>`;
+  return `<section class="home-intro"><h1>${t('연세제일안과와 함께하는')}<br><em>${t('더 편안한 눈 건강 관리')}</em></h1></section><div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span></span></a>`).join('')}</div><section class="install-banner"><img src="assets/icon-192.png" alt="" width="48" height="48"><div><strong>연세제일안과 앱</strong><span>홈 화면에서 바로 이용하세요</span></div><button type="button" data-action="install">앱 설치</button></section><div class="home-foot"><span>${t('당신의 눈을 위한 바른 진료')}</span><button class="text-button" data-action="install">${icon('download')}${t('앱 설치 안내')}</button></div>`;
 }
 function guide() {
   return window.ClinicGuide.render(window.clinicContent,scheduleData,scheduleState);
@@ -301,14 +301,12 @@ function render(focus = false) {
   if (focus) { window.scrollTo(0,0); main.focus({preventScroll:true}); }
 }
 function sheetHeader(title, id) { return `<div class="sheet-header"><h2 id="${id}">${t(title)}</h2><button class="icon-button" data-close aria-label="${t('닫기')}">${icon('close')}</button></div>`; }
-let deferredInstall;
-window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstall=event;});
 function openSheet(kind) {
+  if (kind === 'install') { window.ClinicInstall.open(); return; }
   const dialog = $(`#${kind}-dialog`);
   if (kind === 'veterans') dialog.innerHTML = window.ClinicGuide.veterans();
   if (kind === 'contact') dialog.innerHTML = sheetHeader('문의하기','contact-title') + `<p>${t('편한 방법으로 연세제일안과에 문의하세요.')}</p><a class="contact-option" href="https://pf.kakao.com/_mRjtn/chat" target="_blank" rel="noopener noreferrer"><span class="channel kakao">${icon('chat')}</span><span><strong>${t('카카오톡 상담')}</strong><small>${t('채팅으로 문의하기')}</small></span>${icon('arrow','menu-arrow')}</a><a class="contact-option" href="https://m.booking.naver.com/booking/13/bizes/1336750?theme=place&lang=ko&area=pll" target="_blank" rel="noopener noreferrer"><span class="channel naver">N</span><span><strong>${t('네이버 예약')}</strong><small>${t('예약 페이지로 이동')}</small></span>${icon('arrow','menu-arrow')}</a><a class="contact-option" href="tel:0647272700"><span class="channel phone">${icon('phone')}</span><span><strong>${t('전화 상담')}</strong><small>064-727-2700</small></span>${icon('arrow','menu-arrow')}</a>`;
   if (kind === 'language') dialog.innerHTML = sheetHeader('언어선택','language-title') + `<p>${t('언어를 선택해 주세요.')}<br>${t('기본 메뉴와 화면 안내의 언어를 변경합니다. 병원 원문 안내는 한국어로 제공됩니다.')}</p>${[['ko','한국어','Korean'],['en','English','영어'],['zh','简体中文','중국어']].map(([id,label,desc])=>`<button class="language-option ${language===id?'selected':''}" data-language="${id}" lang="${id}" aria-pressed="${language===id}"><span>${label} <small>· ${desc}</small></span>${language===id?icon('check'):''}</button>`).join('')}`;
-  if (kind === 'install') dialog.innerHTML = sheetHeader('앱 설치 안내','install-title') + `<p>홈 화면에서 연세제일안과를 바로 만나보세요.</p><section class="card blue-card"><h3>아이폰 · iPad</h3><p>Safari에서 앱 주소를 연 뒤 공유 버튼 → <strong>홈 화면에 추가</strong>를 선택해 주세요.</p><h3>안드로이드</h3><p>Chrome 메뉴 → <strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong>를 선택해 주세요.</p></section><p>실제 휴대폰 설치에는 HTTPS로 배포된 주소가 필요합니다.</p>${deferredInstall?'<button class="primary-button" data-install>지금 설치하기</button>':''}`;
   if(kind==='contact'){
     const settings=window.clinicContent?.settings||{},links=dialog.querySelectorAll('a');
     if(safeContentUrl(settings.kakao_url))links[0].href=safeContentUrl(settings.kakao_url);
@@ -318,7 +316,7 @@ function openSheet(kind) {
   dialog.showModal();
 }
 document.addEventListener('click',async event=>{
-  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry],[data-eye-guide-target]');
+  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry],[data-eye-guide-target]');
   if (!button) return;
   if (button.dataset.eyeGuideTarget) {
     const target=button.dataset.eyeGuideTarget;
@@ -344,7 +342,6 @@ document.addEventListener('click',async event=>{
   if (button.hasAttribute('data-schedule-doctor')) { scheduleDoctor=button.dataset.scheduleDoctor;calendar(); }
   if (button.dataset.month) { calendarMonth = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+Number(button.dataset.month),1);selectedDate = new Date(calendarMonth);calendar(); }
   if (button.dataset.day) { selectedDate = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),Number(button.dataset.day));calendar(); $('.schedule-day-panel').scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}); }
-  if (button.hasAttribute('data-install') && deferredInstall) { const prompt = deferredInstall; deferredInstall=null;await prompt.prompt();await prompt.userChoice;$('#install-dialog').close(); }
 });
 document.addEventListener('change',event=>{if(event.target.id==='doctor') { scheduleDoctor=event.target.value; calendar(); }});
 document.addEventListener('keydown',event=>{
