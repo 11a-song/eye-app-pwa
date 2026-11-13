@@ -199,7 +199,7 @@
   });
   function renderProfileLinks(){
     const {plans}=read();
-    return plans.map(p=>`<a class="surgery-category-button${p.archived?' is-archived':''}" href="#/profile/cataract-before${plans.length>1?'?plan='+p.id:''}"><span class="profile-plan-copy"><strong class="profile-plan-eye">${eyes[p.eye]||'수술할 눈 미선택'}</strong><span class="profile-plan-description">백내장 수술 전 안액 스케줄 관리</span><small>${p.surgeryDate.slice(0,4)}년 ${label(p.surgeryDate)}${timeLabel(p)?'<br>내원 '+timeLabel(p):''}</small></span><svg class="menu-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>`).join('');
+    return plans.map(p=>`<a class="surgery-category-button${p.archived?' is-archived':''}" href="#/profile/cataract-before${plans.length>1?'?plan='+p.id:''}"><span class="profile-plan-copy"><strong class="profile-plan-eye">${eyes[p.eye]||'수술할 눈 미선택'}</strong><span class="profile-plan-description">백내장 수술 전 안약 스케줄 관리</span><small>수술예정일 ${p.surgeryDate.slice(0,4)}년 ${label(p.surgeryDate)}${timeLabel(p)?'<br>내원시간 '+timeLabel(p):''}</small></span><svg class="menu-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>`).join('');
   }
   let pendingRecordAction=null;
   function recordHasChecks(store,id){
