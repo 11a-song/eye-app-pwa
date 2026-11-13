@@ -36,6 +36,20 @@
   <script src="app.js" defer></script>
 </head>
 <body>
+  <section id="install-welcome" class="install-welcome" aria-labelledby="install-welcome-title" hidden>
+    <img class="install-welcome-logo" src="assets/logo.svg" alt="연세제일안과" width="224" height="39">
+    <div class="install-welcome-content">
+      <img class="install-welcome-icon" src="assets/icon-192.png" alt="" width="96" height="96">
+      <h1 id="install-welcome-title">연세제일안과를<br>앱으로 만나보세요</h1>
+      <p>진료 일정과 수술 안내를 확인하고<br>나의 안약 사용 기록을 관리하세요.</p>
+      <ul><li>홈 화면에서 바로 실행</li><li>로그인 없이 약 사용 기록 관리</li></ul>
+    </div>
+    <div class="install-welcome-actions">
+      <p id="install-welcome-note"></p>
+      <button type="button" class="primary-button" data-pwa-start>앱 설치하기</button>
+      <button type="button" class="install-continue" data-pwa-continue>브라우저로 계속 이용하기</button>
+    </div>
+  </section>
   <div class="app-shell">
     <header class="app-header"><a href="#/" aria-label="연세제일안과 홈"><img src="assets/logo.svg" alt="연세제일안과" width="224" height="39"></a><nav class="header-language" id="header-language" aria-label="언어 선택"></nav></header>
     <main id="main" tabindex="-1"></main>

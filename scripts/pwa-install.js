@@ -1,10 +1,12 @@
 'use strict';
 (() => {
-  let pendingPrompt = null, installed = false, busy = false;
+  let pendingPrompt = null, installed = false, busy = false, welcomeDismissed = false;
   const displayMode = window.matchMedia('(display-mode: standalone)');
   const isInstalled = () => installed || displayMode.matches || navigator.standalone === true;
   const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isAndroid = () => /Android/i.test(navigator.userAgent);
+  const isMobile = () => isAndroid() || isIOS() || navigator.userAgentData?.mobile === true;
+  const isAndroidChrome = () => isAndroid() && /Chrome/i.test(navigator.userAgent) && !/SamsungBrowser|EdgA|OPR|Firefox/i.test(navigator.userAgent);
   const isInApp = () => /KAKAOTALK|NAVER[(/]|DaumApps|Instagram|FBAN|FBAV|; wv\)/i.test(navigator.userAgent);
   const needsSafari = () => isIOS() && /CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
   const dialog = () => document.querySelector('#install-dialog');
@@ -49,13 +51,45 @@
   }
   function updateState() {
     document.documentElement.toggleAttribute('data-app-installed', isInstalled());
+    const welcome = document.querySelector('#install-welcome');
+    const showWelcome = isMobile() && !isInstalled() && !welcomeDismissed;
+    if (welcome) welcome.hidden = !showWelcome;
+    document.documentElement.toggleAttribute('data-install-welcome', showWelcome);
+    const note = document.querySelector('#install-welcome-note');
+    if (note) note.textContent = isInApp() || (isAndroid() && !isAndroidChrome()) || needsSafari()
+      ? (isAndroid() ? 'Chrome으로 이동해 설치를 진행합니다.' : 'Safari로 이동해 홈 화면에 추가해 주세요.')
+      : isIOS() ? 'Safari의 공유 → 홈 화면에 추가로 설치할 수 있습니다.' : '설치 확인창에서 설치를 눌러 완료해 주세요.';
   }
-  function render() {
+  function startInstall() {
+    if (isInstalled()) { welcomeDismissed = true; updateState(); return; }
+    if (isInApp() || needsSafari() || (isAndroid() && !isAndroidChrome())) {
+      render(true);
+      const sheet = dialog();
+      if (!sheet.open) sheet.showModal();
+      openExternal();
+      return;
+    }
+    window.ClinicInstall.open();
+  }
+  async function detectRelatedInstall() {
+    if (!isMobile() || isInstalled() || !navigator.getInstalledRelatedApps) return;
+    try {
+      const apps = await navigator.getInstalledRelatedApps();
+      const manifestUrl = new URL('manifest.webmanifest', appUrl).href;
+      if (apps.some(app => app.platform === 'webapp' && app.url && new URL(app.url, appUrl).href === manifestUrl)) {
+        installed = true;
+        updateState();
+      }
+    } catch {
+      // Browsers without installation detection still allow continuing on the web.
+    }
+  }
+  function render(forceExternal = false) {
     const sheet = dialog();
     if (!sheet) return;
     let content;
     if (isInstalled()) content = '<p>앱으로 실행 중입니다. 홈 화면의 연세제일안과 아이콘으로 이용해 주세요.</p>';
-    else if (isInApp()) content = '<p>앱 설치를 위해 외부 브라우저에서 열어 주세요.</p><p>아이폰은 Safari, 안드로이드는 Chrome을 이용해 주세요.</p>' + externalControls();
+    else if (isInApp() || forceExternal) content = '<p>앱 설치를 위해 외부 브라우저에서 열어 주세요.</p><p>아이폰은 Safari, 안드로이드는 Chrome을 이용해 주세요.</p>' + externalControls();
     else if (pendingPrompt) content = '<p>홈 화면에 연세제일안과를 추가하고 앱처럼 이용하세요.</p><button type="button" class="primary-button" data-pwa-install>앱 설치하기</button>';
     else if (isIOS()) content = '<p>Safari에서 아래 순서로 설치해 주세요.</p><ol class="install-steps"><li>브라우저의 <strong>공유</strong> 버튼을 누르세요.</li><li><strong>홈 화면에 추가</strong>를 선택하세요.</li><li><strong>추가</strong>를 누르면 설치가 완료됩니다.</li></ol>' + (needsSafari() ? '<p>Safari로 이동한 후 설치를 진행해 주세요.</p>' + externalControls() : '');
     else content = '<p>브라우저 메뉴에서 설치할 수 있습니다.</p><ol class="install-steps"><li>Chrome 또는 삼성 인터넷에서 이 페이지를 여세요.</li><li>메뉴 <strong>⋮ / ☰</strong>를 누르세요.</li><li><strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong>를 선택하세요.</li></ol><p>컴퓨터에서는 주소창의 설치 아이콘 또는 브라우저 메뉴의 앱 설치를 이용해 주세요.</p>';
@@ -81,6 +115,8 @@
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();
     pendingPrompt = event;
+    installed = false;
+    updateState();
     if (dialog()?.open) render();
   });
   window.addEventListener('appinstalled', () => {
@@ -91,6 +127,12 @@
   });
   displayMode.addEventListener?.('change', updateState);
   document.addEventListener('click', event => {
+    if (event.target.closest('[data-pwa-start]')) startInstall();
+    if (event.target.closest('[data-pwa-continue]')) {
+      welcomeDismissed = true;
+      updateState();
+      document.querySelector('#main')?.focus({ preventScroll: true });
+    }
     if (event.target.closest('[data-pwa-install]')) requestInstall();
     if (event.target.closest('[data-pwa-external]')) openExternal();
     if (event.target.closest('[data-pwa-copy]')) copyAddress();
@@ -102,4 +144,5 @@
     if (pendingPrompt && !isInApp()) requestInstall();
   }};
   updateState();
+  detectRelatedInstall();
 })();

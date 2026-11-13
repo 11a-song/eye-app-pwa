@@ -3,18 +3,19 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
-function setup(userAgent = 'Android Chrome', standalone = false, clipboard) {
+function setup(userAgent = 'Android Chrome', standalone = false, clipboard, navigatorExtras = {}) {
   const events = {}, attributes = new Set();
   const status = { textContent: '' }, field = { hidden: true, value: '', focus() {}, select() { this.selected = true; } };
   const sheet = { open: false, innerHTML: '', querySelector: selector => selector === '.install-url' ? field : status, showModal() { this.open = true; }, close() { this.open = false; } };
+  const welcome = { hidden: true }, note = { textContent: '' }, main = { focus() { this.focused = true; } };
   const window = { location: { href: 'https://jeileye.2025work11a.workers.dev/#/before' }, matchMedia: () => ({ matches: standalone, addEventListener() {} }), addEventListener: (name, fn) => events[name] = fn };
   vm.runInNewContext(fs.readFileSync(path.join(root, 'scripts/pwa-install.js'), 'utf8'), {
-    window, URL, navigator: { userAgent, clipboard }, document: {
-      querySelector: () => sheet, addEventListener: (name, fn) => events[name] = fn,
+    window, URL, navigator: { userAgent, clipboard, ...navigatorExtras }, document: {
+      querySelector: selector => ({ '#install-dialog': sheet, '#install-welcome': welcome, '#install-welcome-note': note, '#main': main })[selector], addEventListener: (name, fn) => events[name] = fn,
       documentElement: { toggleAttribute(name, value) { value ? attributes.add(name) : attributes.delete(name); } }
     }
   });
-  return { window, events, sheet, attributes, status, field, click: selector => events.click({ target: { closest: query => query === selector } }) };
+  return { window, events, sheet, attributes, status, field, welcome, main, click: selector => events.click({ target: { closest: query => query === selector } }) };
 }
 (async () => {
   const android = setup();
@@ -72,6 +73,41 @@ function setup(userAgent = 'Android Chrome', standalone = false, clipboard) {
   assert.equal(deniedCopy.field.selected, true);
   assert.match(deniedCopy.status.textContent, /길게 눌러 복사/);
   assert.ok(setup('iPhone', true).attributes.has('data-app-installed'));
+  assert.equal(setup('Android Chrome', true).welcome.hidden, true);
+  assert.equal(setup('Desktop Chrome').welcome.hidden, true);
+  const firstVisit = setup();
+  assert.equal(firstVisit.welcome.hidden, false);
+  assert.ok(firstVisit.attributes.has('data-install-welcome'));
+  firstVisit.click('[data-pwa-continue]');
+  assert.equal(firstVisit.welcome.hidden, true);
+  assert.equal(firstVisit.main.focused, true);
+  firstVisit.events.beforeinstallprompt({ preventDefault() {}, prompt() {} });
+  assert.equal(firstVisit.welcome.hidden, true, 'Continuing on the web is respected for this visit');
+  const installFromWelcome = setup();
+  let started = 0;
+  installFromWelcome.events.beforeinstallprompt({ preventDefault() {}, async prompt() { started++; }, userChoice: Promise.resolve({ outcome: 'accepted' }) });
+  assert.equal(started, 0, 'Never auto-install or prompt on page load');
+  installFromWelcome.click('[data-pwa-start]');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(started, 1);
+  installFromWelcome.events.appinstalled();
+  assert.equal(installFromWelcome.welcome.hidden, true);
+  const externalStart = setup('Android KAKAOTALK');
+  externalStart.click('[data-pwa-start]');
+  assert.match(externalStart.window.location.href, /^intent:.*package=com.android.chrome;/);
+  const samsungStart = setup('Android Chrome SamsungBrowser');
+  samsungStart.click('[data-pwa-start]');
+  assert.match(samsungStart.window.location.href, /^intent:.*package=com.android.chrome;/);
+  assert.equal(samsungStart.field.hidden, false);
+  const knownInstalled = setup('Android Chrome', false, undefined, { async getInstalledRelatedApps() { return [{ platform: 'webapp', url: 'https://jeileye.2025work11a.workers.dev/manifest.webmanifest' }]; } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(knownInstalled.welcome.hidden, true);
+  const unrelated = setup('Android Chrome', false, undefined, { async getInstalledRelatedApps() { return [{ platform: 'webapp', url: 'https://example.com/manifest.webmanifest' }]; } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(unrelated.welcome.hidden, false);
+  const failedDetection = setup('iPhone Safari', false, undefined, { async getInstalledRelatedApps() { throw Error('unavailable'); } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(failedDetection.welcome.hidden, false);
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8'));
   for (const size of [192, 512]) {
     const icon = manifest.icons.find(icon => icon.sizes === `${size}x${size}`);
