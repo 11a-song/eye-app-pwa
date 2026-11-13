@@ -119,11 +119,12 @@ function setup(userAgent = 'Android Chrome', standalone = false, clipboard, navi
   for (const file of JSON.parse(shell.replace(/'/g, '"'))) assert.ok(fs.existsSync(path.join(root, file)), `Missing offline file: ${file}`);
   assert.ok(!shell.includes('.jpg'), 'Photos must not compete with first-screen downloads');
   const workerEvents = {}, cachedImages = new Map();
-  let downloads = 0, imageStatus = 200;
+  let downloads = 0, imageStatus = 200, networkFails = false, skipWaitingCalls = 0;
+  const fetchedUrls = [], precached = [];
   vm.runInNewContext(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), {
-    self: { location: { origin: 'https://example.com' }, registration: { scope: 'https://example.com/' }, addEventListener: (name, fn) => workerEvents[name] = fn }, URL,
-    caches: { async open() { return { async match(request) { return cachedImages.get(typeof request === 'string' ? request : request.url); }, async put(request, response) { cachedImages.set(typeof request === 'string' ? request : request.url, response); } }; } },
-    async fetch() { downloads++; return new Response('image', { status: imageStatus }); }
+    self: { location: { origin: 'https://example.com' }, registration: { scope: 'https://example.com/' }, async skipWaiting() { skipWaitingCalls++; }, addEventListener: (name, fn) => workerEvents[name] = fn }, URL, Response,
+    caches: { async open() { return { async addAll(files) { precached.push(...files); }, async match(request) { return cachedImages.get(typeof request === 'string' ? request : request.url); }, async put(request, response) { cachedImages.set(typeof request === 'string' ? request : request.url, response); } }; } },
+    async fetch(request) { downloads++; fetchedUrls.push(typeof request === 'string' ? request : request.url); if(networkFails) throw Error('offline'); return new Response('image', { status: imageStatus }); }
   });
   async function requestAsset(file) {
     const waits = [];
@@ -153,6 +154,26 @@ function setup(userAgent = 'Android Chrome', standalone = false, clipboard, navi
   assert.equal(await requestAsset('/rest/v1/private'), undefined);
   assert.equal(await requestAsset('/admin.html'), undefined);
   assert.equal(await requestAsset('https://other.example.com/photo.jpg'), undefined);
+  const redirectedHtml = new Response('<h1>App</h1>', {headers:{'Content-Type':'text/html'}});
+  Object.defineProperty(redirectedHtml,'redirected',{value:true});
+  cachedImages.set('https://example.com/',redirectedHtml);
+  const repaired = await requestAsset('/index.html');
+  assert.equal(repaired.redirected,false,'Followed redirects must not be returned to browser navigation');
+  assert.equal(await repaired.text(),'<h1>App</h1>');
+  cachedImages.delete('https://example.com/');
+  await requestAsset('/index.html');
+  assert.equal(fetchedUrls.at(-1),'https://example.com/','Fetch the canonical root instead of the redirecting index URL');
+  let installWork;
+  workerEvents.install({waitUntil(promise){installWork=promise;}});
+  await installWork;
+  assert.ok(!precached.includes('./index.html'));
+  assert.equal(cachedImages.get('https://example.com/').redirected,false);
+  assert.equal(skipWaitingCalls,1,'Activate the repair without deleting device records');
+  cachedImages.delete('https://example.com/');
+  networkFails=true;
+  const offline = await requestAsset('/');
+  assert.equal(offline.status,503);
+  assert.match(await offline.text(),/인터넷 연결을 확인/);
   const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
   assert.match(html, /<main id="main"[^>]*>[\s\S]*?class="menu-list"/);
   assert.equal((html.match(/<script src=/g) || []).length, 1, 'One application request replaces the script waterfall');
