@@ -268,8 +268,8 @@ function faq() { return emptyMenuPage(menus[5][2]); }
 function eyeDropsGuide() {
   const fromMedication=location.hash.includes('from=medication'),plan=location.hash.match(/[?&]plan=([a-z0-9-]+)/)?.[1];
   const back=fromMedication?'#/before/cataract/medication':'#/profile/cataract-before'+(plan?'?plan='+plan:'');
-  const nav='<nav class="eye-drops-nav" aria-label="올바른 약 사용법 목차">'+[['eye-method','점안 방법'],['eye-interval','여러 안약 사용 시'],['eye-check','사용 전 확인']].map(([id,title],i)=>'<button type="button" data-eye-guide-target="'+id+'"'+(i===0?' aria-current="location"':'')+'>'+title+'</button>').join('')+'</nav>';
-  return emptyMenuPage('올바른 약 사용법',nav)+'<section class="eye-drops-page"><a class="surgery-detail-back" href="'+back+'">'+icon('back')+'이전 화면</a>'+window.clinicEyeDropsGuideHtml+'</section>';
+  const nav='<nav class="eye-drops-nav" aria-label="올바른 안약 사용 목차">'+[['eye-method','점안 방법'],['eye-interval','여러 안약 사용 시'],['eye-check','사용 전 확인']].map(([id,title],i)=>'<button type="button" data-eye-guide-target="'+id+'"'+(i===0?' aria-current="location"':'')+'>'+title+'</button>').join('')+'</nav>';
+  return emptyMenuPage('올바른 안약 사용',nav)+'<section class="eye-drops-page"><a class="surgery-detail-back" href="'+back+'">'+icon('back')+'이전 화면</a>'+window.clinicEyeDropsGuideHtml+'</section>';
 }
 function profile() {
   const section=location.hash.replace(/^#\/?/,'').split('?')[0].split('/')[1];
@@ -291,7 +291,7 @@ function render(focus = false) {
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);
   if(settings.clinic_name)headerLogo.alt=settings.clinic_name;
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
-  document.title = `${t(menus.find(item => item[0] === route)?.[2] || (route === 'profile' ? '내정보' : route === 'eye-drops' ? '올바른 약 사용법' : '홈'))} · 연세제일안과`;
+  document.title = `${t(menus.find(item => item[0] === route)?.[2] || (route === 'profile' ? '내정보' : route === 'eye-drops' ? '올바른 안약 사용' : '홈'))} · 연세제일안과`;
   if(['before','after'].includes(route)&&categoryId){const category=surgeryCategories.find(([id])=>id===categoryId);if(category)document.title=t(category[1])+' · '+document.title;}
   if(settings.clinic_name)document.title=document.title.replace('연세제일안과',settings.clinic_name);
   $('#header-language').innerHTML = [['ko','KR','한국어'],['en','EN','English'],['zh','CN','简体中文']].map(([id,label,name])=>`<button type="button" data-language="${id}" lang="${id}" aria-label="${name}" aria-pressed="${language===id}">${label}</button>`).join('<span aria-hidden="true">|</span>');

@@ -65,7 +65,7 @@ context.location.hash='#/before/cataract/medication';
 save('left',2027,1,2);assert.equal(context.location.hash,'#/before/cataract/medication');
 assert.equal(element('#toast').textContent,'저장되었습니다.');
 let html=context.window.CataractMedication.renderSchedule();
-assert.ok(html.includes('class="medication-guide-link"')&&html.includes('올바른 약 사용법 바로가기'));
+assert.ok(html.includes('class="medication-guide-link"')&&html.includes('올바른 안약 사용 바로가기'));
 assert.ok(html.indexOf('먹는 약')<html.indexOf('class="medication-guide-link"'));
 assert.ok(!html.includes('class="medication-product '),'standalone medicine photo cards are removed from the tracker');
 assert.equal((html.match(/class="medication-day-photos"/g)||[]).length,4);
