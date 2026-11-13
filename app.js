@@ -243,13 +243,11 @@ function after() {
   const managed=managedPage('after');if(managed!==null)return managed;
   return pageTop(menus[3][2],menus[3][3]) + `<div class="card blue-card">${icon('after')}<h2>수술 후에도 함께하겠습니다</h2><p>수술 방법과 처방에 따라 관리 방법이 달라집니다. 병원에서 받은 안내문을 먼저 확인해 주세요.</p></div>` + ['스마일라식','퍼스널아이즈 라섹','올레이져 라섹','렌즈삽입술','백내장'].map(name => accordion(`${name} 수술 후 안내`,'수술별 상세 안내는 준비 중입니다. 처방 안약 사용, 다음 내원일과 생활 관리에 관한 내용은 담당 의료진의 안내를 따라 주세요.')).join('') + `<section class="card"><h2>수술 후 문의가 있으신가요?</h2><p>회복 과정에 관한 궁금한 점은 병원에 문의해 주세요.</p>${callButton()}</section>`;
 }
-function dream() {
-  const managed=managedPage('dream');if(managed!==null)return managed;
-  return pageTop(menus[4][2],menus[4][3]) + `<section class="card blue-card">${icon('lens')}<h2>아이의 눈 건강을 위한 안내</h2><p>드림렌즈 상담과 사용에 필요한 정보를 확인하는 공간입니다.</p></section><section class="card"><h2>드림렌즈 진료 과정</h2>${[['상담 및 검사','아이의 눈 상태와 렌즈 사용에 관해 상담합니다.'],['의료진 안내 확인','검사 결과에 따른 렌즈 안내를 받습니다.'],['사용 안내 및 경과 확인','렌즈 사용법과 다음 내원일을 확인합니다.']].map(([title,text],i)=>`<div class="step"><span>0${i+1}</span><div><h3>${title}</h3><p>${text}</p></div></div>`).join('')}<p class="note">화면 구성용 과정 안내입니다. 실제 진료 과정은 병원 확인 후 확정합니다.</p></section>` + accordion('착용 · 세척 · 보관 안내','병원에서 확인한 상세 안내를 준비 중입니다. 현재 사용 중인 렌즈의 관리 방법은 병원에서 받은 안내를 확인해 주세요.') + `<button class="primary-button" data-action="contact">${icon('chat')}드림렌즈 상담 문의</button>`;
+function emptyMenuPage(title) {
+  return `<div class="guide-sticky-header"><header class="guide-topbar"><a class="guide-home-logo" href="#/" aria-label="연세제일안과 홈"><img src="${escapeHtml(safeContentUrl(window.clinicContent?.settings?.logo_url)||'assets/logo.svg')}" alt="연세제일안과" width="140" height="25"></a><h1>${t(title)}</h1></header></div>`;
 }
-function faq() {
-  return pageTop(menus[5][2],menus[5][3]) + `<div class="search">${icon('search')}<input id="faq-search" type="search" placeholder="궁금한 내용을 검색해 보세요" aria-label="자주 묻는 질문 검색"></div><div id="faq-list">${activeFaqs().map(([q,a])=>accordion(escapeHtml(q),escapeHtml(a))).join('')}</div><div class="card blue-card"><h2>찾으시는 답변이 없나요?</h2><p>병원에 직접 문의해 주세요.</p><button class="primary-button" data-action="contact">${icon('chat')}${t('문의하기')}</button></div>`;
-}
+function dream() { return emptyMenuPage(menus[4][2]); }
+function faq() { return emptyMenuPage(menus[5][2]); }
 function profile() { return pageTop('내정보','나의 진료 안내를 확인하는 공간입니다.') + `<section class="card empty"><div class="profile-icon">${icon('user')}</div><h2>내 진료 정보를 만날 공간</h2><p>로그인 및 개인 진료 정보 연동을 준비 중입니다.<br>현재는 병원 안내 메뉴를 이용해 주세요.</p><a class="primary-button" href="#/">홈으로 돌아가기</a></section><section class="card"><h2>예약 확인이 필요하신가요?</h2><p>네이버에서 예약하신 내역은 네이버 예약 페이지에서 확인할 수 있습니다.</p><button class="primary-button" data-action="contact">${t('문의하기')}</button></section>`; }
 function render(focus = false) {
   const route = location.hash.replace(/^#\/?/,'').split('?')[0];
@@ -258,7 +256,7 @@ function render(focus = false) {
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
   main.innerHTML = (pages[route] || home)() + (route === 'profile' ? '<a class="admin-login-link" href="admin.html">병원 관리자 로그인</a>' : '');
   if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
-  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after'].includes(route) ? 'surgery-view' : '';
+  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['dream','faq'].includes(route) ? 'plain-menu-view' : ['before','after'].includes(route) ? 'surgery-view' : '';
   const settings=window.clinicContent?.settings||{};
   const headerLogo=$('.app-header img');
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);
