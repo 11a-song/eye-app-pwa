@@ -189,3 +189,6 @@
 .medication-tracker>#medication-check-status{margin-top:36px;margin-bottom:0}
 .app-shell main.plain-menu-view:has(.medication-tracker){padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 @media(max-height:480px){.app-shell main.plain-menu-view:has(.medication-tracker){padding-bottom:calc(68px + env(safe-area-inset-bottom))}}
+.medication-tracker .medication-title-icon{width:40px;height:34px;color:#4a4a4a;stroke-width:3;fill:none}
+.medication-tracker .medication-management-title{display:flex;align-items:center;gap:8px}
+.medication-management-icon{width:22px;height:24px;flex-shrink:0;color:inherit;stroke-width:1.8}
