@@ -267,7 +267,7 @@ function profile() {
   const header=emptyMenuPage('내정보');
   if(section==='cataract-before')return header+'<a class="surgery-detail-back profile-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a>'+window.CataractMedication.renderSchedule();
   if(section==='cataract-after')return header+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a><h2>백내장 수술 후</h2></section>';
-  return header+'<div class="surgery-category-list">'+(window.CataractMedication.hasSchedule()?'<a class="surgery-category-button" href="#/profile/cataract-before"><span>백내장 수술 전</span>'+icon('arrow','menu-arrow')+'</a>':'')+'<a class="surgery-category-button" href="#/profile/cataract-after"><span>백내장 수술 후</span>'+icon('arrow','menu-arrow')+'</a></div>';
+  return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'<a class="surgery-category-button" href="#/profile/cataract-after"><span>백내장 수술 후</span>'+icon('arrow','menu-arrow')+'</a></div>';
 }
 function render(focus = false) {
   const [route,categoryId,sectionId] = location.hash.replace(/^#\/?/,'').split('?')[0].split('/');
