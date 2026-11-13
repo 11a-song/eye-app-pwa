@@ -131,3 +131,16 @@
 .medication-tracker .medication-tracker-progress progress::-moz-progress-bar{background:#2d83f5;border-radius:999px}
 .medication-tracker .medication-tracker-reference{margin:0 0 20px;padding:0 0 20px;border-bottom:1px solid #dce2ea}
 .medication-tracker .medication-tracker-reference .medication-oral-note{text-align:center;margin:0}
+.medication-check-phrase{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;white-space:nowrap}
+.medication-check-icon{width:19px;height:19px;flex-shrink:0}
+.medication-progress-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.medication-progress-step{min-width:0;text-align:center}
+.medication-step-date{display:block;margin-bottom:7px;font-size:13px;font-weight:600;line-height:1.4;color:#697586;white-space:nowrap}
+.medication-tracker .medication-progress-step progress{height:8px}
+.medication-progress-step small{display:block;margin-top:6px;font-size:11px;line-height:1.5;color:#8c95a2;white-space:nowrap}
+.medication-progress-step[data-state="active"] .medication-step-date,.medication-progress-step[data-state="active"] small{color:#2d83f5}
+.medication-progress-step[data-state="complete"] .medication-step-date,.medication-progress-step[data-state="complete"] small{color:#1265b9;font-weight:700}
+.medication-complete-sticker:not([hidden]){display:flex;flex-direction:column;align-items:center;justify-content:center;width:124px;height:124px;margin:24px auto 12px;border:5px double #2d83f5;border-radius:50%;color:#2d83f5;background:#f3f8ff;transform:rotate(-8deg);text-align:center}
+.medication-complete-sticker svg{width:24px;height:24px;stroke-width:2.4}
+.medication-complete-sticker strong{font-size:27px;line-height:1.25;font-weight:800}
+.medication-complete-sticker span{font-size:10px;line-height:1.5;margin-top:4px}
