@@ -37,3 +37,5 @@
 .surgery-vision-before .vision-guide{overflow:visible;border:0;border-radius:0;background:transparent}.surgery-vision-before .vision-guide-header{padding:0;margin-bottom:20px;background:transparent}.surgery-vision-before .vision-guide-content{display:grid;gap:18px;padding:0}.surgery-vision-before .vision-guide-content>section{margin:0;padding:22px;background:#fff;border:0;border-radius:20px;min-width:0}.surgery-vision-before .vision-guide-section>h4{margin:0 0 22px;padding:0;border:0;font-size:20px;line-height:1.5}.surgery-vision-before .vision-guide-notice>h4{margin:0 0 14px;line-height:1.5}
 
 .surgery-vision-before .vision-guide-section>h4,.surgery-vision-before .vision-guide-notice>h4{font-size:22px;font-weight:700;color:var(--blue)}.surgery-vision-before .vision-guide-section h5{font-size:20px;font-weight:700;color:var(--blue)}
+
+.surgery-vision-before .vision-guide-section p.vision-guide-tag{display:inline-flex;align-items:center;justify-content:center;padding:7px 14px;border:0;border-radius:999px;background:var(--blue);color:#fff;font-size:13px;font-weight:700;line-height:1.6}
