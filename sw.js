@@ -1,4 +1,4 @@
-const CACHE = 'jeileye-app-v119';
+const CACHE = 'jeileye-app-v120';
 const SHELL = ['./', './index.html', './assets/app.css', './assets/app.js', './manifest.webmanifest', './assets/logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/doctor-placeholder.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));

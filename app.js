@@ -64,6 +64,7 @@ let scheduleState = 'idle';
 let scheduleDoctor = '';
 let scheduleLoadedAt = 0;
 let scheduleRequest;
+let scheduleGeneration = 0;
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const scheduleDateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const faqs = [
@@ -114,18 +115,24 @@ async function loadSchedules(force = false) {
   if (!force && scheduleState === 'ready' && Date.now() - scheduleLoadedAt < 60000) return;
   scheduleState = 'loading';
   if (currentRoute === 'schedule') calendar();
+  const generation = scheduleGeneration;
   scheduleRequest = (async () => {
     try {
-      scheduleData = await window.loadDoctorScheduleData();
+      const data = await window.loadDoctorScheduleData();
+      if (generation !== scheduleGeneration) return;
+      scheduleData = data;
       scheduleState = 'ready'; scheduleLoadedAt = Date.now();
       if (scheduleDoctor && scheduleDoctor !== '__closed' && !scheduleData.doctors.some(doctor => doctor.id === scheduleDoctor)) scheduleDoctor = '';
     } catch {
+      if (generation !== scheduleGeneration) return;
       scheduleState = 'error';
       scheduleData = { doctors: [], schedules: [], closures: [] };
     } finally {
-      scheduleRequest = null;
-      if (currentRoute === 'schedule') calendar();
-      else if (currentRoute === 'guide' && window.ClinicGuide?.active === 'director') render();
+      if (generation === scheduleGeneration) {
+        scheduleRequest = null;
+        if (currentRoute === 'schedule') calendar();
+        else if (currentRoute === 'guide' && window.ClinicGuide?.active === 'director') render();
+      }
     }
   })();
   return scheduleRequest;
@@ -278,8 +285,33 @@ function profile() {
   if(section==='cataract-after')return header+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/profile">'+icon('back')+'내정보 목록</a><h2>백내장 수술 후</h2></section>';
   return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'</div>';
 }
+function resetNavigationState() {
+  window.ClinicGuide?.select('support');
+  calendarMonth = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Seoul'}));
+  selectedDate = new Date(calendarMonth);
+  scheduleDoctor = '';
+  scheduleData = {doctors:[],schedules:[],closures:[]};
+  scheduleState = 'idle';
+  scheduleLoadedAt = 0;
+  scheduleGeneration++;
+  scheduleRequest = null;
+  currentRoute = '';
+  document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
+  const toast = $('#toast');
+  toast.classList?.remove('visible');
+  toast.textContent = '';
+}
+function goHome() {
+  resetNavigationState();
+  if (window.history?.replaceState) {
+    window.history.replaceState(null, '', '#/');
+    render(true);
+  } else if (location.hash !== '#/') location.hash = '#/';
+  else render(true);
+}
 function render(focus = false) {
   const [route,categoryId,sectionId] = location.hash.replace(/^#\/?/,'').split('?')[0].split('/');
+  if (!route && currentRoute) resetNavigationState();
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile,blog:blogPage,'eye-drops':eyeDropsGuide};
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
@@ -316,8 +348,11 @@ function openSheet(kind) {
   dialog.showModal();
 }
 document.addEventListener('click',async event=>{
-  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry],[data-eye-guide-target]');
+  const button = event.target.closest('[href="#/"],[data-action],[data-close],[data-language],[data-month],[data-day],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry],[data-eye-guide-target]');
   if (!button) return;
+  if (button.getAttribute?.('href') === '#/' && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && (event.button == null || event.button === 0)) {
+    event.preventDefault();goHome();return;
+  }
   if (button.dataset.eyeGuideTarget) {
     const target=button.dataset.eyeGuideTarget;
     if(!['eye-method','eye-interval','eye-check'].includes(target))return;
