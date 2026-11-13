@@ -814,7 +814,6 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   'use strict';
   const KEY='jeileye-cataract-preop-v1';
   let toastTimer;
-  const doseFeedbackTimers=new WeakMap();
   let cardSequence=0,planSequence=0;
   const newPlanId=()=>`plan-${Date.now().toString(36)}-${++planSequence}`;
   const eyes={left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'};
@@ -904,7 +903,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     return plans.map(plan=>'<section class="medication-saved-plan'+(plan.archived?' is-archived':'')+'" aria-label="저장한 수술 정보"><dl><div><dt>수술할 눈</dt><dd class="medication-eye-value"><span>'+(eyes[plan.eye]||'미선택')+'</span><span class="cataract-disease-badge">백내장</span></dd></div><div><dt>수술 예정일</dt><dd>'+plan.surgeryDate.slice(0,4)+'년 '+label(plan.surgeryDate)+'</dd></div><div><dt>내원 시간</dt><dd>'+(timeLabel(plan)||'미입력')+'</dd></div></dl>'+'</section>').join('');
   }
   function renderGuide(){
-    return `<div class="medication-guide"><p class="medication-intro"><strong>수술 3일 전부터</strong> 병원에서 미리 처방해드린 안약을 <strong>수술할 눈</strong>에 넣어주세요.</p>${renderGuideSummary()}<div class="medication-products">${medicines.map(m=>`<article class="medication-product ${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="220" height="220"><h3>${m.name}</h3><span class="medication-type">${m.type}</span><strong>하루 ${m.slots.length}번</strong><p>${m.slots.join(' / ')}</p></article>`).join('')}</div><p class="medication-interval">겹치는 시간대(아침, 저녁)에는 <strong>순서와 상관없이 5분 이상 간격</strong>을 두고 넣어주세요.</p><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은 <strong>수술 후</strong>에 드셔야 합니다.</p><a class="medication-guide-link" href="#/eye-drops?from=medication">올바른 안약 사용 바로가기</a></div>`;
+    return `<div class="medication-guide"><p class="medication-intro"><strong>수술 3일 전부터</strong> 병원에서 미리 처방해드린 안약을 <strong>수술할 눈</strong>에 넣어주세요.</p>${renderGuideSummary()}<div class="medication-products">${medicines.map(m=>`<article class="medication-product ${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="220" height="220"><h3>${m.name}</h3><span class="medication-type">${m.type}</span><strong>하루 ${m.slots.length}번</strong><p>${m.slots.join(' / ')}</p></article>`).join('')}</div><p class="medication-interval">겹치는 시간대(아침, 저녁)에는 <strong>순서와 상관없이 5분 이상 간격</strong>을 두고 넣어주세요.</p><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은<br><strong>수술 후</strong>에 드셔야 합니다.</p><a class="medication-guide-link" href="#/eye-drops?from=medication">올바른 안약 사용 바로가기</a></div>`;
   }
   const dailySlots=(plan,date)=>date===plan.surgeryDate&&plan.period==='am'?['아침']:date===plan.surgeryDate&&plan.period==='pm'?['아침','점심']:['아침','점심','저녁','주무시기 전'];
   function totals(store){
@@ -924,7 +923,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   }
   function renderScheduleDay(plan,store,date,index){
     const slots=dailySlots(plan,date),today=key(new Date()),isToday=date===today;
-    return `<details class="medication-day" data-medication-date="${date}" data-past="${date<today}" ${isToday?'open':''}><summary class="medication-day-summary"><span class="medication-day-summary-date"><strong>${label(date,false)}</strong><small class="medication-day-weekday">(${weekday(date)})</small></span><span class="medication-day-summary-phase">${index===3?'수술 당일':`수술 ${3-index}일 전`}</span><svg class="medication-day-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary><div class="medication-day-content"><header class="medication-day-date"><div class="medication-day-photos">${medicines.map(m=>`<figure class="${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="76" height="84" loading="lazy"><figcaption>${m.name}</figcaption></figure>`).join('')}</div></header><div class="medication-day-doses">${slots.map(slot=>`<div class="medication-time-group" role="group" aria-label="${slot}"><h4 class="medication-time-title">${timeIcon(slot)}${slot}</h4><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<div class="medication-dose-item"><label><span class="medication-dose-name"><i class="medication-dose-dot ${m.id}" aria-hidden="true"></i><span class="medication-dose-label">${m.name}</span></span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''} ${plan.archived?'disabled':''}></label><span class="medication-dose-feedback" data-dose-feedback role="status" aria-live="polite" hidden></span></div>`;}).join('')}</div></div>`).join('')}</div></div></details>`;
+    return `<details class="medication-day" data-medication-date="${date}" data-past="${date<today}" ${isToday?'open':''}><summary class="medication-day-summary"><span class="medication-day-summary-date"><strong>${label(date,false)}</strong><small class="medication-day-weekday">(${weekday(date)})</small></span><span class="medication-day-summary-phase">${index===3?'수술 당일':`수술 ${3-index}일 전`}</span><svg class="medication-day-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary><div class="medication-day-content"><header class="medication-day-date"><div class="medication-day-photos">${medicines.map(m=>`<figure class="${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="76" height="84" loading="lazy"><figcaption>${m.name}</figcaption></figure>`).join('')}</div></header><div class="medication-day-doses">${slots.map(slot=>`<div class="medication-time-group" role="group" aria-label="${slot}"><h4 class="medication-time-title">${timeIcon(slot)}${slot}</h4><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<div class="medication-dose-item"><label><span class="medication-dose-name"><i class="medication-dose-dot ${m.id}" aria-hidden="true"></i><span class="medication-dose-label">${m.name}</span></span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''} ${plan.archived?'disabled':''}></label></div>`;}).join('')}</div></div>`).join('')}</div></div></details>`;
   }
   function renderPlanSummary(plan){
     return `<section class="medication-plan-summary"><header class="medication-summary-header"><h2><svg class="medication-title-icon" viewBox="0 0 32 32" aria-hidden="true"><g transform="rotate(32 23 8)"><path d="M20 1h6v4h-6zM19 5h8v8h-8zM21 13h4l-2 4z"/></g><path d="M16 12c-1 1.5-2 2.7-2 3.5a2 2 0 0 0 4 0c0-.8-1-2-2-3.5Z"/><path d="M2 23s4-6 10-6 10 6 10 6-4 6-10 6S2 23 2 23Z"/><circle cx="12" cy="23" r="3"/></svg><span class="medication-title-eye">${eyes[plan.eye]||'수술할 눈 미선택'}</span><span>백내장 수술 전</span></h2></header><div class="medication-summary-body"><dl><div><dt>수술일</dt><dd>${plan.surgeryDate.slice(0,4)}년 ${label(plan.surgeryDate)}</dd></div><div><dt>내원시간</dt><dd>${timeLabel(plan)||'미입력'}</dd></div></dl>${plan.archived?'<p class="medication-readonly-note">이전 수술 기록 · 조회 전용</p>':''}</div></section>`;
@@ -947,20 +946,12 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   function renderSchedule(){
     const store=read(),plan=store.plan;
     if(!plan)return `<section class="medication-empty"><h2>백내장 수술 전</h2><p>수술할 눈과 수술일을 입력하면 안약 사용 일정을 체크할 수 있습니다.</p><a class="primary-button" href="#/before/cataract">약 사용 일정 설정</a></section>`;
-    return `<div class="medication-tracker${plan.archived?' is-archived':''}"><section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은 <strong>수술 후</strong>에 드셔야 합니다.</p></section><p class="medication-tracker-hint medication-check-intro">안약을 넣은 후 <span class="medication-check-phrase"><svg class="medication-check-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor"/><path d="m7 12 3 3 7-7" stroke="currentColor" stroke-width="1.6"/></svg>체크해</span> 주세요.</p>${renderPlanSummary(plan)}<section class="medication-schedule-card" aria-label="안약 스케줄 관리"><p class="medication-tracker-hint">안약과 안약 사이에는 5분 이상 간격으로 넣어주세요.</p>${renderMedicationProgress(store)}${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}</section>${renderArrivalCard()}<aside class="medication-arrival-notices" aria-label="수술 당일 내원 시 주의사항"><p>*수술실 입실까지 약 1시간 정도 대기시간이 있습니다.</p><p>*내원시간 이후 도착 시 수술 순서가 변경될 수 있습니다.</p></aside><p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에만 저장됩니다.</p></div>`;
+    return `<div class="medication-tracker${plan.archived?' is-archived':''}"><section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은<br><strong>수술 후</strong>에 드셔야 합니다.</p></section><p class="medication-tracker-hint medication-check-intro">안약을 넣은 후 <span class="medication-check-phrase"><svg class="medication-check-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor"/><path d="m7 12 3 3 7-7" stroke="currentColor" stroke-width="1.6"/></svg>체크해</span> 주세요.</p>${renderPlanSummary(plan)}<section class="medication-schedule-card" aria-label="안약 스케줄 관리"><p class="medication-tracker-hint">안약과 안약 사이에는 5분 이상 간격으로 넣어주세요.</p>${renderMedicationProgress(store)}${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}</section>${renderArrivalCard()}<aside class="medication-arrival-notices" aria-label="수술 당일 내원 시 주의사항"><p>*수술실 입실까지 약 1시간 정도 대기시간이 있습니다.</p><p>*내원시간 이후 도착 시 수술 순서가 변경될 수 있습니다.</p></aside><p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에만 저장됩니다.</p></div>`;
   }
   function showSavedToast(message='저장되었습니다.'){
     const toast=document.querySelector('#toast');
     clearTimeout(toastTimer);toast.textContent=message;toast.classList.add('visible');
     toastTimer=setTimeout(()=>toast.classList.remove('visible'),3000);
-  }
-  function showDoseFeedback(input){
-    const feedback=input.closest?.('label')?.nextElementSibling;
-    if(!feedback?.hasAttribute?.('data-dose-feedback'))return;
-    clearTimeout(doseFeedbackTimers.get(feedback));
-    feedback.textContent=input.checked?'저장 되었습니다.':'취소 되었습니다.';
-    feedback.hidden=false;
-    doseFeedbackTimers.set(feedback,setTimeout(()=>{feedback.hidden=true;doseFeedbackTimers.delete(feedback);},2500));
   }
   function saveAppointment(form){
     const status=form.querySelector?.('.appointment-status')||document.querySelector('#appointment-status'),plan=formPlan(form);
@@ -1021,7 +1012,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     document.querySelector('#medication-progress-bar').innerHTML=renderProgressSteps(store);
     document.querySelector('#medication-complete-sticker').hidden=!(total>0&&done===total);
     status.textContent='체크 기록은 현재 기기에만 저장됩니다.';
-    showDoseFeedback(input);
+    showSavedToast(input.checked?'저장 되었습니다.':'취소 되었습니다.');
   });
   function renderProfileLinks(){
     const {plans}=read();

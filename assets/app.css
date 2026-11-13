@@ -1063,6 +1063,10 @@ html[data-install-welcome] .app-shell{display:none}
 /* 고정 메뉴 위로 갈수록 사라지는 공통 하단 음영 */
 .app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{background:#fff;border-top-color:#dfe4ec;box-shadow:0 -5px 18px rgba(38,50,69,.09)}
 .app-shell .bottom-nav::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:clamp(48px,12dvh,90px);background:linear-gradient(to bottom,rgba(38,50,69,0) 0%,rgba(38,50,69,.015) 35%,rgba(38,50,69,.05) 70%,rgba(38,50,69,.10) 100%);pointer-events:none;z-index:-1}
+/* 본문의 하단 음영을 화면 끝까지 이어 메뉴의 둥근 모서리 뒤에도 표시합니다. */
+.app-shell .bottom-nav::before{content:none}
+.app-shell::after{content:"";position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:480px;height:calc(clamp(48px,12dvh,90px) + 64px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(38,50,69,0),rgba(38,50,69,.045) 45%,rgba(38,50,69,.14) 100%);pointer-events:none;z-index:9}
+#toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 /* schedule.css */
 /* 참고 홈페이지의 원장별 일정 화면을 앱 공통 내비게이션 안에 표시합니다. */
 .app-shell:has(.schedule-view){background:var(--bg)}
@@ -1509,6 +1513,10 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 .medication-tracker input[data-cataract-dose]:checked{accent-color:#8b95a3}
 .medication-tracker .medication-time-title,.medication-tracker .medication-day[data-past="true"]:not(:has(input[data-cataract-dose]:not(:checked))) .medication-time-title{color:#111}
 .medication-tracker>#medication-check-status{border-top:0;padding-top:0}
+.medication-dose-grid label:has(input[data-cataract-dose]:checked) .medication-dose-label{font-weight:400}
+.medication-tracker>#medication-check-status{margin-top:36px;margin-bottom:0}
+.app-shell main.plain-menu-view:has(.medication-tracker){padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+@media(max-height:480px){.app-shell main.plain-menu-view:has(.medication-tracker){padding-bottom:calc(68px + env(safe-area-inset-bottom))}}
 /* eye-drops-guide.css */
 .eye-drops-page .eye-guide-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
 .eye-drops-page .eye-guide-nav { position: sticky; top: var(--eye-header-height, 70px); z-index: 5; width: 80%; margin: 0 auto; background: #f2f2f2; transition: width .35s ease; }

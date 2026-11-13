@@ -233,10 +233,10 @@ assert.equal(pastTags.filter(tag=>tag.includes('data-past="true"')).length,4,'pa
 const feedback={hidden:true,textContent:'',hasAttribute:name=>name==='data-dose-feedback'};
 const localDose=context.window.CataractMedication.renderSchedule().match(/data-cataract-dose="([^"]+)"/)[1];
 const localInput={checked:true,dataset:{cataractDose:localDose},matches:()=>true,closest:selector=>selector==='label'?{nextElementSibling:feedback}:null};
-const globalToastBefore=element('#toast').textContent;
-handlers.change({target:localInput});assert.equal(feedback.hidden,false);assert.equal(feedback.textContent,'저장 되었습니다.');
-assert.equal(element('#toast').textContent,globalToastBefore,'checkbox feedback appears below its own item instead of in the global toast');
-localInput.checked=false;handlers.change({target:localInput});assert.equal(feedback.textContent,'취소 되었습니다.');
+handlers.change({target:localInput});assert.equal(feedback.hidden,true);
+assert.equal(element('#toast').textContent,'저장 되었습니다.','Checkbox feedback uses the fixed bottom-center toast');
+localInput.checked=false;handlers.change({target:localInput});assert.equal(element('#toast').textContent,'취소 되었습니다.');
+assert.ok(!context.window.CataractMedication.renderSchedule().includes('data-dose-feedback'));
 assert.equal(element('#medication-check-status').textContent,'체크 기록은 현재 기기에만 저장됩니다.');
 const stageHtml=context.window.CataractMedication.renderSchedule();
 assert.match(stageHtml,/medication-check-icon[\s\S]*?<\/svg>체크해/);

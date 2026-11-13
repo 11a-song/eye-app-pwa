@@ -185,3 +185,7 @@
 .medication-tracker input[data-cataract-dose]:checked{accent-color:#8b95a3}
 .medication-tracker .medication-time-title,.medication-tracker .medication-day[data-past="true"]:not(:has(input[data-cataract-dose]:not(:checked))) .medication-time-title{color:#111}
 .medication-tracker>#medication-check-status{border-top:0;padding-top:0}
+.medication-dose-grid label:has(input[data-cataract-dose]:checked) .medication-dose-label{font-weight:400}
+.medication-tracker>#medication-check-status{margin-top:36px;margin-bottom:0}
+.app-shell main.plain-menu-view:has(.medication-tracker){padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+@media(max-height:480px){.app-shell main.plain-menu-view:has(.medication-tracker){padding-bottom:calc(68px + env(safe-area-inset-bottom))}}
