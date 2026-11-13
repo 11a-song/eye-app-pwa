@@ -1,6 +1,7 @@
 (function(){
   'use strict';
   const KEY='jeileye-cataract-preop-v1';
+  let toastTimer;
   const eyes={left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'};
   const periods={am:'오전',pm:'오후'};
   const medicines=[
@@ -55,6 +56,9 @@
     if(!plan){status.textContent='수술할 눈, 올바른 날짜와 오전·오후를 선택해 주세요.';return;}
     const store=read();store.plan=plan;
     if(!write(store)){status.textContent='기기에 저장하지 못했습니다. 브라우저의 저장 설정을 확인해 주세요.';return;}
+    const toast=document.querySelector('#toast');
+    clearTimeout(toastTimer);toast.textContent='저장되었습니다.';toast.classList.add('visible');
+    toastTimer=setTimeout(()=>toast.classList.remove('visible'),3000);
     location.hash='#/profile/cataract-before';
   });
   document.addEventListener('change',event=>{

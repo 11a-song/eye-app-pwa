@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../scripts/cataract-medication.js'),'utf8');
 const data=new Map(),elements=new Map(),handlers={};let failWrite=false;
-const element=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:0});return elements.get(selector);};
+const element=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:0,classList:{add(){},remove(){}}});return elements.get(selector);};
 function session(){
-  const context=vm.createContext({window:{},location:{hash:''},document:{querySelector:element,addEventListener:(type,handler)=>handlers[type]=handler},localStorage:{getItem:key=>data.get(key)||null,setItem:(key,value)=>{if(failWrite)throw Error('storage blocked');data.set(key,value);}},Intl,Date,console});
+  const context=vm.createContext({window:{},location:{hash:''},document:{querySelector:element,addEventListener:(type,handler)=>handlers[type]=handler},localStorage:{getItem:key=>data.get(key)||null,setItem:(key,value)=>{if(failWrite)throw Error('storage blocked');data.set(key,value);}},Intl,Date,console,setTimeout:()=>1,clearTimeout(){}});
   vm.runInContext(source,context);return context;
 }
 let context=session();
@@ -13,6 +13,7 @@ assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사�
 for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderGuide().includes('value="'+eye+'"'));
 save('left',2027,2,30);assert.equal(data.size,0,'invalid dates must not create a schedule');
 save('left',2027,1,2);assert.equal(context.location.hash,'#/profile/cataract-before');
+assert.equal(element('#toast').textContent,'저장되었습니다.');
 let html=context.window.CataractMedication.renderSchedule();
 assert.equal((html.match(/type="checkbox"/g)||[]).length,24,'four days, four antibiotic and two anti-inflammatory doses daily');
 assert.ok(html.includes('12월 30일'));assert.ok(html.includes('1월 2일'));assert.ok(html.includes('왼쪽 눈'));
