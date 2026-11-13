@@ -10,7 +10,7 @@ function el(key){
 let scheduleCalls=0,scheduleFails=false;
 const schedule={doctors:data.doctors.map(d=>({...d,id:String(d.id),weeklySchedules:data.doctor_weekly_schedules.filter(r=>r.doctor_id===d.id)})),schedules:[],closures:[],clinicHours:data.clinic_hours};
 const context=vm.createContext({window:{clinicContent:content,addEventListener:(name,fn)=>windowHandlers[name]=fn,scrollTo(){},matchMedia:()=>({matches:true}),loadDoctorScheduleData:async()=>{scheduleCalls++;if(scheduleFails)throw Error('offline');return schedule;}},document:{querySelector:el,querySelectorAll:()=>[],documentElement:{},addEventListener:(name,fn)=>handlers[name]=fn},location:{hash:'#/guide',protocol:'file:'},navigator:{},localStorage:{getItem:()=>null,setItem(){}},URL,console,setTimeout});
-for(const file of ['scripts/guide-reference.js','scripts/guide.js','scripts/holidays.js','scripts/schedule-model.js','app.js'])vm.runInContext(read(file),context,{filename:file});
+for(const file of ['scripts/guide-reference.js','scripts/guide.js','scripts/holidays.js','scripts/schedule-model.js','scripts/vision-before.js','app.js'])vm.runInContext(read(file),context,{filename:file});
 const reference=context.window.clinicGuideReference,guide=context.window.ClinicGuide;
 const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:name=>Object.hasOwn(dataset,name.replace(/^data-/,'').replace(/-([a-z])/g,(_,c)=>c.toUpperCase()))})}});
 (async()=>{
@@ -65,6 +65,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
     for(const [id,label] of [['vision','시력교정'],['cataract','백내장'],['glaucoma','녹내장'],['retina','망막']]){
       context.location.hash='#/'+stage+'/'+id;vm.runInContext('render()',context);
       assert.ok(el('#main').innerHTML.includes('<h2>'+label+'</h2>'));
+      assert.equal(el('#main').innerHTML.includes('id="beforeSurgery"'),stage==='before'&&id==='vision');
       assert.ok(el('#main').innerHTML.includes('href="#/'+stage+'"'));
     }
   }
