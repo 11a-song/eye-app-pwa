@@ -43,9 +43,18 @@
     for(const date of dates(store.plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++){total++;if(store.checks[doseKey(store.plan,date,m.id,i)]===true)done++;}
     return {done,total};
   }
+  function timeIcon(slot){
+    const paths={
+      '아침':'M3 18h18 M6 14a6 6 0 0 1 12 0 M12 2v4 M3 8l3 2 M21 8l-3 2 M9 5l3-3 3 3',
+      '점심':'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l2 2 M17 17l2 2 M5 19l2-2 M17 7l2-2',
+      '저녁':'M3 18h18 M6 14a6 6 0 0 1 12 0 M12 2v5 M9 4l3 3 3-3 M3 9l3 2 M21 9l-3 2',
+      '주무시기 전':'M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10 M17 3v4 M15 5h4'
+    };
+    return `<svg class="medication-time-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[slot]}"/></svg>`;
+  }
   function renderScheduleDay(plan,store,date,index){
     const slots=['아침','점심','저녁','주무시기 전'];
-    return `<section class="medication-day"><header class="medication-day-date"><h3>${label(date)}</h3><small class="medication-day-weekday">${['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][parseDate(date).getDay()]}</small><span>${index===3?'수술 당일':`수술 ${3-index}일 전`}</span></header><div class="medication-day-doses">${slots.map(slot=>`<fieldset class="medication-time-group"><legend>${slot}</legend><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<label><span>${m.name}</span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''}></label>`;}).join('')}</div></fieldset>`).join('')}</div></section>`;
+    return `<section class="medication-day"><header class="medication-day-date"><h3>${label(date)}</h3><small class="medication-day-weekday">${['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][parseDate(date).getDay()]}</small><span>${index===3?'수술 당일':`수술 ${3-index}일 전`}</span></header><div class="medication-day-doses">${slots.map(slot=>`<fieldset class="medication-time-group"><legend class="medication-time-title">${timeIcon(slot)}${slot}</legend><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<label><span>${m.name}</span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''}></label>`;}).join('')}</div></fieldset>`).join('')}</div></section>`;
   }
   function renderSchedule(){
     const store=read(),plan=store.plan;
