@@ -64,7 +64,11 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
     assert.equal((el('#main').innerHTML.match(/class="surgery-category-button"/g)||[]).length,4);
     for(const [id,label] of [['vision','시력교정'],['cataract','백내장'],['glaucoma','녹내장'],['retina','망막']]){
       context.location.hash='#/'+stage+'/'+id;vm.runInContext('render()',context);
-      assert.ok(el('#main').innerHTML.includes('<h2>'+label+'</h2>'));
+      if(stage==='before'&&id==='vision'){
+        assert.ok(el('#main').innerHTML.includes('<h2 id="heading-beforeSurgery" class="vision-guide-header-title">시력교정 검사/수술 전 안내사항</h2>'));
+        assert.ok(!el('#main').innerHTML.includes('<h2>시력교정</h2>'));
+        assert.ok(!el('#main').innerHTML.includes('section-number'));
+      }else assert.ok(el('#main').innerHTML.includes('<h2>'+label+'</h2>'));
       assert.equal(el('#main').innerHTML.includes('id="beforeSurgery"'),stage==='before'&&id==='vision');
       assert.ok(el('#main').innerHTML.includes('href="#/'+stage+'"'));
     }
