@@ -12,7 +12,8 @@ function save(eye,year,month,day,period='am'){handlers.submit({preventDefault(){
 assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
 for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderGuide().includes('value="'+eye+'"'));
 save('left',2027,2,30);assert.equal(data.size,0,'invalid dates must not create a schedule');
-save('left',2027,1,2);assert.equal(context.location.hash,'#/profile/cataract-before');
+context.location.hash='#/before/cataract/medication';
+save('left',2027,1,2);assert.equal(context.location.hash,'#/before/cataract/medication');
 assert.equal(element('#toast').textContent,'저장되었습니다.');
 let html=context.window.CataractMedication.renderSchedule();
 assert.equal((html.match(/type="checkbox"/g)||[]).length,24,'four days, four antibiotic and two anti-inflammatory doses daily');

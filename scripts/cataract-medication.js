@@ -59,7 +59,6 @@
     const toast=document.querySelector('#toast');
     clearTimeout(toastTimer);toast.textContent='저장되었습니다.';toast.classList.add('visible');
     toastTimer=setTimeout(()=>toast.classList.remove('visible'),3000);
-    location.hash='#/profile/cataract-before';
   });
   document.addEventListener('change',event=>{
     const input=event.target;
