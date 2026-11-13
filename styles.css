@@ -117,3 +117,9 @@ html[data-install-welcome] .app-shell{display:none}
 .app-shell .bottom-nav .contact-orb svg{width:21px;height:21px}
 @media(max-width:360px){.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{padding-inline:8px;gap:4px;grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr)}.app-shell .bottom-nav .nav-item{font-size:13px;gap:4px}.app-shell .bottom-nav .schedule-nav-item{font-size:12px}.app-shell .bottom-nav .nav-item>svg{width:20px;height:20px}}
 @media(max-height:480px){.app-shell:has(.home-view){--home-nav-height:64px}.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{height:calc(64px + env(safe-area-inset-bottom));padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}.app-shell .bottom-nav .contact-trigger{margin-top:-12px}.app-shell .bottom-nav .contact-orb{width:54px;height:54px}}
+/* 하단 메뉴: 홈메뉴 | 문의 | 스케줄 */
+.app-shell:has(.home-view){--home-nav-height:64px;padding-bottom:calc(var(--home-nav-height) + env(safe-area-inset-bottom))}
+.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{height:calc(64px + env(safe-area-inset-bottom));padding:8px 12px calc(8px + env(safe-area-inset-bottom));grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:0;box-shadow:none}
+.app-shell .bottom-nav .nav-item{font-size:15px;font-weight:600;min-height:44px;padding:8px 4px;white-space:nowrap;text-align:center}
+.app-shell .bottom-nav .nav-divider{font-size:16px;line-height:1;color:#cbd0d8;font-weight:400;user-select:none}
+@media(max-height:480px){.app-shell:has(.home-view){--home-nav-height:56px}.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{height:calc(56px + env(safe-area-inset-bottom));padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}}

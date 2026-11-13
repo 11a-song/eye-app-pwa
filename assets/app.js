@@ -1129,6 +1129,7 @@ const icons = {
 };
 const icon = (name, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${icons[name] || icons.lens}</svg>`;
 const translations = {
+  '홈메뉴':['Home','首页'], '스케줄':['Schedule','日程'],
   '홈 메뉴':['Home menu','首页菜单'], '수술자 안약 스케줄':['Surgery eye drop schedule','手术用药日程'],
   '홈':['Home','首页'], '내정보':['My info','我的信息'], '언어선택':['Language','语言'], '문의':['Contact','咨询'],
   '병원 이용 안내':['Hospital guide','就诊指南'], '원장별 진료 일정':['Doctor schedules','医生出诊安排'],
@@ -1454,7 +1455,7 @@ function render(focus = false) {
   if(['before','after'].includes(route)&&categoryId){const category=surgeryCategories.find(([id])=>id===categoryId);if(category)document.title=t(category[1])+' · '+document.title;}
   if(settings.clinic_name)document.title=document.title.replace('연세제일안과',settings.clinic_name);
   $('#header-language').innerHTML = [['ko','KR','한국어'],['en','EN','English'],['zh','CN','简体中文']].map(([id,label,name])=>`<button type="button" data-language="${id}" lang="${id}" aria-label="${name}" aria-pressed="${language===id}">${label}</button>`).join('<span aria-hidden="true">|</span>');
-  $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${icon('home')}<span>${t('홈 메뉴')}</span></a><button class="nav-item contact-trigger" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog"><span class="contact-orb">${icon('chat')}<span>${t('문의')}</span></span></button><a class="nav-item schedule-nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${icon('user')}<span>${t('수술자 안약 스케줄')}</span></a>`;
+  $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${t('홈메뉴')}</a><span class="nav-divider" aria-hidden="true">|</span><button class="nav-item contact-nav-item" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog">${t('문의')}</button><span class="nav-divider" aria-hidden="true">|</span><a class="nav-item schedule-nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${t('스케줄')}</a>`;
   if (route === 'schedule') { calendar(); loadSchedules(); }
   if (route === 'guide' && window.ClinicGuide.active === 'director' && ['idle','ready'].includes(scheduleState)) loadSchedules();
   if (focus) { window.scrollTo(0,0); main.focus({preventScroll:true}); }
