@@ -317,3 +317,102 @@ window.clinicGuideReference = {
 
 // Original history chapter from the reference website.
 window.clinicGuideReference.historyMarkup = "<h3 class=\"about-history-intro\">제주 안과의 '최초'를 선도해온 기록</h3>\r\n      <ol class=\"about-history-list guide-history\">\r\n        <li class=\"about-history-year\"><h4>2017</h4><ul><li><strong>연세제일안과 개원</strong><span>이도이동 중앙로 337</span></li><li><strong>제주도내 로컬 안과병원 최초 광각안저 촬영기 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2019</h4><ul><li><strong>안구건조증 치료를 위한 루메니스<br>M22 IPL 레이저 도내 최초 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2020</h4><ul><li><strong>안과 전문 진료 차트 선제적 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2022</h4><ul><li><strong>제주 유일 황반변성 특수 레이저<br>vitra PDT 레이저 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2025</h4><ul><li><strong>난시 및 고위수차 분석 장비<br>i-trace 최초 도입</strong></li></ul></li>\r\n        <li class=\"about-history-year\"><h4>2026</h4><ul><li><strong>제주지역 안과 최초 <span class=\"history-accent\">보훈위탁병원</span> 지정</strong></li><li><strong>최신 백내장·망막 수술 장비<br>알콘 유니티 VCS 신규 도입</strong></li><li><strong>현위치 확장이전</strong><span>도남동 연북로 449</span></li></ul></li>\r\n      </ol>";
+
+// Document issuance content supplied by the clinic; original forms are unmodified.
+window.clinicGuideReference.documents = {
+  "source": "https://jeileye.com/issuance.php",
+  "title": "서류발급 안내",
+  "description": "서류를 미리 작성하신 후 내원하시면 빠르게 증명서를 발급 받으실 수 있습니다.",
+  "notes": [
+    "증명서 발급 시 소정의 수수료가 발생합니다.",
+    "의료법 제20조 1항에 의거, 환자 본인 또는 지정된 범위의 대리인(배우자, 직계존비속 등)만 구비서류 확인 후 발급 가능합니다.",
+    "환자 정보 보호를 위해 신분증 미지참 시 발급이 절대 불가합니다."
+  ],
+  "applicants": [
+    {
+      "name": "환자 본인",
+      "required": "본인 신분증",
+      "note": "-"
+    },
+    {
+      "name": "가족",
+      "required": "발급동의서, 신청자 신분증, 환자 신분증 사본, 가족관계증명서 등 친족관계 증명 서류",
+      "note": "배우자, 직계존비속 등"
+    },
+    {
+      "name": "대리인",
+      "required": "환자 신분증 사본, 신청자 신분증, 발급동의서, 위임장",
+      "note": "만 14세 미만은 법정대리인이 작성"
+    },
+    {
+      "name": "기타 상황",
+      "required": "사망/의식불명/행방불명 등 증빙 서류, 신청자 신분증, 친족관계 서류",
+      "note": "진단서, 실종선고문 등 상황별 서류"
+    }
+  ],
+  "fees": [
+    {
+      "name": "일반진단서 / 소견서(공공기관)",
+      "price": "10,000원",
+      "note": "추가 1매당 1,000원"
+    },
+    {
+      "name": "수술확인서",
+      "price": "3,000원",
+      "note": "-"
+    },
+    {
+      "name": "상해진단서 (3주 미만)",
+      "price": "30,000원",
+      "note": "추가 1매당 1,000원"
+    },
+    {
+      "name": "상해진단서 (3주 이상)",
+      "price": "50,000원",
+      "note": "추가 1매당 1,000원"
+    },
+    {
+      "name": "진료/입퇴원확인서",
+      "price": "3,000원",
+      "note": "추가 1매당 1,000원"
+    },
+    {
+      "name": "의무기록사본",
+      "price": "1,000원",
+      "note": "5매 초과 시 추가금 발생"
+    },
+    {
+      "name": "영상 CD 복사",
+      "price": "10,000원",
+      "note": "-"
+    }
+  ],
+  "forms": [
+    {
+      "title": "발급 동의서",
+      "files": [
+        {
+          "file": "issuance_agreement.hwp",
+          "format": "HWP"
+        },
+        {
+          "file": "issuance_agreement.pdf",
+          "format": "PDF"
+        }
+      ]
+    },
+    {
+      "title": "위임장",
+      "files": [
+        {
+          "file": "warrant.hwp",
+          "format": "HWP"
+        },
+        {
+          "file": "warrant.pdf",
+          "format": "PDF"
+        }
+      ]
+    }
+  ]
+};

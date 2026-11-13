@@ -60,3 +60,32 @@ body:has(.guide-modal[open]){overflow:hidden}
 .surgery-category-prompt{margin:28px 0 16px;font-size:16px;font-weight:600;line-height:1.6}.surgery-category-prompt+.surgery-category-list{padding-top:0}
 
 .guide-location-photos{scroll-padding:0}.guide-location-photos figure{scroll-snap-align:end}.guide-location-photos figure:first-child{margin-left:0}
+
+/* 보훈·지원의 서류발급 안내: 원문 정보를 모바일 폭에 맞게 표시합니다. */
+.guide-documents{margin-top:36px;padding-top:26px;border-top:1px solid #e1e6ee}
+.guide-documents h2{margin:0 0 10px;font-size:24px;line-height:1.4;color:#111}
+.guide-documents-intro{margin:0 0 22px;color:#7b808b;font-size:15px;line-height:1.8}
+.guide-document-section{margin:16px 0;padding:20px 18px;border:1px solid #e6ebf2;border-radius:18px;background:#fff}
+.guide-document-section h3{margin:0 0 18px;font-size:18px;font-weight:700;line-height:1.5;color:#111}
+.guide-document-notes{margin:0;padding-left:25px;list-style:decimal-leading-zero}
+.guide-document-notes li{padding-left:4px;margin:10px 0;font-size:15px;line-height:1.8}
+.guide-document-notes li::marker{color:#1265b9;font-weight:600}
+.guide-document-applicants article{padding:16px 0;border-bottom:1px solid #edf0f5}
+.guide-document-applicants article:first-child{padding-top:0}
+.guide-document-applicants article:last-child{padding-bottom:0;border:0}
+.guide-document-section h4{margin:0 0 7px;font-size:16px;font-weight:700;line-height:1.5}
+.guide-document-applicants p{margin:0;font-size:15px;line-height:1.8}
+.guide-document-applicants small{display:block;margin-top:6px;font-size:13px;color:#7b808b;line-height:1.6}
+.guide-document-fees{margin:0}
+.guide-document-fees>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.7fr);gap:12px;padding:16px 0;border-bottom:1px solid #edf0f5;font-size:15px;line-height:1.7}
+.guide-document-fees>div:first-child{padding-top:0}
+.guide-document-fees>div:last-child{padding-bottom:0;border:0}
+.guide-document-fees dd{margin:0;text-align:right}
+.guide-document-fees strong{color:#1265b9;font-size:16px;white-space:nowrap}
+.guide-document-fees small{display:block;margin-top:3px;font-size:12px;color:#7b808b}
+.guide-document-downloads article+article{margin-top:22px;padding-top:20px;border-top:1px solid #edf0f5}
+.guide-document-downloads article>div{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.guide-document-downloads a{display:flex;align-items:center;justify-content:center;gap:5px;min-height:46px;padding:10px 5px;border:1px solid #bad6ff;border-radius:10px;background:#f1f6ff;color:#1265b9;font-size:13px;line-height:1.4;text-align:center}
+.guide-document-downloads a svg{width:16px;height:16px}
+.guide-document-downloads a:active{background:#e2eeff}
+@media(max-width:360px){.guide-document-section{padding:18px 14px}.guide-document-downloads a{font-size:12px}.guide-document-fees>div{gap:8px;font-size:14px}}

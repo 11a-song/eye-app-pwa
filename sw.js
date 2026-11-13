@@ -1,4 +1,4 @@
-const CACHE = 'jeileye-app-v149';
+const CACHE = 'jeileye-app-v150';
 const SHELL = ['./', './assets/app.css', './assets/app.js', './manifest.webmanifest', './assets/logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/doctor-placeholder.svg'];
 // Cloudflare redirects /index.html to /. A followed redirect cannot be returned
 // directly to a navigation request whose redirect mode is manual (Chrome ERR_FAILED).
@@ -33,7 +33,8 @@ self.addEventListener('fetch', event => {
   // APIs, administrator pages and other origins always bypass this cache.
   const publicImage = relative.startsWith('./assets/') && /\.(?:jpe?g|png|webp|avif|svg)$/i.test(url.pathname);
   const publicFont = relative.startsWith('./assets/fonts/subsets/') && /\.woff2$/i.test(url.pathname);
-  if (!isDocument && !SHELL.includes(relative) && !publicImage && !publicFont) return;
+  const publicForm = relative.startsWith('./assets/forms/') && /\.(?:pdf|hwp)$/i.test(url.pathname);
+  if (!isDocument && !SHELL.includes(relative) && !publicImage && !publicFont && !publicForm) return;
   const key = isDocument ? scope.href : event.request;
   event.respondWith((async () => {
     let cache;

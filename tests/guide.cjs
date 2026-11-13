@@ -21,6 +21,18 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   assert.match(el('#main').innerHTML,/유족 및 며느리 카드 소지자<small class="guide-support-note">\(1954\.12\.31 이전 출생자\)<\/small>/);
   assert.ok(!el('#main').innerHTML.includes('병원 진료시간'));
   assert.ok(!el('#main').innerHTML.includes('<h2>내원 안내</h2>'));
+  assert.ok(el('#main').innerHTML.indexOf('진료비 지원')<el('#main').innerHTML.indexOf('id="guide-documents-title"'));
+  assert.match(el('#main').innerHTML,/각종 증명서 발급 공통 안내/);
+  assert.equal(reference.documents.notes.length,3);
+  assert.equal(reference.documents.applicants.length,4);
+  assert.equal(reference.documents.fees.length,7);
+  const formLinks=[...el('#main').innerHTML.matchAll(/href="(assets\/forms\/[^\"]+)" download=/g)];
+  assert.equal(formLinks.length,4);
+  for(const [,file] of formLinks){
+    const bytes=fs.readFileSync(path.join(root,file));
+    if(file.endsWith('.pdf'))assert.equal(bytes.subarray(0,5).toString(),'%PDF-');
+    else assert.equal(bytes.subarray(0,8).toString('hex'),'d0cf11e0a1b11ae1');
+  }
   await click({action:'veterans'});
   const modal=el('#veterans-dialog');assert.equal(modal.open,true);
   assert.match(modal.innerHTML,/2026년 1월/);assert.ok(!modal.innerHTML.includes('2025년 1월'));
