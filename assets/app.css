@@ -1053,6 +1053,13 @@ html[data-install-welcome] .app-shell{display:none}
 .app-shell .bottom-nav .nav-item{font-size:15px;font-weight:600;min-height:44px;padding:8px 4px;white-space:nowrap;text-align:center}
 .app-shell .bottom-nav .nav-divider{font-size:16px;line-height:1;color:#cbd0d8;font-weight:400;user-select:none}
 @media(max-height:480px){.app-shell:has(.home-view){--home-nav-height:56px}.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{height:calc(56px + env(safe-area-inset-bottom));padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}}
+/* 긴 스케줄 이름과 각 메뉴의 아이콘을 위한 너비 배분 */
+.app-shell .bottom-nav,.app-shell:has(.home-view) .bottom-nav{grid-template-columns:minmax(0,1fr) auto minmax(0,.8fr) auto minmax(0,1.8fr)}
+.app-shell .bottom-nav .nav-item{gap:5px;font-size:14px}
+.app-shell .bottom-nav .nav-item>svg{width:20px;height:20px}
+.app-shell .bottom-nav .schedule-nav-item{font-size:13px;white-space:normal}
+.app-shell .bottom-nav .schedule-nav-item>span{line-height:1.3;word-break:keep-all}
+@media(max-width:360px){.app-shell .bottom-nav .nav-item{font-size:13px;gap:4px}.app-shell .bottom-nav .schedule-nav-item{font-size:12px}.app-shell .bottom-nav .nav-item>svg{width:18px;height:18px}}
 /* schedule.css */
 /* 참고 홈페이지의 원장별 일정 화면을 앱 공통 내비게이션 안에 표시합니다. */
 .app-shell:has(.schedule-view){background:var(--bg)}
