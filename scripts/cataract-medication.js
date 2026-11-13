@@ -56,7 +56,7 @@
     const year=date?date.getFullYear():Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()));
     return `<label for="${monthId}">수술 예정일</label><div class="medication-date-fields"><label><input name="year" type="number" min="2000" max="2100" value="${year}" required inputmode="numeric" aria-label="수술 연도"><span>년</span></label><label><input id="${monthId}" name="month" type="number" min="1" max="12" value="${date?date.getMonth()+1:''}" placeholder="월" required inputmode="numeric" aria-label="수술 월"><span>월</span></label><label><input name="day" type="number" min="1" max="31" value="${date?date.getDate():''}" placeholder="일" required inputmode="numeric" aria-label="수술 일"><span>일</span></label></div><p class="medication-time-label">내원 시간</p><div class="medication-time-row"><fieldset class="medication-period" aria-label="내원 시간 오전·오후 선택">${Object.entries(periods).map(([id,title])=>`<label><input type="radio" name="period" value="${id}" required ${plan?.period===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset><div class="medication-time-fields"><label><input type="number" name="hour" min="1" max="12" required inputmode="numeric" placeholder="시" value="${hasTime(plan)?plan.hour:''}" aria-label="내원 시"><span>시</span></label><label><input type="number" name="minute" min="0" max="59" required inputmode="numeric" placeholder="분" value="${hasTime(plan)?pad(plan.minute):''}" aria-label="내원 분"><span>분</span></label></div></div><p id="medication-date-preview" aria-live="polite">${plan?`${label(dates(plan)[0])}부터 ${label(plan.surgeryDate)} 수술 당일까지 사용`:'수술일을 입력하면 안약 사용 시작일을 알려드려요.'}</p>`;
   }
-  function eyeFields(plan){return `<fieldset class="medication-eye"><legend>수술할 눈을 선택하세요.</legend>${Object.entries(eyes).map(([id,title])=>`<label><input type="radio" name="eye" value="${id}" required ${plan?.eye===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset>`;}
+  function eyeFields(plan){return `<fieldset class="medication-eye"><legend class="cataract-eye-heading"><span>수술할 눈을 선택하세요.</span><button type="button" data-close-cataract-appointment>닫기 ×</button></legend>${Object.entries(eyes).map(([id,title])=>`<label><input type="radio" name="eye" value="${id}" required ${plan?.eye===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset>`;}
   function renderSetupCard(plan){
     const formId=`cataract-appointment-form-${++cardSequence}`;
     const fields=appointmentFields(plan,formId).replace(/<p id="medication-date-preview"[\s\S]*?<\/p>/,'');
@@ -64,7 +64,7 @@
   }
   function renderSetup(){
     const {plans}=read();
-    return `<section class="cataract-appointment-panel" aria-label="수술 일정"><div class="cataract-appointment-cards">${plans.map(renderSavedCard).join('')}</div><button type="button" class="cataract-appointment-add ${plans.length?'':'is-create'}" data-add-cataract-appointment>${plans.length?'항목 추가':'수술일 생성'}</button></section>`;
+    return `<section class="cataract-appointment-panel" aria-label="수술 일정"><div class="cataract-appointment-cards">${plans.map(renderSavedCard).join('')}</div><button type="button" class="cataract-appointment-add" data-add-cataract-appointment>+ ${plans.length?'항목 추가':'수술일 생성'}</button></section>`;
   }
   function renderSavedCard(plan){
     return `<article class="cataract-saved-card" data-saved-plan="${plan.id}"><header><strong>${eyes[plan.eye]||'수술할 눈 미선택'}</strong><div class="cataract-saved-actions"><button type="button" data-edit-cataract-appointment="${plan.id}">수정</button><button type="button" data-delete-cataract-appointment="${plan.id}" aria-label="${label(plan.surgeryDate)} ${eyes[plan.eye]||''} 수술일 삭제">삭제</button></div></header><dl><div><dt>수술 예정일</dt><dd>${plan.surgeryDate.slice(0,4)}년 ${label(plan.surgeryDate)}</dd></div><div><dt>내원 시간</dt><dd>${timeLabel(plan)||'미입력'}</dd></div></dl></article>`;
@@ -137,7 +137,7 @@
     if(panel){
       form.outerHTML=renderSavedCard(plan);
       const add=panel.querySelector('[data-add-cataract-appointment]');
-      add.textContent='항목 추가';add.classList.remove('is-create');
+      add.textContent='+ 항목 추가';
     }
   }
   document.addEventListener('submit',event=>{
@@ -166,6 +166,15 @@
     return plans.map(p=>`<a class="surgery-category-button" href="#/profile/cataract-before${plans.length>1?'?plan='+p.id:''}"><span>백내장 수술 전<small>${label(p.surgeryDate)} · ${eyes[p.eye]||'수술할 눈 미선택'}${timeLabel(p)?'<br>내원 '+timeLabel(p):''}</small></span><svg class="menu-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>`).join('');
   }
   document.addEventListener('click',event=>{
+    const close=event.target.closest?.('[data-close-cataract-appointment]');
+    if(close){
+      const form=close.closest('form[data-cataract-appointment]'),panel=form.closest('.cataract-appointment-panel');
+      const original=read().plans.find(p=>p.id===form.dataset.planId);
+      if(original)form.outerHTML=renderSavedCard(original);else form.remove();
+      const add=panel.querySelector('[data-add-cataract-appointment]');
+      add.textContent=!read().plans.length&&!panel.querySelector('form[data-cataract-appointment]')?'+ 수술일 생성':'+ 항목 추가';
+      add.focus?.({preventScroll:true});return;
+    }
     const remove=event.target.closest?.('[data-delete-cataract-appointment]');
     if(remove){
       const store=read(),id=remove.dataset.deleteCataractAppointment;
@@ -179,7 +188,7 @@
       remove.closest('.cataract-saved-card').remove();
       const add=panel.querySelector('[data-add-cataract-appointment]');
       const empty=!store.plans.length&&!panel.querySelector('form[data-cataract-appointment]');
-      add.textContent=empty?'수술일 생성':'항목 추가';add.classList.toggle('is-create',empty);
+      add.textContent=empty?'+ 수술일 생성':'+ 항목 추가';
       showSavedToast('삭제되었습니다.');return;
     }
     const edit=event.target.closest?.('[data-edit-cataract-appointment]');
@@ -192,7 +201,7 @@
     if(!button)return;
     const list=button.closest('.cataract-appointment-panel').querySelector('.cataract-appointment-cards');
     list.insertAdjacentHTML('beforeend',renderSetupCard(null));
-    button.textContent='항목 추가';button.classList.remove('is-create');
+    button.textContent='+ 항목 추가';
     list.lastElementChild.querySelector('input')?.focus({preventScroll:true});
     list.lastElementChild.scrollIntoView({block:'nearest',behavior:'smooth'});
   });

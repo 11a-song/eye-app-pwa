@@ -24,7 +24,7 @@ function editCardMarkup(){
   return html;
 }
 assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
-assert.ok(context.window.CataractMedication.renderSetup().includes('>수술일 생성</button>'));
+assert.ok(context.window.CataractMedication.renderSetup().includes('>+ 수술일 생성</button>'));
 assert.ok(!context.window.CataractMedication.renderSetup().includes('<form'));
 const appointmentForm=form('left',2027,1,2,'pm',2,30);appointmentForm.id='cataract-appointment-form';
 handlers.change({target:{closest:selector=>selector==='#cataract-appointment-form'?appointmentForm:null}});
@@ -123,8 +123,22 @@ handlers.change({target:{checked:true,dataset:{cataractDose:secondDose},closest:
 assert.equal(deleteCard(originalId).removed,true);
 assert.ok(context.window.CataractMedication.renderSchedule().includes('1 / 21회 완료'),'deleting another record preserves this record and its checks');
 assert.equal((context.window.CataractMedication.renderProfileLinks().match(/class="surgery-category-button"/g)||[]).length,1);
-const deletedLast=deleteCard(secondId);assert.equal(deletedLast.add.textContent,'수술일 생성');
+const deletedLast=deleteCard(secondId);assert.equal(deletedLast.add.textContent,'+ 수술일 생성');
 context=session();assert.equal(context.window.CataractMedication.hasSchedule(),false,'last deleted schedule must not return after reload');
 assert.equal(context.window.CataractMedication.renderProfileLinks(),'');
 assert.equal(element('#toast').textContent,'삭제되었습니다.');
+assert.ok(addCardMarkup().includes('<legend class="cataract-eye-heading"><span>수술할 눈을 선택하세요.</span><button type="button" data-close-cataract-appointment>닫기 ×</button></legend>'));
+let closed=false;const closingAdd={textContent:'',focus(){}};
+const closingPanel={querySelector:selector=>selector==='[data-add-cataract-appointment]'?closingAdd:null};
+const unsaved={dataset:{planId:''},closest:()=>closingPanel,remove(){closed=true;}};
+const closingButton={closest:()=>unsaved};
+const beforeClose=data.get('jeileye-cataract-preop-v1');
+handlers.click({target:{closest:selector=>selector==='[data-close-cataract-appointment]'?closingButton:null}});
+assert.equal(closed,true);assert.equal(closingAdd.textContent,'+ 수술일 생성');
+assert.equal(data.get('jeileye-cataract-preop-v1'),beforeClose,'closing an unsaved card does not modify saved data');
+save('left',2027,1,2,'pm',2,30);
+const savedId=JSON.parse(data.get('jeileye-cataract-preop-v1')).plan.id;
+let restored='';const editing={dataset:{planId:savedId},closest:()=>closingPanel,set outerHTML(html){restored=html;}};
+handlers.click({target:{closest:selector=>selector==='[data-close-cataract-appointment]'?{closest:()=>editing}:null}});
+assert.ok(restored.includes('class="cataract-saved-card"'),'closing an edit restores the saved card');
 console.log('Cataract medication: automatic appointment fill, arrival time, morning/afternoon surgery limits, date validation, persistence and failed storage passed.');
