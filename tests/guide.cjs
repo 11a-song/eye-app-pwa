@@ -4,7 +4,7 @@ const data=JSON.parse(read('data/public-import.json'));
 const content={status:'ready',pages:data.content_pages,doctors:data.doctors,profiles:data.doctor_about_profiles,equipment:data.equipment,hours:data.clinic_hours,settings:{},notices:[],blog:[]};
 const elements=new Map(),handlers={},windowHandlers={};
 function el(key){
-  if(!elements.has(key))elements.set(key,{innerHTML:'',value:'',textContent:'',open:false,clientWidth:300,focus(){},scrollIntoView(){},scrollBy(options){this.lastScroll=options;},querySelectorAll:()=>[],showModal(){this.open=true;},close(){this.open=false;}});
+  if(!elements.has(key))elements.set(key,{innerHTML:'',value:'',textContent:'',open:false,clientWidth:300,focus(){},scrollIntoView(options){this.lastView=options;},scrollBy(options){this.lastScroll=options;},querySelectorAll:()=>[],showModal(){this.open=true;},close(){this.open=false;}});
   return elements.get(key);
 }
 let scheduleCalls=0,scheduleFails=false;
@@ -58,6 +58,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   content.status='ready';content.profiles[0].greeting='<img src=x onerror=alert(1)>';guide.select('director');vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('&lt;img src=x'));assert.ok(!el('#main').innerHTML.includes('<img src=x'));
   scheduleFails=true;await vm.runInContext('loadSchedules(true)',context);await new Promise(setImmediate);assert.equal(vm.runInContext('scheduleState',context),'error');assert.equal(scheduleCalls,2,'failed guide schedule must not auto-retry in a render loop');
   for(const route of ['before','after','dream','faq','profile','schedule']){context.location.hash='#/'+route;vm.runInContext('render()',context);assert.ok(!el('#main').innerHTML.includes('class="back"'),route);}
+  await click({day:'12'});assert.equal(el('.schedule-day-panel').lastView.block,'start');assert.equal(vm.runInContext('selectedDate.getDate()',context),12);
   for(const resource of ['guide.css','scripts/guide.js','scripts/guide-reference.js','assets/veterans-logo.svg'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
   console.log('Guide: tab navigation, 19 facility photos, source ordering, 12 benefit groups, modal close, 2026 correction, managed content escaping, offline handling and back-link removal passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
