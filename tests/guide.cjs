@@ -73,6 +73,13 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
       assert.ok(el('#main').innerHTML.includes('href="#/'+stage+'"'));
     }
   }
+  context.location.hash='#/before/cataract';vm.runInContext('render()',context);
+  assert.equal((el('#main').innerHTML.match(/class="surgery-category-button"/g)||[]).length,2);
+  for(const [id,title] of [['precautions','수술 전 주의사항'],['medication','수술 전 약 사용법']]){
+    context.location.hash='#/before/cataract/'+id;vm.runInContext('render()',context);
+    assert.ok(el('#main').innerHTML.includes('<h2>'+title+'</h2>'));
+    assert.ok(el('#main').innerHTML.includes('href="#/before/cataract"'));
+  }
   for(const resource of ['guide.css','scripts/guide.js','scripts/guide-reference.js','assets/veterans-logo.svg'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
   console.log('Guide: tab navigation, 19 facility photos, source ordering, 12 benefit groups, modal close, 2026 correction, managed content escaping, offline handling and back-link removal passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
