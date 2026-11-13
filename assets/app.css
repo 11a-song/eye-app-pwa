@@ -1209,6 +1209,8 @@ body:has(.guide-modal[open]){overflow:hidden}
 
 .surgery-category-prompt{margin:28px 0 16px;font-size:16px;font-weight:600;line-height:1.6}.surgery-category-prompt+.surgery-category-list{padding-top:0}
 
+.guide-location-photos{scroll-padding:0}.guide-location-photos figure{scroll-snap-align:end}.guide-location-photos figure:first-child{margin-left:0}
+
 /* typography.css */
 /* 참고 홈페이지 모바일 기준:
    style.css: 본문 16, 메뉴 20, 보조 설명 13, 달력 날짜 14/요일 12

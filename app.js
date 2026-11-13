@@ -334,10 +334,12 @@ function render(focus = false) {
   if (!route && currentRoute) resetNavigationState();
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile,blog:blogPage,'eye-drops':eyeDropsGuide};
+  const locationScroll=route==='guide'?main.querySelector?.('#guide-gallery-location')?.scrollLeft:undefined;
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
   main.innerHTML = (['before','after'].includes(route)&&categoryId?surgeryDetail(route,categoryId,sectionId):(pages[route] || home)());
   if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
   main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq','profile','eye-drops'].includes(route) ? 'plain-menu-view' : 'home-view';
+  if(route==='guide')window.ClinicGuide.initializeLocationCarousel?.(locationScroll);
   const settings=window.clinicContent?.settings||{};
   const headerLogo=$('.app-header img');
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);

@@ -722,7 +722,12 @@ window.clinicGuideReference.historyMarkup = "<h3 class=\"about-history-intro\">�
     return `<section class="guide-veterans" aria-labelledby="guide-veterans-title">${image(reference.logo,'국가보훈부','guide-veterans-logo')}<h2 id="guide-veterans-title">연세제일안과는 <strong>보훈위탁병원</strong>입니다.</h2><dl class="guide-info-rows">${reference.summary.details.map(r=>`<div><dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd></div>`).join('')}</dl><div class="guide-detail-action"><button class="guide-outline-button" data-action="veterans" aria-haspopup="dialog" aria-controls="veterans-dialog">보훈안내 자세히 <span aria-hidden="true">↗</span></button></div><h3>진료비 지원</h3><ul class="guide-support-list">${reference.summary.support.map(item=>`<li>${supportLabel(item)}</li>`).join('')}</ul></section>${content?.status==='ready'?content.pages.filter(r=>r.page_key==='guide'&&r.title.replace(/\s/g,'')!=='내원안내').map(r=>`<section class="card"><h2>${esc(r.title)}</h2><div class="managed-text">${esc(r.content)}</div></section>`).join(''):''}`;
   }
   function locationPhotos(){
-    return `<div class="guide-carousel guide-location-carousel"><div id="guide-gallery-location" class="guide-location-photos" tabindex="0" role="region" aria-label="병원 위치와 주차장"><figure>${image('assets/facility/building-exterior.jpg','연세제일안과 메디온빌딩 외관')}<figcaption>제주시 연북로 449 메디온빌딩 2,3층</figcaption></figure><figure>${image('assets/facility/building-parking.jpg','메디온빌딩 뒤편 주차장')}<figcaption>건물 뒤편 주차장</figcaption></figure></div></div>`;
+    return `<div class="guide-carousel guide-location-carousel"><div id="guide-gallery-location" class="guide-location-photos" tabindex="0" role="region" aria-roledescription="캐러셀" aria-label="병원 건물과 주차장. 좌우로 넘겨 보세요."><figure>${image('assets/facility/building-parking.jpg','메디온빌딩 뒤편 주차장')}<figcaption>건물 뒤편 주차장</figcaption></figure><figure>${image('assets/facility/building-exterior.jpg','연세제일안과 메디온빌딩 외관')}<figcaption>제주시 연북로 449 메디온빌딩 2,3층</figcaption></figure></div></div>`;
+  }
+  function initializeLocationCarousel(previousScroll){
+    const gallery=document.querySelector('#guide-gallery-location');
+    if(!gallery||!Number.isFinite(gallery.scrollWidth))return;
+    gallery.scrollLeft=Number.isFinite(previousScroll)?previousScroll:Math.max(0,gallery.scrollWidth-gallery.clientWidth);
   }
   function galleryControls(id,label){
     return `<div class="guide-gallery-controls"><button type="button" data-guide-gallery="${id}" data-direction="-1" aria-label="${esc(label)} 이전 사진">←</button><button type="button" data-guide-gallery="${id}" data-direction="1" aria-label="${esc(label)} 다음 사진">→</button></div>`;
@@ -765,7 +770,7 @@ window.clinicGuideReference.historyMarkup = "<h3 class=\"about-history-intro\">�
     const notes=items=>items.map(p=>`<p class="guide-veterans-note">${esc(p.text)}${p.links.map(a=>safeUrl(a.url)?` <a href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener noreferrer">${esc(a.label)}</a>`:'').join('')}</p>`).join('');
     return `<header class="guide-modal-header"><h2 id="veterans-title">보훈위탁병원 안내</h2><button type="button" class="guide-close" data-close autofocus>닫기 <span aria-hidden="true">×</span></button></header><div class="guide-modal-content">${image(reference.logo,'국가보훈부','guide-veterans-logo')}<p class="guide-veterans-intro">${intro}</p><h3>보훈위탁병원 진료비 지원 기준</h3><div class="guide-benefits">${data.groups.map(r=>`<article><h4><span class="guide-benefit-title">${supportLabel(r.target)}</span>${personBadge(r.person)}</h4><dl><div><dt>진료비 지원</dt><dd>${esc(r.care)}</dd></div><div><dt>약제비 지원</dt><dd>${esc(r.medicine)}</dd></div></dl></article>`).join('')}</div>${notes(data.footnotes.slice(0,-1))}<h3>공통 적용 조건 및 지원 제외 항목</h3><dl class="guide-condition-list">${data.conditions.map(r=>`<div><dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd></div>`).join('')}</dl>${notes(data.footnotes.slice(-1))}<button type="button" class="primary-button" data-close>닫기</button></div>`;
   }
-  window.ClinicGuide={tabs,render,veterans,get active(){return active;},select(id){if(tabs.some(([key])=>key===id))active=id;}};
+  window.ClinicGuide={tabs,render,veterans,initializeLocationCarousel,get active(){return active;},select(id){if(tabs.some(([key])=>key===id))active=id;}};
 }());
 
 ;
@@ -1447,10 +1452,12 @@ function render(focus = false) {
   if (!route && currentRoute) resetNavigationState();
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile,blog:blogPage,'eye-drops':eyeDropsGuide};
+  const locationScroll=route==='guide'?main.querySelector?.('#guide-gallery-location')?.scrollLeft:undefined;
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
   main.innerHTML = (['before','after'].includes(route)&&categoryId?surgeryDetail(route,categoryId,sectionId):(pages[route] || home)());
   if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
   main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq','profile','eye-drops'].includes(route) ? 'plain-menu-view' : 'home-view';
+  if(route==='guide')window.ClinicGuide.initializeLocationCarousel?.(locationScroll);
   const settings=window.clinicContent?.settings||{};
   const headerLogo=$('.app-header img');
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);

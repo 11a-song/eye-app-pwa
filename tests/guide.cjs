@@ -31,6 +31,10 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   await click({guideTab:'facility'});assert.equal(guide.active,'facility');
   assert.equal((el('#main').innerHTML.match(/<figure>/g)||[]).length,21);
   assert.ok(el('#main').innerHTML.indexOf('guide-location-photos')<el('#main').innerHTML.indexOf('class="guide-floor"'));
+  assert.ok(el('#main').innerHTML.indexOf('building-parking.jpg')<el('#main').innerHTML.indexOf('building-exterior.jpg'));
+  const locationGallery=el('#guide-gallery-location');locationGallery.scrollWidth=876;locationGallery.clientWidth=480;
+  guide.initializeLocationCarousel();assert.equal(locationGallery.scrollLeft,396,'Start on the right-hand building with parking peeking from the left');
+  guide.initializeLocationCarousel(0);assert.equal(locationGallery.scrollLeft,0,'Content refresh preserves the chosen photo');
   for(const name of ['building-exterior','building-parking'])assert.ok(fs.existsSync(path.join(root,'assets/facility/'+name+'.jpg')));
   assert.ok(el('#main').innerHTML.includes('제주시 연북로 449 메디온빌딩 2,3층'));
   assert.ok(el('#main').innerHTML.includes('건물 뒤편 주차장'));
