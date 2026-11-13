@@ -117,5 +117,35 @@ function setup(userAgent = 'Android Chrome', standalone = false, clipboard, navi
   }
   const shell = fs.readFileSync(path.join(root, 'sw.js'), 'utf8').match(/const SHELL = (\[.*\]);/)[1];
   for (const file of JSON.parse(shell.replace(/'/g, '"'))) assert.ok(fs.existsSync(path.join(root, file)), `Missing offline file: ${file}`);
+  assert.ok(!shell.includes('.jpg'), 'Photos must not compete with first-screen downloads');
+  const workerEvents = {}, cachedImages = new Map();
+  let downloads = 0, imageStatus = 200;
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), {
+    self: { location: { origin: 'https://example.com' }, registration: { scope: 'https://example.com/' }, addEventListener: (name, fn) => workerEvents[name] = fn }, URL,
+    caches: { async open() { return { async match(request) { return cachedImages.get(request.url); }, async put(request, response) { cachedImages.set(request.url, response); } }; } },
+    async fetch() { downloads++; return new Response('image', { status: imageStatus }); }
+  });
+  async function requestAsset(file) {
+    const waits = [];
+    let response;
+    workerEvents.fetch({ request: { url: new URL(file, 'https://example.com').href, method: 'GET' }, respondWith(promise) { response = promise; }, waitUntil(promise) { waits.push(promise); } });
+    const result = await response;
+    await Promise.all(waits);
+    return result;
+  }
+  await requestAsset('/assets/facility/building-parking.jpg');
+  await requestAsset('/assets/facility/building-parking.jpg');
+  assert.equal(downloads, 1, 'Viewing the same image again uses its cached copy');
+  imageStatus = 404;
+  await requestAsset('/assets/missing.jpg');
+  await requestAsset('/assets/missing.jpg');
+  assert.equal(downloads, 3, 'Failed image responses are not stored');
+  imageStatus = 200;
+  await requestAsset('/app.js');
+  await requestAsset('/app.js');
+  assert.equal(downloads, 5, 'Scripts retain the existing network-first update policy');
+  assert.equal(await requestAsset('/rest/v1/private'), undefined);
+  assert.equal(await requestAsset('/admin.html'), undefined);
+  assert.equal(await requestAsset('https://other.example.com/photo.jpg'), undefined);
   console.log('PWA installation checks passed');
 })();
