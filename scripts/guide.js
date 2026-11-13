@@ -36,14 +36,14 @@
     return `<div class="guide-gallery-controls"><button type="button" data-guide-gallery="${id}" data-direction="-1" aria-label="${esc(label)} 이전 사진">←</button><button type="button" data-guide-gallery="${id}" data-direction="1" aria-label="${esc(label)} 다음 사진">→</button></div>`;
   }
   function facilities(content){
-    return `<div class="guide-section-heading"><h2>시설 안내</h2><p>사진을 좌우로 넘겨 병원 내부를 둘러보세요.</p></div>${locationPhotos()}${reference.facilities.map((floor,index)=>`<section class="guide-floor"><header><div class="guide-floor-heading"><h3>${esc(floor.floor)}</h3><div class="guide-floor-copy"><strong>${esc(floor.description)}</strong><div class="guide-floor-contact">${floor.phoneLabel?`<span class="guide-floor-phone-label">${esc(floor.phoneLabel.trim())}</span>`:''}<a class="guide-floor-phone" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}">${esc(floor.phone||'')}</a><a class="guide-call-button" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}" aria-label="${esc(floor.floor)} ${esc(floor.description)} 전화 연결하기">연결하기</a></div></div></div>${galleryControls(index,floor.floor)}</header><div class="guide-carousel"><div id="guide-gallery-${index}" class="guide-gallery" tabindex="0" role="region" aria-label="${esc(floor.floor)} 시설 사진. 좌우로 넘겨 보세요.">${floor.photos.map((photo,i)=>`<figure>${image(photo.src,photo.alt)}<figcaption><span>${esc(photo.caption)}</span><small>${i+1} / ${floor.photos.length}</small></figcaption></figure>`).join('')}</div></div></section>`).join('')}${hours(content)}`;
+    return `${locationPhotos()}${reference.facilities.map((floor,index)=>`<section class="guide-floor"><header><div class="guide-floor-heading"><h3>${esc(floor.floor)}</h3><div class="guide-floor-copy"><strong>${esc(floor.description)}</strong><div class="guide-floor-contact">${floor.phoneLabel?`<span class="guide-floor-phone-label">${esc(floor.phoneLabel.trim())}</span>`:''}<a class="guide-floor-phone" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}">${esc(floor.phone||'')}</a><a class="guide-call-button" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}" aria-label="${esc(floor.floor)} ${esc(floor.description)} 전화 연결하기">연결하기</a></div></div></div>${galleryControls(index,floor.floor)}</header><div class="guide-carousel"><div id="guide-gallery-${index}" class="guide-gallery" tabindex="0" role="region" aria-label="${esc(floor.floor)} 시설 사진. 좌우로 넘겨 보세요.">${floor.photos.map((photo,i)=>`<figure>${image(photo.src,photo.alt)}<figcaption><span>${esc(photo.caption)}</span><small>${i+1} / ${floor.photos.length}</small></figcaption></figure>`).join('')}</div></div></section>`).join('')}${hours(content)}`;
   }
   function doctors(content,schedule,scheduleState){
     if(content?.status!=='ready')return status(content);
     const name=d=>String(d.name).replace(/\s*원장\s*$/,'').trim();
     const rank=d=>{const i=reference.doctorOrder.indexOf(name(d));return i<0?Infinity:i;};
     const rows=content.doctors.filter(d=>content.profiles.some(p=>String(p.doctor_id)===String(d.id))).slice().sort((a,b)=>rank(a)-rank(b));
-    return '<div class="guide-section-heading"><h2>의료진 소개</h2><p>원장님을 선택하면 인사말과 약력을 확인할 수 있습니다.</p></div>'+rows.map(d=>{
+    return rows.map(d=>{
       const p=content.profiles.find(p=>String(p.doctor_id)===String(d.id));
       const weekly=schedule.doctors.find(row=>String(row.id)===String(d.id))?.weeklySchedules||[];
       const days=['일','월','화','수','목','금','토'];
@@ -54,14 +54,14 @@
   function equipment(content){
     if(content?.status!=='ready')return status(content);
     const labels={surgery:'수술 장비',exam:'검진 장비',treatment:'치료 장비'};
-    return '<div class="guide-section-heading"><h2>보유장비</h2><p>분류를 선택하면 장비 사진과 설명을 볼 수 있습니다.</p></div>'+reference.equipmentOrder.map(category=>{
+    return reference.equipmentOrder.map(category=>{
       const title=labels[category];
       const rows=content.equipment.filter(r=>r.category===category);
       return `<details class="guide-equipment-group" name="guide-equipment" data-guide-detail="equipment-${category}"><summary><span>${title}<small>${rows.length}종</small></span><svg class="guide-expand" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary><div class="guide-equipment-list">${rows.map(r=>`<article><div class="guide-equipment-photo">${image(r.image_url,r.title+' 장비')}</div><div class="guide-equipment-copy"><small>${esc(title.replace(/\s/g,''))}</small><h3>${esc(r.title)}</h3><p>${esc(r.description||'')}</p></div></article>`).join('')||'<p>장비 안내를 준비 중입니다.</p>'}</div></details>`;
     }).join('');
   }
   function history(){
-    return `<div class="guide-section-heading"><h2>History</h2><p>제주 안과의 '최초'를 선도해온 기록</p></div><ol class="guide-history">${reference.history.map(row=>`<li><h3>${esc(row.year)}</h3>${list(row.items)}</li>`).join('')}</ol>`;
+    return `<ol class="guide-history">${reference.history.map(row=>`<li><h3>${esc(row.year)}</h3>${list(row.items)}</li>`).join('')}</ol>`;
   }
   function render(content,schedule,scheduleState){
     const panes={support:()=>support(content),facility:()=>facilities(content),director:()=>doctors(content,schedule,scheduleState),equipment:()=>equipment(content),history};
