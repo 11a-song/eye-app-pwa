@@ -36,9 +36,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   assert.ok(el('#main').innerHTML.indexOf('병원 진료시간')>el('#main').innerHTML.lastIndexOf('</figure>'));
   assert.equal(reference.facilities.length,2);
   for(const floor of reference.facilities)for(const photo of floor.photos)assert.ok(fs.existsSync(path.join(root,photo.src)),photo.src);
-  await click({guideGallery:'0',direction:'1'});assert.ok(el('#guide-gallery-0').lastScroll.left>0);
-  assert.equal((el('#main').innerHTML.match(/class="guide-gallery-controls"/g)||[]).length,3);
-  await click({guideGallery:'location',direction:'1'});assert.ok(el('#guide-gallery-location').lastScroll.left>0);
+  assert.ok(!el('#main').innerHTML.includes('data-guide-gallery'));
   await click({guideTab:'director'});await new Promise(setImmediate);
   assert.equal(scheduleCalls,1);assert.equal(vm.runInContext('scheduleState',context),'ready');
   let html=el('#main').innerHTML;

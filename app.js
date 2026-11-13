@@ -290,7 +290,7 @@ function openSheet(kind) {
   dialog.showModal();
 }
 document.addEventListener('click',async event=>{
-  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry]');
+  const button = event.target.closest('[data-action],[data-close],[data-language],[data-month],[data-day],[data-install],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-retry]');
   if (!button) return;
   if (button.dataset.guideTab) {
     window.ClinicGuide.select(button.dataset.guideTab);render();
@@ -299,10 +299,6 @@ document.addEventListener('click',async event=>{
     $('#guide-tabs').scrollIntoView({block:'start'});return;
   }
   if (button.hasAttribute('data-guide-retry')) { window.reloadClinicContent?.();return; }
-  if (button.hasAttribute('data-guide-gallery')) {
-    const gallery=$(`#guide-gallery-${button.dataset.guideGallery}`);
-    gallery.scrollBy({left:Number(button.dataset.direction)*(gallery.clientWidth*.9+12),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});return;
-  }
   if (button.dataset.action) openSheet(button.dataset.action);
   if (button.hasAttribute('data-close')) button.closest('dialog').close();
   if (button.dataset.language) { language = button.dataset.language; try { localStorage.setItem('clinic-language',language); } catch {} $('#language-dialog').close();render(); }
