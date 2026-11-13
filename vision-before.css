@@ -41,3 +41,5 @@
 .surgery-vision-before .vision-guide-section p.vision-guide-tag{display:inline-flex;align-items:center;justify-content:center;padding:7px 14px;border:0;border-radius:999px;background:var(--blue);color:#fff;font-size:13px;font-weight:700;line-height:1.6}
 
 .surgery-vision-before .vision-guide-section>h4,.surgery-vision-before .vision-guide-notice>h4,.surgery-vision-before .vision-guide-section h5,.surgery-vision-before .vision-guide-section h5 span{color:#111}
+
+.surgery-vision-before .vision-heading-with-icon{position:relative;padding-left:31px}.surgery-vision-before .vision-heading-icon{position:absolute;top:.2em;left:0;display:inline-block;width:22px;height:22px;fill:none;stroke:#0074ff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
