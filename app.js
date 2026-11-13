@@ -97,7 +97,7 @@ function managedPage(key){
 function activeFaqs(){const content=window.clinicContent;return !content||content.status==='disabled'?faqs:content.status==='ready'?content.pages.filter(row=>row.page_key==='faq').map(row=>[row.title,row.content]):[];}
 function blogPage(){const content=window.clinicContent;return pageTop('병원 블로그','병원이 전하는 눈 건강 이야기')+(content?.status==='ready'?content.blog.map(row=>accordion(escapeHtml(row.title),`<p class="note">${escapeHtml(row.post_date)}</p>`+contentImage(row.image_url)+`<div class="managed-text">${escapeHtml(row.content)}</div>`+(safeContentUrl(row.source_url)?`<a class="text-button" href="${escapeHtml(safeContentUrl(row.source_url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.source||'출처 보기')} ↗</a>`:''))).join(''):'<section class="card"><p>블로그를 불러오는 중입니다.</p></section>');}
 function home() {
-  return `<section class="home-intro"><h1>${t('연세제일안과와 함께하는')}<br><em>${t('더 편안한 눈 건강 관리')}</em></h1></section><div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span></span></a>`).join('')}</div><section class="install-banner"><img src="assets/icon-192.png" alt="" width="48" height="48"><div><strong>연세제일안과 앱</strong><span>홈 화면에서 바로 이용하세요</span></div><button type="button" data-action="install">앱 설치</button></section><div class="home-foot"><span>${t('당신의 눈을 위한 바른 진료')}</span><button class="text-button" data-action="install">${icon('download')}${t('앱 설치 안내')}</button></div>`;
+  return `<div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span></span></a>`).join('')}</div><section class="install-banner"><img src="assets/icon-192.png" alt="" width="48" height="48"><div><strong>연세제일안과 앱</strong><span>홈 화면에서 바로 이용하세요</span></div><button type="button" data-action="install">앱 설치</button></section>`;
 }
 function guide() {
   return window.ClinicGuide.render(window.clinicContent,scheduleData,scheduleState);
@@ -285,7 +285,7 @@ function render(focus = false) {
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
   main.innerHTML = (['before','after'].includes(route)&&categoryId?surgeryDetail(route,categoryId,sectionId):(pages[route] || home)());
   if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
-  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq','profile','eye-drops'].includes(route) ? 'plain-menu-view' : '';
+  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq','profile','eye-drops'].includes(route) ? 'plain-menu-view' : 'home-view';
   const settings=window.clinicContent?.settings||{};
   const headerLogo=$('.app-header img');
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);
