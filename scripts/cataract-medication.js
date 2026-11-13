@@ -45,7 +45,7 @@
   }
   function renderScheduleDay(plan,store,date,index){
     const slots=['아침','점심','저녁','주무시기 전'];
-    return `<section class="medication-day"><header class="medication-day-date"><h3>${label(date)}</h3><span>${index===3?'수술 당일':`수술 ${3-index}일 전`}</span></header><div class="medication-day-doses">${slots.map(slot=>`<fieldset class="medication-time-group"><legend>${slot}</legend><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<label><span>${m.name}</span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''}></label>`;}).join('')}</div></fieldset>`).join('')}</div></section>`;
+    return `<section class="medication-day"><header class="medication-day-date"><h3>${label(date)}</h3><small class="medication-day-weekday">${['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][parseDate(date).getDay()]}</small><span>${index===3?'수술 당일':`수술 ${3-index}일 전`}</span></header><div class="medication-day-doses">${slots.map(slot=>`<fieldset class="medication-time-group"><legend>${slot}</legend><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<label><span>${m.name}</span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''}></label>`;}).join('')}</div></fieldset>`).join('')}</div></section>`;
   }
   function renderSchedule(){
     const store=read(),plan=store.plan;
