@@ -42,6 +42,10 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   await click({guideTab:'director'});await new Promise(setImmediate);
   assert.equal(scheduleCalls,1);assert.equal(vm.runInContext('scheduleState',context),'ready');
   let html=el('#main').innerHTML;
+  for(const summary of html.match(/<summary>[\s\S]*?<\/summary>/g)||[])assert.ok(!summary.includes('guide-specialties'));
+  assert.match(html,/<h3>진료과목<\/h3><span class="guide-specialties">/);
+  assert.ok(html.includes('오후 5시까지 진료'));assert.ok(!html.includes('종일 진료 · 17:00까지'));
+  assert.ok(html.includes('자세한 진료 일정 보기'));
   // Use canonical doctor names from data to verify source ordering, independent of allocated IDs.
   let previous=-1;for(const name of reference.doctorOrder){const doctor=data.doctors.find(d=>d.name.startsWith(name));const at=html.indexOf('<strong>'+doctor.name+'</strong>');assert.ok(at>previous);previous=at;}
   assert.match(html,/약력/);assert.match(html,/학회활동/);assert.match(html,/guide-weekly/);
