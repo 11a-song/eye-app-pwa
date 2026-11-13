@@ -142,7 +142,7 @@ assert.ok(!archivedHtml.includes('수술일·수술할 눈 수정'));
 assert.ok(!archivedHtml.includes('class="medication-summary-edit"'));
 const guideCards=[...context.window.CataractMedication.renderGuide().matchAll(/<section class="medication-saved-plan[^\"]*"[\s\S]*?<\/section>/g)].map(m=>m[0]);
 assert.ok(guideCards[0].includes('is-archived')&&!guideCards[0].includes('수술 정보 수정'));
-assert.ok(!guideCards[1].includes('is-archived')&&guideCards[1].includes('수술 정보 수정'));
+assert.ok(!guideCards[1].includes('is-archived')&&!guideCards[1].includes('수술 정보 수정'));
 assert.ok(context.window.CataractMedication.renderProfileLinks().includes('surgery-category-button is-archived'));
 const archivedDose=archivedHtml.match(/data-cataract-dose="([^"]+)"/)[1],priorData=data.get('jeileye-cataract-preop-v1');
 const blockedCheck={checked:false,dataset:{cataractDose:archivedDose},closest:()=>null,matches:()=>true};
