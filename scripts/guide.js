@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   const reference=window.clinicGuideReference;
-  const tabs=[['support','보훈·지원'],['facility','시설'],['director','의료진'],['equipment','장비'],['history','연혁']];
+  const tabs=[['support','보훈·지원'],['facility','시설'],['director','의료진'],['equipment','장비'],['history','History']];
   let active='support';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function safeUrl(value){
@@ -61,7 +61,7 @@
     }).join('');
   }
   function history(){
-    return `<ol class="guide-history">${reference.history.map(row=>`<li><h3>${esc(row.year)}</h3>${list(row.items)}</li>`).join('')}</ol>`;
+    return `<ol class="guide-history">${reference.history.map((row,index)=>`<li><div class="guide-history-heading"><h3>${esc(row.year)}</h3>${index===0?`<strong class="guide-history-tagline">제주 안과의 '최초'를 선도해온 기록</strong>`:''}</div>${list(row.items)}</li>`).join('')}</ol>`;
   }
   function render(content,schedule,scheduleState){
     const panes={support:()=>support(content),facility:()=>facilities(content),director:()=>doctors(content,schedule,scheduleState),equipment:()=>equipment(content),history};
