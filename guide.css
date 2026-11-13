@@ -23,3 +23,5 @@ body:has(.guide-modal[open]){overflow:hidden}
 .guide-benefit-person{display:inline-block;max-width:100%;padding:3px 8px;border:1px solid #e0e5ed;border-radius:999px;background:#fff;color:var(--muted);font-size:13px;font-weight:400;line-height:1.6;vertical-align:middle}.guide-benefits h4 .guide-benefit-person{margin:0;flex-shrink:0}.guide-benefits h4{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin-bottom:13px}.guide-benefit-title{max-width:100%;min-width:0}
 
 .guide-veterans .guide-support-note{font-size:14px}
+
+.guide-floor>header{flex-wrap:wrap;gap:12px;align-items:flex-start}.guide-floor-heading{display:flex;align-items:flex-start;gap:12px;min-width:0;flex:1 1 260px}.guide-floor-heading h3{flex-shrink:0}.guide-floor-copy{display:grid;gap:3px;min-width:0}.guide-floor-copy strong{font-size:20px;font-weight:700;line-height:1.5;word-break:keep-all}.guide-floor-copy a{font-size:14px;line-height:1.6;color:var(--muted);width:fit-content}.guide-floor .guide-gallery-controls{margin-left:auto;flex-shrink:0}

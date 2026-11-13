@@ -150,7 +150,9 @@ window.clinicGuideReference = {
   "facilities": [
     {
       "floor": "2층",
-      "description": "진료, 접수",
+      "description": "진료/접수",
+      "phone": "064.727.2700",
+      "phoneLabel": "대표전화 ",
       "photos": [
         {
           "src": "assets/facility/2f-01.jpg",
@@ -221,7 +223,9 @@ window.clinicGuideReference = {
     },
     {
       "floor": "3층",
-      "description": "시력교정수술센터",
+      "description": "시력교정수술센터/세안실",
+      "phone": "064.727.2703",
+      "phoneLabel": "",
       "photos": [
         {
           "src": "assets/facility/3f-02.jpg",
