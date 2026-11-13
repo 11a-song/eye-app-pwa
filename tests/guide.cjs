@@ -15,6 +15,7 @@ const reference=context.window.clinicGuideReference,guide=context.window.ClinicG
 const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:name=>Object.hasOwn(dataset,name.replace(/^data-/,'').replace(/-([a-z])/g,(_,c)=>c.toUpperCase()))})}});
 (async()=>{
   assert.equal((el('#main').innerHTML.match(/role="tab" /g)||[]).length,5);
+  assert.ok(!el('#main').innerHTML.includes('class="page-top"'));
   assert.ok(!el('#main').innerHTML.includes('class="back"'));
   assert.match(el('#main').innerHTML,/국가유공자 및 국가유공자의 유가족/);
   assert.match(el('#main').innerHTML,/유족 및 며느리 카드 소지자<small class="guide-support-note">\(1954\.12\.31 이전 출생자\)<\/small>/);

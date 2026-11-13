@@ -1,4 +1,5 @@
 /* App-native guide: one section at a time, with readable cards and local photos. */
+.app-shell:has(main.guide-view)>.app-header{display:none}.app-shell main.guide-view{padding-top:0}.guide-view .guide-tabs{padding-top:calc(12px + env(safe-area-inset-top));top:0}
 .guide-view .page-top{margin-bottom:18px}.guide-view .page-top h1{font-size:28px}.guide-view .page-top .eyebrow{display:none}
 .guide-tabs{display:flex;gap:5px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none;position:sticky;top:0;z-index:3;margin:0 -24px;padding:12px 24px;background:var(--bg);border-bottom:1px solid #e5e8ef}
 .guide-tabs::-webkit-scrollbar{display:none}.guide-tabs button{flex:1 0 auto;min-width:59px;border:0;border-radius:999px;padding:10px 13px;background:transparent;color:#737c8a;font-size:14px;font-weight:600;white-space:nowrap}
