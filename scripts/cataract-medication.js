@@ -64,7 +64,10 @@
   }
   function renderSetup(){
     const {plans}=read();
-    return `<details class="cataract-appointment-panel"><summary>수술일 생성</summary><div class="cataract-appointment-cards">${plans.length?plans.map(renderSetupCard).join(''):renderSetupCard(null)}</div><button type="button" class="cataract-appointment-add" data-add-cataract-appointment>+ 항목 추가</button></details>`;
+    return `<section class="cataract-appointment-panel" aria-label="수술 일정"><div class="cataract-appointment-cards">${plans.map(renderSavedCard).join('')}</div><button type="button" class="cataract-appointment-add ${plans.length?'':'is-create'}" data-add-cataract-appointment>${plans.length?'항목 추가':'수술일 생성'}</button></section>`;
+  }
+  function renderSavedCard(plan){
+    return `<article class="cataract-saved-card" data-saved-plan="${plan.id}"><header><strong>${eyes[plan.eye]||'수술할 눈 미선택'}</strong><button type="button" data-edit-cataract-appointment="${plan.id}">수정</button></header><dl><div><dt>수술 예정일</dt><dd>${plan.surgeryDate.slice(0,4)}년 ${label(plan.surgeryDate)}</dd></div><div><dt>내원 시간</dt><dd>${timeLabel(plan)||'미입력'}</dd></div></dl></article>`;
   }
   function renderArrivalCard(){
     const {plan}=read();
@@ -130,6 +133,12 @@
     if(!write(store)){status.textContent='기기에 저장하지 못했습니다. 다시 시도해 주세요.';return;}
     if(!form.dataset)form.dataset={};form.dataset.planId=plan.id;
     status.textContent='';showSavedToast();
+    const panel=form.closest?.('.cataract-appointment-panel');
+    if(panel){
+      form.outerHTML=renderSavedCard(plan);
+      const add=panel.querySelector('[data-add-cataract-appointment]');
+      add.textContent='항목 추가';add.classList.remove('is-create');
+    }
   }
   document.addEventListener('submit',event=>{
     if(!event.target.id?.startsWith('cataract-appointment-form'))return;
@@ -157,10 +166,17 @@
     return plans.map(p=>`<a class="surgery-category-button" href="#/profile/cataract-before${plans.length>1?'?plan='+p.id:''}"><span>백내장 수술 전<small>${label(p.surgeryDate)} · ${eyes[p.eye]||'수술할 눈 미선택'}</small></span><svg class="menu-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>`).join('');
   }
   document.addEventListener('click',event=>{
+    const edit=event.target.closest?.('[data-edit-cataract-appointment]');
+    if(edit){
+      const plan=read().plans.find(p=>p.id===edit.dataset.editCataractAppointment);
+      if(plan){const panel=edit.closest('.cataract-appointment-panel');edit.closest('.cataract-saved-card').outerHTML=renderSetupCard(plan);panel.querySelector(`form[data-plan-id="${plan.id}"] input`)?.focus({preventScroll:true});}
+      return;
+    }
     const button=event.target.closest?.('[data-add-cataract-appointment]');
     if(!button)return;
     const list=button.closest('.cataract-appointment-panel').querySelector('.cataract-appointment-cards');
     list.insertAdjacentHTML('beforeend',renderSetupCard(null));
+    button.textContent='항목 추가';button.classList.remove('is-create');
     list.lastElementChild.querySelector('input')?.focus({preventScroll:true});
     list.lastElementChild.scrollIntoView({block:'nearest',behavior:'smooth'});
   });

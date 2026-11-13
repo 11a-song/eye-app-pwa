@@ -75,6 +75,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   }
   context.location.hash='#/before/cataract';vm.runInContext('render()',context);
   assert.equal((el('#main').innerHTML.match(/class="surgery-category-button"/g)||[]).length,2);
+  assert.ok(el('#main').innerHTML.indexOf('href="#/before/cataract/medication"')<el('#main').innerHTML.indexOf('class="cataract-appointment-panel"'));
   for(const [id,title] of [['precautions','수술 전 주의사항'],['medication','수술 전 약 사용법']]){
     context.location.hash='#/before/cataract/'+id;vm.runInContext('render()',context);
     assert.ok(el('#main').innerHTML.includes('<h2>'+(id==='precautions'?'백내장 수술 전 주의사항':title)+'</h2>'));
