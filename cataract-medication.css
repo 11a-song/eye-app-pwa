@@ -108,3 +108,14 @@
 .profile-plan-eye{font-size:22px;font-weight:750;line-height:1.35}
 .profile-plan-description{font-size:16px;font-weight:500;line-height:1.5}
 .surgery-category-button .profile-plan-copy small{margin-top:0;font-size:15px;line-height:1.7}
+/* 스케줄 상세: 수술할 눈을 제목 앞에, 날짜/시간은 작은 보조 정보로 표시 */
+.medication-tracker .medication-summary-header{align-items:flex-start;margin-bottom:12px}
+.medication-tracker .medication-summary-header h2{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:25px;font-weight:700;line-height:1.4}
+.medication-tracker .medication-title-eye{color:var(--blue);font-size:inherit;font-weight:inherit;white-space:nowrap}
+.medication-tracker.is-archived .medication-title-eye{color:#929aa7}
+.medication-tracker .medication-summary-body{display:block}
+.medication-tracker .medication-summary-body>dl{margin:0;gap:4px}
+.medication-tracker .medication-summary-body dl>div{grid-template-columns:64px minmax(0,1fr);gap:10px;line-height:1.6}
+.medication-tracker .medication-summary-body dt,.medication-tracker .medication-summary-body dd{font-size:14px;font-weight:400}
+.medication-tracker .medication-summary-body dd{font-weight:500}
+.medication-tracker .medication-management-title{margin:18px 0 10px;font-size:20px;font-weight:700;line-height:1.4}
