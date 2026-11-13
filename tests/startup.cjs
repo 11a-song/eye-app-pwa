@@ -9,7 +9,7 @@ const context=vm.createContext({
   window:{location,history:{replaceState(state,title,url){historyWrites.push(url);location.hash=url;}},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener:(name,fn)=>events[name]=fn,dispatchEvent:event=>events[event.type]?.(event),scrollTo(){}},
   document:{querySelector:element,querySelectorAll:()=>[],documentElement:{toggleAttribute(){}},addEventListener(name,fn){if(name==='click')clicks.push(fn);}},
   location,navigator:{userAgent:'Android Chrome'},localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value)},
-  fetch:async()=>({ok:true,json:async()=>[]}),URL,URLSearchParams,AbortSignal,Event,console,setTimeout
+  fetch:async()=>({ok:true,json:async()=>[]}),URL,URLSearchParams,AbortSignal,Event,console,setTimeout,clearTimeout
 });
 (async()=>{
   vm.runInContext(fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),context,{filename:'assets/app.js'});
@@ -57,5 +57,24 @@ const context=vm.createContext({
     const file=face[1].match(/url\(([^)]+)\)/)[1];
     assert.equal(fs.readFileSync(path.join(root,file)).subarray(0,4).toString(),'wOF2');
   }
+  saved.delete('jeileye-cataract-preop-v1');
+  location.hash='#/guide';vm.runInContext('render()',context);
+  const scheduleLink={dataset:{},getAttribute:name=>name==='href'?'#/profile':null,hasAttribute:()=>false};
+  let blocked=false;
+  for(const click of clicks)await click({preventDefault(){blocked=true;},target:{closest:selector=>selector.includes('[href^="#/profile"]')?scheduleLink:null}});
+  assert.equal(blocked,true);
+  assert.equal(location.hash,'#/guide','No saved surgery date: keep the current page');
+  assert.match(element('#toast').textContent,/수술일을 생성한 후/);
+  location.hash='#/profile/cataract-before';vm.runInContext('render()',context);
+  assert.equal(location.hash,'#/','Direct links cannot bypass the schedule requirement');
+  const plan={id:'test-plan',eye:'left',surgeryDate:'2026-11-20',period:'am',hour:9,minute:0};
+  saved.set('jeileye-cataract-preop-v1',JSON.stringify({plans:[plan],checks:{}}));
+  blocked=false;
+  for(const click of clicks)await click({preventDefault(){blocked=true;},target:{closest:selector=>selector.includes('[href^="#/profile"]')?scheduleLink:null}});
+  assert.equal(blocked,false);
+  location.hash='#/profile';vm.runInContext('render()',context);
+  assert.equal(location.hash,'#/profile');
+  assert.match(element('#main').innerHTML,/백내장 수술 전/);
+  vm.runInContext('goHome()',context);
   console.log('Startup: production bundle, mobile welcome, home render, content refresh and local font slices passed');
 })().catch(error=>{console.error(error);process.exitCode=1;});

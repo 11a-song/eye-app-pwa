@@ -9,7 +9,7 @@ function el(key){
 }
 let scheduleCalls=0,scheduleFails=false;
 const schedule={doctors:data.doctors.map(d=>({...d,id:String(d.id),weeklySchedules:data.doctor_weekly_schedules.filter(r=>r.doctor_id===d.id)})),schedules:[],closures:[],clinicHours:data.clinic_hours};
-const context=vm.createContext({window:{clinicContent:content,addEventListener:(name,fn)=>windowHandlers[name]=fn,scrollTo(){},matchMedia:()=>({matches:true}),loadDoctorScheduleData:async()=>{scheduleCalls++;if(scheduleFails)throw Error('offline');return schedule;}},document:{querySelector:el,querySelectorAll:()=>[],documentElement:{},addEventListener:(name,fn)=>handlers[name]=fn},location:{hash:'#/guide',protocol:'file:'},navigator:{},localStorage:{getItem:()=>null,setItem(){}},URL,console,setTimeout});
+const context=vm.createContext({window:{clinicContent:content,addEventListener:(name,fn)=>windowHandlers[name]=fn,scrollTo(){},matchMedia:()=>({matches:true}),loadDoctorScheduleData:async()=>{scheduleCalls++;if(scheduleFails)throw Error('offline');return schedule;}},document:{querySelector:el,querySelectorAll:()=>[],documentElement:{},addEventListener:(name,fn)=>handlers[name]=fn},location:{hash:'#/guide',protocol:'file:'},navigator:{},localStorage:{getItem:()=>null,setItem(){}},URL,console,setTimeout,clearTimeout});
 for(const file of ['scripts/guide-reference.js','scripts/guide.js','scripts/holidays.js','scripts/schedule-model.js','scripts/vision-before.js','scripts/cataract-before.js','scripts/cataract-medication.js','scripts/eye-drops-guide.js','app.js'])vm.runInContext(read(file),context,{filename:file});
 const reference=context.window.clinicGuideReference,guide=context.window.ClinicGuide;
 const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:name=>Object.hasOwn(dataset,name.replace(/^data-/,'').replace(/-([a-z])/g,(_,c)=>c.toUpperCase()))})}});
@@ -93,13 +93,16 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   for(const resource of ['scripts/guide.js','scripts/guide-reference.js'])assert.ok(read('assets/app.js').includes('/* '+resource+' */'));
   assert.ok(fs.existsSync(path.join(root,'assets/veterans-logo.svg')));
   context.location.hash='#/profile';vm.runInContext('render()',context);
+  assert.equal(context.location.hash,'#/');
+  assert.match(el('#toast').textContent,/수술일을 생성한 후/);
   assert.ok(!el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
   assert.ok(!el('#main').innerHTML.includes('class="surgery-category-button"'));
   assert.ok(!el('#main').innerHTML.includes('admin-login-link'));
   context.localStorage.getItem=key=>key==='jeileye-cataract-preop-v1'?JSON.stringify({appointment:{surgeryDate:'2027-01-02',period:'pm',hour:2,minute:30},checks:{}}):null;
-  vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
+  context.location.hash='#/profile';vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
   context.localStorage.getItem=()=>null;
-  context.location.hash='#/profile/cataract-before';vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('약 사용 일정 설정'));
+  context.location.hash='#/profile/cataract-before';vm.runInContext('render()',context);assert.equal(context.location.hash,'#/');
+  context.localStorage.getItem=key=>key==='jeileye-cataract-preop-v1'?JSON.stringify({appointment:{surgeryDate:'2027-01-02',period:'pm',hour:2,minute:30},checks:{}}):null;
   context.location.hash='#/profile/cataract-after';vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('<h2>백내장 수술 후</h2>'));
   context.location.hash='#/eye-drops?from=medication';vm.runInContext('render()',context);
   assert.equal((el('#main').innerHTML.match(/class="eye-guide-section"/g)||[]).length,3);

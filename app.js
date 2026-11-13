@@ -66,6 +66,15 @@ let scheduleDoctor = '';
 let scheduleLoadedAt = 0;
 let scheduleRequest;
 let scheduleGeneration = 0;
+let scheduleAccessToastTimer;
+function hasSurgerySchedule() { return window.CataractMedication?.hasSchedule() === true; }
+function showScheduleAccessNotice() {
+  const toast = $('#toast');
+  if (scheduleAccessToastTimer) clearTimeout(scheduleAccessToastTimer);
+  toast.textContent = '수술일을 생성한 후 이용할 수 있습니다.';
+  toast.classList?.add('visible');
+  scheduleAccessToastTimer = setTimeout(() => { toast.classList?.remove('visible'); scheduleAccessToastTimer = null; }, 2600);
+}
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const scheduleDateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const faqs = [
@@ -287,6 +296,8 @@ function profile() {
   return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'</div>';
 }
 function resetNavigationState() {
+  if (scheduleAccessToastTimer) clearTimeout(scheduleAccessToastTimer);
+  scheduleAccessToastTimer = null;
   window.ClinicGuide?.select('support');
   calendarMonth = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Seoul'}));
   selectedDate = new Date(calendarMonth);
@@ -312,6 +323,13 @@ function goHome() {
 }
 function render(focus = false) {
   const [route,categoryId,sectionId] = location.hash.replace(/^#\/?/,'').split('?')[0].split('/');
+  if (route === 'profile' && !hasSurgerySchedule()) {
+    if (window.history?.replaceState) window.history.replaceState(null, '', '#/');
+    else location.hash = '#/';
+    render(true);
+    showScheduleAccessNotice();
+    return;
+  }
   if (!route && currentRoute) resetNavigationState();
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile,blog:blogPage,'eye-drops':eyeDropsGuide};
@@ -349,8 +367,11 @@ function openSheet(kind) {
   dialog.showModal();
 }
 document.addEventListener('click',async event=>{
-  const button = event.target.closest('[href="#/"],[data-action],[data-close],[data-language],[data-month],[data-day],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry],[data-eye-guide-target]');
+  const button = event.target.closest('[href="#/"],[href^="#/profile"],[data-action],[data-close],[data-language],[data-month],[data-day],[data-schedule-retry],[data-schedule-doctor],[data-guide-tab],[data-guide-gallery],[data-guide-retry],[data-eye-guide-target]');
   if (!button) return;
+  if (button.getAttribute?.('href')?.startsWith('#/profile') && !hasSurgerySchedule()) {
+    event.preventDefault();showScheduleAccessNotice();return;
+  }
   if (button.getAttribute?.('href') === '#/' && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && (event.button == null || event.button === 0)) {
     event.preventDefault();goHome();return;
   }
