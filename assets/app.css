@@ -1425,6 +1425,10 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 
 .medication-dose-item{position:relative;width:min(100%,168px)}.medication-dose-item .medication-dose-feedback{position:absolute;top:calc(100% + 6px);left:0;z-index:20;width:100%;margin:0;box-shadow:0 5px 16px #182c4c35;pointer-events:none}.medication-tracker .medication-day{position:relative;overflow:visible}.medication-day-content{border-radius:0 0 16px 16px}.medication-day:has(.medication-dose-feedback:not([hidden])){z-index:2}
 
+.profile-plan-copy{display:grid;gap:8px;min-width:0}
+.profile-plan-eye{font-size:22px;font-weight:750;line-height:1.35}
+.profile-plan-description{font-size:16px;font-weight:500;line-height:1.5}
+.surgery-category-button .profile-plan-copy small{margin-top:0;font-size:15px;line-height:1.7}
 /* eye-drops-guide.css */
 .eye-drops-page .eye-guide-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
 .eye-drops-page .eye-guide-nav { position: sticky; top: var(--eye-header-height, 70px); z-index: 5; width: 80%; margin: 0 auto; background: #f2f2f2; transition: width .35s ease; }
