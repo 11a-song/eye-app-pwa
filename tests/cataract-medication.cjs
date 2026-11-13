@@ -7,7 +7,7 @@ function session(){
   vm.runInContext(source,context);return context;
 }
 let context=session();
-const form=(eye,year,month,day,period,hour=9,minute=0)=>({id:'cataract-appointment-form',elements:{namedItem:name=>({value:{eye,year,month,day,period,hour,minute}[name]})}});
+const form=(eye,year,month,day,period,hour=9,minute=0)=>({id:'cataract-appointment-form',elements:{namedItem:name=>({value:name==='surgeryDate'?`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`:{eye,period,hour,minute}[name]})}});
 function save(eye,year,month,day,period='am',hour=9,minute=0){handlers.submit({preventDefault(){},target:form(eye,year,month,day,period,hour,minute)});}
 function addCardMarkup(retainChanges=false){
   const snapshot=new Map(data);
@@ -39,7 +39,14 @@ const setup=context.window.CataractMedication.renderSetup(),editMarkup=editCardM
 assert.ok(editMarkup.indexOf('class="medication-eye"')<editMarkup.indexOf('class="medication-date"'));
 assert.ok(!prefilled.includes('<input')&&!prefilled.includes('<form'));
 for(const text of ['왼쪽 눈','2027년 1월 2일','오후 2시 30분'])assert.ok(prefilled.includes(text));
-assert.ok(editMarkup.includes('name="month" type="number" min="1" max="12" value="1"'));
+assert.ok(editMarkup.includes('type="date" name="surgeryDate"')&&editMarkup.includes('value="2027-01-02"'));
+assert.ok(editMarkup.includes('data-date-display class="">2027년 1월 2일 (토)</span>'));
+assert.ok(!editMarkup.includes('name="year"')&&!editMarkup.includes('name="month"')&&!editMarkup.includes('name="day"'));
+const dateText={textContent:'',classList:{toggle(){}}},dateStatus={textContent:''};
+const dateInput={name:'surgeryDate',value:'2027-01-03',closest:selector=>selector==='.medication-date-picker'?{querySelector:()=>dateText}:selector==='form[data-cataract-appointment]'?{querySelector:()=>dateStatus}:null};
+const beforeDateSelection=data.get('jeileye-cataract-preop-v1');
+handlers.change({target:dateInput});assert.equal(dateText.textContent,'2027년 1월 3일 (일)');
+assert.equal(data.get('jeileye-cataract-preop-v1'),beforeDateSelection,'calendar choice updates display without saving until requested');
 assert.ok(editMarkup.includes('value="pm" required checked'));
 assert.ok(editMarkup.includes('value="2" aria-label="내원 시"'));
 assert.ok(editMarkup.includes('value="30" aria-label="내원 분"'));
