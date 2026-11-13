@@ -59,6 +59,15 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   scheduleFails=true;await vm.runInContext('loadSchedules(true)',context);await new Promise(setImmediate);assert.equal(vm.runInContext('scheduleState',context),'error');assert.equal(scheduleCalls,2,'failed guide schedule must not auto-retry in a render loop');
   for(const route of ['before','after','dream','faq','profile','schedule']){context.location.hash='#/'+route;vm.runInContext('render()',context);assert.ok(!el('#main').innerHTML.includes('class="back"'),route);}
   await click({day:'12'});assert.equal(el('.schedule-day-panel').lastView.block,'start');assert.equal(vm.runInContext('selectedDate.getDate()',context),12);
+  for(const stage of ['before','after']){
+    context.location.hash='#/'+stage;vm.runInContext('render()',context);
+    assert.equal((el('#main').innerHTML.match(/class="surgery-category-button"/g)||[]).length,4);
+    for(const [id,label] of [['vision','시력교정'],['cataract','백내장'],['glaucoma','녹내장'],['retina','망막']]){
+      context.location.hash='#/'+stage+'/'+id;vm.runInContext('render()',context);
+      assert.ok(el('#main').innerHTML.includes('<h2>'+label+'</h2>'));
+      assert.ok(el('#main').innerHTML.includes('href="#/'+stage+'"'));
+    }
+  }
   for(const resource of ['guide.css','scripts/guide.js','scripts/guide-reference.js','assets/veterans-logo.svg'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
   console.log('Guide: tab navigation, 19 facility photos, source ordering, 12 benefit groups, modal close, 2026 correction, managed content escaping, offline handling and back-link removal passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

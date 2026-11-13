@@ -235,14 +235,21 @@ function calendar() {
   $('#selected-label').textContent = new Intl.DateTimeFormat(language === 'ko' ? 'ko-KR' : language === 'zh' ? 'zh-CN' : 'en-US',{month:'long',day:'numeric',weekday:'short'}).format(selectedDate);
   renderScheduleDetail();
 }
-function before() {
-  const managed=managedPage('before');if(managed!==null)return managed;
-  return pageTop(menus[2][2],menus[2][3]) + `<div class="card blue-card">${icon('before')}<h2>수술 종류에 맞는 안내를 확인하세요</h2><p>기존 홈페이지의 시력교정 안내를 바탕으로 구성했습니다. 개인별 준비 사항은 병원에서 받은 안내를 따라 주세요.</p></div><p class="section-label">시력교정 검사 · 수술</p>` + accordion('검사 및 수술 전 준비','검사와 수술을 앞두고 렌즈를 착용 중이라면 착용 중단 기간을 미리 확인해 주세요. 필요한 기간은 렌즈 종류에 따라 달라집니다. 자세한 일정은 시력교정수술센터에 확인해 주세요.') + accordion('내원 당일 안내','기존 병원 안내에 따라 눈화장은 피하고 신분증을 지참해 주세요. 검사 및 수술 당일은 자가운전이 어려울 수 있으므로 대중교통 이용 또는 보호자 동반 내원을 안내하고 있습니다.') + accordion('검사 시간과 방문 장소','기초검사는 약 2~3시간 소요됩니다. 시력교정수술센터는 3층입니다. 예약 변경은 최소 하루 전에 연락해 주세요.<a class="primary-button" href="tel:0647272703">시력교정수술센터 064-727-2703</a>') + accordion('백내장 · 기타 수술','수술 종류별 상세 안내는 준비 중입니다. 담당 의료진에게 받은 개별 안내를 확인해 주세요.');
+const surgeryCategories=[['vision','시력교정'],['cataract','백내장'],['glaucoma','녹내장'],['retina','망막']];
+function surgeryMenu(stage) {
+  const title=stage==='before'?'수술 전':'수술 후';
+  return emptyMenuPage(title)+'<div class="surgery-category-list">'+surgeryCategories.map(([id,label])=>
+    '<a class="surgery-category-button" href="#/'+stage+'/'+id+'"><span>'+t(label)+'</span>'+icon('arrow','menu-arrow')+'</a>'
+  ).join('')+'</div>';
 }
-function after() {
-  const managed=managedPage('after');if(managed!==null)return managed;
-  return pageTop(menus[3][2],menus[3][3]) + `<div class="card blue-card">${icon('after')}<h2>수술 후에도 함께하겠습니다</h2><p>수술 방법과 처방에 따라 관리 방법이 달라집니다. 병원에서 받은 안내문을 먼저 확인해 주세요.</p></div>` + ['스마일라식','퍼스널아이즈 라섹','올레이져 라섹','렌즈삽입술','백내장'].map(name => accordion(`${name} 수술 후 안내`,'수술별 상세 안내는 준비 중입니다. 처방 안약 사용, 다음 내원일과 생활 관리에 관한 내용은 담당 의료진의 안내를 따라 주세요.')).join('') + `<section class="card"><h2>수술 후 문의가 있으신가요?</h2><p>회복 과정에 관한 궁금한 점은 병원에 문의해 주세요.</p>${callButton()}</section>`;
+function surgeryDetail(stage,categoryId) {
+  const category=surgeryCategories.find(([id])=>id===categoryId);
+  if(!category)return surgeryMenu(stage);
+  const title=stage==='before'?'수술 전':'수술 후';
+  return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/'+stage+'">'+icon('back')+t(title)+' 목록</a><h2>'+t(category[1])+'</h2></section>';
 }
+function before() { return surgeryMenu('before'); }
+function after() { return surgeryMenu('after'); }
 function emptyMenuPage(title) {
   return `<div class="guide-sticky-header"><header class="guide-topbar"><a class="guide-home-logo" href="#/" aria-label="연세제일안과 홈"><img src="${escapeHtml(safeContentUrl(window.clinicContent?.settings?.logo_url)||'assets/logo.svg')}" alt="연세제일안과" width="140" height="25"></a><h1>${t(title)}</h1></header></div>`;
 }
@@ -250,19 +257,20 @@ function dream() { return emptyMenuPage(menus[4][2]); }
 function faq() { return emptyMenuPage(menus[5][2]); }
 function profile() { return pageTop('내정보','나의 진료 안내를 확인하는 공간입니다.') + `<section class="card empty"><div class="profile-icon">${icon('user')}</div><h2>내 진료 정보를 만날 공간</h2><p>로그인 및 개인 진료 정보 연동을 준비 중입니다.<br>현재는 병원 안내 메뉴를 이용해 주세요.</p><a class="primary-button" href="#/">홈으로 돌아가기</a></section><section class="card"><h2>예약 확인이 필요하신가요?</h2><p>네이버에서 예약하신 내역은 네이버 예약 페이지에서 확인할 수 있습니다.</p><button class="primary-button" data-action="contact">${t('문의하기')}</button></section>`; }
 function render(focus = false) {
-  const route = location.hash.replace(/^#\/?/,'').split('?')[0];
+  const [route,categoryId] = location.hash.replace(/^#\/?/,'').split('?')[0].split('/');
   currentRoute = route;
   const pages = {guide,schedule,before,after,dream,faq,profile,blog:blogPage};
   const openGuideDetails=route==='guide'?Array.from(main.querySelectorAll?.('details[data-guide-detail][open]')||[]).map(node=>node.dataset.guideDetail):[];
-  main.innerHTML = (pages[route] || home)() + (route === 'profile' ? '<a class="admin-login-link" href="admin.html">병원 관리자 로그인</a>' : '');
+  main.innerHTML = (['before','after'].includes(route)&&categoryId?surgeryDetail(route,categoryId):(pages[route] || home)()) + (route === 'profile' ? '<a class="admin-login-link" href="admin.html">병원 관리자 로그인</a>' : '');
   if(openGuideDetails.length)for(const node of main.querySelectorAll('details[data-guide-detail]'))if(openGuideDetails.includes(node.dataset.guideDetail))node.open=true;
-  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['dream','faq'].includes(route) ? 'plain-menu-view' : ['before','after'].includes(route) ? 'surgery-view' : '';
+  main.className = route === 'schedule' ? 'schedule-view' : route === 'guide' ? 'guide-view' : ['before','after','dream','faq'].includes(route) ? 'plain-menu-view' : '';
   const settings=window.clinicContent?.settings||{};
   const headerLogo=$('.app-header img');
   if(settings.logo_url&&safeContentUrl(settings.logo_url))headerLogo.src=safeContentUrl(settings.logo_url);
   if(settings.clinic_name)headerLogo.alt=settings.clinic_name;
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : language;
   document.title = `${t(menus.find(item => item[0] === route)?.[2] || (route === 'profile' ? '내정보' : '홈'))} · 연세제일안과`;
+  if(['before','after'].includes(route)&&categoryId){const category=surgeryCategories.find(([id])=>id===categoryId);if(category)document.title=t(category[1])+' · '+document.title;}
   if(settings.clinic_name)document.title=document.title.replace('연세제일안과',settings.clinic_name);
   $('#header-language').innerHTML = [['ko','KR','한국어'],['en','EN','English'],['zh','CN','简体中文']].map(([id,label,name])=>`<button type="button" data-language="${id}" lang="${id}" aria-label="${name}" aria-pressed="${language===id}">${label}</button>`).join('<span aria-hidden="true">|</span>');
   $('#bottom-nav').innerHTML = `<a class="nav-item ${!route?'active':''}" ${!route?'aria-current="page"':''} href="#/">${icon('home')}<span>${t('홈')}</span></a><button class="nav-item contact-trigger" data-action="contact" aria-haspopup="dialog" aria-controls="contact-dialog"><span class="contact-orb">${icon('chat')}</span><span>${t('문의')}</span></button><a class="nav-item ${route==='profile'?'active':''}" ${route==='profile'?'aria-current="page"':''} href="#/profile">${icon('user')}<span>${t('내정보')}</span></a>`;
