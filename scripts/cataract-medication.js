@@ -39,6 +39,15 @@
     }catch{return {plan:null,plans:[],activeId:'',appointment:null,checks:{}};}
   }
   function write(value){try{localStorage.setItem(KEY,JSON.stringify(value));return true;}catch{return false;}}
+  function stepArrivalMinute(input,direction){
+    const current=Number(input.value),base=Number.isFinite(current)?Math.round(current):0;
+    input.value=pad(((base+direction)%60+60)%60);
+    input.dispatchEvent?.(new Event('change',{bubbles:true}));
+  }
+  document.addEventListener('keydown',event=>{
+    if(!event.target.matches?.('input[data-arrival-minute]')||!['ArrowUp','ArrowDown'].includes(event.key))return;
+    event.preventDefault();stepArrivalMinute(event.target,event.key==='ArrowUp'?10:-10);
+  });
   function dates(plan){
     const surgery=parseDate(plan.surgeryDate);
     return [3,2,1,0].map(offset=>{const date=new Date(surgery);date.setDate(date.getDate()-offset);return key(date);});
@@ -56,7 +65,7 @@
     const monthId=`cataract-month-${formId}`;
     const date=plan?parseDate(plan.surgeryDate):null;
     const year=date?date.getFullYear():Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()));
-    return `<label for="${monthId}">수술 예정일</label><div class="medication-date-fields"><label><input name="year" type="number" min="2000" max="2100" value="${year}" required inputmode="numeric" aria-label="수술 연도"><span>년</span></label><label><input id="${monthId}" name="month" type="number" min="1" max="12" value="${date?date.getMonth()+1:''}" placeholder="월" required inputmode="numeric" aria-label="수술 월"><span>월</span></label><label><input name="day" type="number" min="1" max="31" value="${date?date.getDate():''}" placeholder="일" required inputmode="numeric" aria-label="수술 일"><span>일</span></label></div><p class="medication-time-label">내원 시간</p><div class="medication-time-row"><fieldset class="medication-period" aria-label="내원 시간 오전·오후 선택">${Object.entries(periods).map(([id,title])=>`<label><input type="radio" name="period" value="${id}" required ${plan?.period===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset><div class="medication-time-fields"><label><input type="number" name="hour" min="1" max="12" required inputmode="numeric" placeholder="시" value="${hasTime(plan)?plan.hour:''}" aria-label="내원 시"><span>시</span></label><label><input type="number" name="minute" min="0" max="59" required inputmode="numeric" placeholder="분" value="${hasTime(plan)?pad(plan.minute):''}" aria-label="내원 분"><span>분</span></label></div></div><p id="medication-date-preview" aria-live="polite">${plan?`${label(dates(plan)[0])}부터 ${label(plan.surgeryDate)} 수술 당일까지 사용`:'수술일을 입력하면 안약 사용 시작일을 알려드려요.'}</p>`;
+    return `<label for="${monthId}">수술 예정일</label><div class="medication-date-fields"><label><input name="year" type="number" min="2000" max="2100" value="${year}" required inputmode="numeric" aria-label="수술 연도"><span>년</span></label><label><input id="${monthId}" name="month" type="number" min="1" max="12" value="${date?date.getMonth()+1:''}" placeholder="월" required inputmode="numeric" aria-label="수술 월"><span>월</span></label><label><input name="day" type="number" min="1" max="31" value="${date?date.getDate():''}" placeholder="일" required inputmode="numeric" aria-label="수술 일"><span>일</span></label></div><p class="medication-time-label">내원 시간</p><div class="medication-time-row"><fieldset class="medication-period" aria-label="내원 시간 오전·오후 선택">${Object.entries(periods).map(([id,title])=>`<label><input type="radio" name="period" value="${id}" required ${plan?.period===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset><div class="medication-time-fields"><label><input type="number" name="hour" min="1" max="12" required inputmode="numeric" placeholder="시" value="${hasTime(plan)?plan.hour:''}" aria-label="내원 시"><span>시</span></label><div class="medication-minute-field"><div class="medication-minute-control"><input type="number" name="minute" min="0" max="59" step="any" data-arrival-minute required inputmode="numeric" placeholder="분" value="${hasTime(plan)?pad(plan.minute):''}" aria-label="내원 분"><div class="medication-minute-steps"><button type="button" data-minute-step="10" aria-label="내원 분 10분 늘리기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 10 4-4 4 4"/></svg></button><button type="button" data-minute-step="-10" aria-label="내원 분 10분 줄이기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button></div></div><span>분</span></div></div></div><p id="medication-date-preview" aria-live="polite">${plan?`${label(dates(plan)[0])}부터 ${label(plan.surgeryDate)} 수술 당일까지 사용`:'수술일을 입력하면 안약 사용 시작일을 알려드려요.'}</p>`;
   }
   function eyeFields(plan){return `<fieldset class="medication-eye"><legend class="cataract-eye-heading"><span>수술할 눈을 선택하세요.</span><button type="button" data-close-cataract-appointment>닫기 ×</button></legend>${Object.entries(eyes).map(([id,title])=>`<label><input type="radio" name="eye" value="${id}" required ${plan?.eye===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset>`;}
   function renderSetupCard(plan){
@@ -218,6 +227,11 @@
   }
   document.querySelector('#cataract-record-dialog')?.addEventListener?.('close',()=>{pendingRecordAction=null;});
   document.addEventListener('click',event=>{
+    const minuteStep=event.target.closest?.('[data-minute-step]');
+    if(minuteStep){
+      const input=minuteStep.closest('.medication-minute-control').querySelector('input');
+      stepArrivalMinute(input,Number(minuteStep.dataset.minuteStep));input.focus({preventScroll:true});return;
+    }
     const choice=event.target.closest?.('[data-cataract-record-choice]');
     if(choice){const pending=pendingRecordAction;pendingRecordAction=null;document.querySelector('#cataract-record-dialog').close();if(choice.dataset.cataractRecordChoice==='confirm'&&pending&&pending.button.isConnected!==false)runRecordAction(pending.type,pending.button);return;}
 

@@ -195,4 +195,12 @@ assert.ok(context.window.CataractMedication.renderProfileLinks().includes('surge
 const freshForm=form('right',2027,1,9,'am',9,0);freshForm.dataset={planId:''};
 handlers.submit({target:freshForm,preventDefault(){}});
 assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.at(-1).archived,false,'newly saved record stays editable');
+const minuteInput={value:'25',matches:()=>true,focus(){}};
+handlers.keydown({target:minuteInput,key:'ArrowUp',preventDefault(){}});assert.equal(minuteInput.value,'35');
+handlers.keydown({target:minuteInput,key:'ArrowDown',preventDefault(){}});assert.equal(minuteInput.value,'25');
+const minuteStep={dataset:{minuteStep:'10'},closest:()=>({querySelector:()=>minuteInput})};
+handlers.click({target:{closest:selector=>selector==='[data-minute-step]'?minuteStep:null}});assert.equal(minuteInput.value,'35');
+minuteInput.value='50';handlers.click({target:{closest:selector=>selector==='[data-minute-step]'?minuteStep:null}});assert.equal(minuteInput.value,'00');
+save('right',2027,1,9,'am',9,37);assert.ok(context.window.CataractMedication.renderArrivalCard().includes('오전 9시 37분'),'typed minutes need not be a multiple of ten');
+assert.ok(editCardMarkup().includes('step="any" data-arrival-minute'));
 console.log('Cataract medication: automatic appointment fill, arrival time, morning/afternoon surgery limits, date validation, persistence and failed storage passed.');
