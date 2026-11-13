@@ -37,23 +37,24 @@
     const year=date?date.getFullYear():Number(new Intl.DateTimeFormat('en',{year:'numeric',timeZone:'Asia/Seoul'}).format(new Date()));
     return `<div class="medication-guide"><p class="medication-intro"><strong>수술 3일 전부터</strong> 병원에서 미리 처방해드린 안약을 <strong>수술할 눈</strong>에 넣어주세요.</p><form id="cataract-medication-form"><fieldset class="medication-eye"><legend>수술할 눈을 선택하세요.</legend>${Object.entries(eyes).map(([id,title])=>`<label><input type="radio" name="eye" value="${id}" required ${plan?.eye===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset><div class="medication-date"><label for="cataract-month">수술 예정일</label><div class="medication-date-fields"><label><input name="year" type="number" min="2000" max="2100" value="${year}" required inputmode="numeric" aria-label="수술 연도"><span>년</span></label><label><input id="cataract-month" name="month" type="number" min="1" max="12" value="${date?date.getMonth()+1:''}" placeholder="월" required inputmode="numeric" aria-label="수술 월"><span>월</span></label><label><input name="day" type="number" min="1" max="31" value="${date?date.getDate():''}" placeholder="일" required inputmode="numeric" aria-label="수술 일"><span>일</span></label></div><fieldset class="medication-period"><legend>수술 시간</legend>${Object.entries(periods).map(([id,title])=>`<label><input type="radio" name="period" value="${id}" required ${plan?.period===id?'checked':''}><span>${title}</span></label>`).join('')}</fieldset><p id="medication-date-preview" aria-live="polite">${plan?`${label(dates(plan)[0])}부터 ${label(plan.surgeryDate)} 수술 당일까지 사용`:'수술일을 입력하면 안약 사용 시작일을 알려드려요.'}</p><button class="primary-button" type="submit">내정보에 일정 저장</button><p id="medication-form-status" class="medication-storage-note" role="status">일정과 체크 기록은 현재 기기에 저장됩니다.</p></div><div class="medication-products">${medicines.map(m=>`<article class="medication-product ${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="220" height="220"><h3>${m.name}</h3><span class="medication-type">${m.type}</span><strong>하루 ${m.slots.length}번</strong><p>${m.slots.join(' / ')}</p></article>`).join('')}</div><p class="medication-interval">겹치는 시간대(아침, 저녁)에는 <strong>순서와 상관없이 5분 이상 간격</strong>을 두고 넣어주세요.</p><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은 <strong>수술 후</strong>에 드셔야 합니다.</p></form></div>`;
   }
+  const dailySlots=(plan,date)=>plan.period==='pm'&&date===plan.surgeryDate?['아침','점심']:['아침','점심','저녁','주무시기 전'];
   function totals(store){
     if(!store.plan)return {done:0,total:0};
     let done=0,total=0;
-    for(const date of dates(store.plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++){total++;if(store.checks[doseKey(store.plan,date,m.id,i)]===true)done++;}
+    for(const date of dates(store.plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++){if(!dailySlots(store.plan,date).includes(m.slots[i]))continue;total++;if(store.checks[doseKey(store.plan,date,m.id,i)]===true)done++;}
     return {done,total};
   }
   function timeIcon(slot){
     const paths={
-      '아침':'M3 18h18 M6 14a6 6 0 0 1 12 0 M12 2v4 M3 8l3 2 M21 8l-3 2 M9 5l3-3 3 3',
-      '점심':'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l2 2 M17 17l2 2 M5 19l2-2 M17 7l2-2',
-      '저녁':'M3 18h18 M6 14a6 6 0 0 1 12 0 M12 2v5 M9 4l3 3 3-3 M3 9l3 2 M21 9l-3 2',
-      '주무시기 전':'M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10 M17 3v4 M15 5h4'
+      '아침':'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l2 2 M17 17l2 2 M5 19l2-2 M17 7l2-2',
+      '점심':'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v5l3 2',
+      '저녁':'M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10',
+      '주무시기 전':'M3 9c2 3 5 5 9 5s7-2 9-5 M6 12l-2 3 M10 14l-1 3 M14 14l1 3 M18 12l2 3'
     };
     return `<svg class="medication-time-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[slot]}"/></svg>`;
   }
   function renderScheduleDay(plan,store,date,index){
-    const slots=['아침','점심','저녁','주무시기 전'];
+    const slots=dailySlots(plan,date);
     return `<section class="medication-day"><header class="medication-day-date"><h3>${label(date)}</h3><small class="medication-day-weekday">${['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][parseDate(date).getDay()]}</small><span>${index===3?'수술 당일':`수술 ${3-index}일 전`}</span></header><div class="medication-day-doses">${slots.map(slot=>`<fieldset class="medication-time-group"><legend class="medication-time-title">${timeIcon(slot)}${slot}</legend><div class="medication-dose-grid">${medicines.filter(m=>m.slots.includes(slot)).map(m=>{const dose=doseKey(plan,date,m.id,m.slots.indexOf(slot));return `<label><span>${m.name}</span><input type="checkbox" data-cataract-dose="${dose}" ${store.checks[dose]===true?'checked':''}></label>`;}).join('')}</div></fieldset>`).join('')}</div></section>`;
   }
   function renderSchedule(){
@@ -82,7 +83,7 @@
     if(!input.matches?.('input[data-cataract-dose]'))return;
     const store=read(),allowed=new Set();
     if(!store.plan)return;
-    for(const date of dates(store.plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++)allowed.add(doseKey(store.plan,date,m.id,i));
+    for(const date of dates(store.plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++)if(dailySlots(store.plan,date).includes(m.slots[i]))allowed.add(doseKey(store.plan,date,m.id,i));
     if(!allowed.has(input.dataset.cataractDose))return;
     store.checks[input.dataset.cataractDose]=input.checked;
     const status=document.querySelector('#medication-check-status');
