@@ -71,7 +71,7 @@ assert.ok(!html.includes('class="medication-product '),'standalone medicine phot
 assert.equal((html.match(/class="medication-day-photos"/g)||[]).length,4);
 assert.equal((html.match(/alt="목시트라 안약과 포장"/g)||[]).length,4);
 assert.equal((html.match(/alt="브로낙 안약과 포장"/g)||[]).length,4);
-assert.ok(html.includes('class="medication-summary-header"')&&html.includes('class="medication-summary-edit"'));
+assert.ok(html.includes('class="medication-summary-header"')&&!html.includes('class="medication-summary-edit"'));
 assert.ok(html.includes('<dt>수술일</dt><dd>2027년 1월 2일 (토)</dd>')&&html.includes('<dt>내원시간</dt><dd>오전 9시 00분</dd>'));
 assert.equal((html.match(/type="checkbox"/g)||[]).length,20,'three full days and only morning on the morning surgery date');
 const groups=[...html.matchAll(/<div class="medication-time-group"[^>]*>([\s\S]*?)<\/h4><div class="medication-dose-grid">([\s\S]*?)<\/div><\/div>/g)].map(match=>match[1]+match[2]);
