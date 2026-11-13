@@ -17,7 +17,7 @@
     const [y,m,d]=value.split('-').map(Number),date=new Date(y,m-1,d,12);
     return key(date)===value?date:null;
   }
-  function validPlan(plan){return !!(plan&&Object.hasOwn(eyes,plan.eye)&&parseDate(plan.surgeryDate)&&(!plan.period||Object.hasOwn(periods,plan.period)));}
+  function validPlan(plan){return !!(plan&&(Object.hasOwn(eyes,plan.eye)||plan.eye==='pending')&&parseDate(plan.surgeryDate)&&(!plan.period||Object.hasOwn(periods,plan.period)));}
   function cleanAppointment(value){
     if(!parseDate(value?.surgeryDate))return null;
     const appointment={surgeryDate:value.surgeryDate};
@@ -26,7 +26,7 @@
     return appointment;
   }
   function read(){
-    try{const value=JSON.parse(localStorage.getItem(KEY)||'null');return {plan:validPlan(value?.plan)?value.plan:null,appointment:cleanAppointment(value?.appointment),checks:value?.checks&&typeof value.checks==='object'&&!Array.isArray(value.checks)?value.checks:{}};}catch{return {plan:null,appointment:null,checks:{}};}
+    try{const value=JSON.parse(localStorage.getItem(KEY)||'null'),appointment=cleanAppointment(value?.appointment);return {plan:validPlan(value?.plan)?value.plan:appointment?{...appointment,eye:'pending'}:null,appointment,checks:value?.checks&&typeof value.checks==='object'&&!Array.isArray(value.checks)?value.checks:{}};}catch{return {plan:null,appointment:null,checks:{}};}
   }
   function write(value){try{localStorage.setItem(KEY,JSON.stringify(value));return true;}catch{return false;}}
   function dates(plan){
@@ -39,7 +39,7 @@
     const number=name=>Number(form.elements.namedItem(name).value);
     const surgeryDate=`${number('year')}-${pad(number('month'))}-${pad(number('day'))}`;
     const plan={eye:form.elements.namedItem('eye').value,surgeryDate,period:form.elements.namedItem('period').value,hour:number('hour'),minute:number('minute')};
-    return validPlan(plan)&&Object.hasOwn(periods,plan.period)&&hasTime(plan)&&String(form.elements.namedItem('minute').value).trim()!==''?plan:null;
+    return validPlan(plan)&&Object.hasOwn(eyes,plan.eye)&&Object.hasOwn(periods,plan.period)&&hasTime(plan)&&String(form.elements.namedItem('minute').value).trim()!==''?plan:null;
   }
   function appointmentFields(plan){
     const date=plan?parseDate(plan.surgeryDate):null;
@@ -84,7 +84,7 @@
     const store=read(),plan=store.plan;
     if(!plan)return `<section class="medication-empty"><h2>백내장 수술 전</h2><p>수술할 눈과 수술일을 입력하면 안약 사용 일정을 체크할 수 있습니다.</p><a class="primary-button" href="#/before/cataract/medication">약 사용 일정 설정</a></section>`;
     const {done,total}=totals(store);
-    return `<div class="medication-tracker"><section class="medication-plan-summary"><span class="medication-plan-eye">${eyes[plan.eye]}</span><h2>백내장 수술 전</h2><p>수술일 ${label(plan.surgeryDate)}${timeLabel(plan)?' '+timeLabel(plan):periods[plan.period]?' '+periods[plan.period]:''} · ${plan.surgeryDate.slice(0,4)}년</p><a href="#/before/cataract/medication">수술일·수술할 눈 수정 →</a><p id="medication-progress" role="status">${done} / ${total}회 완료</p><progress id="medication-progress-bar" max="${total}" value="${done}" aria-label="안약 사용 완료 횟수"></progress></section><section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은 <strong>수술 후</strong>에 드셔야 합니다.</p><div class="medication-products">${medicines.map(m=>`<article class="medication-product ${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="220" height="220"><h3>${m.name}</h3></article>`).join('')}</div></section><p class="medication-tracker-hint">안약을 넣은 후 체크해 주세요.<br>아침·저녁에는 두 안약을 5분 이상 간격으로 사용하세요.</p>${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}${renderArrivalCard()}<p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에 저장됩니다.</p></div>`;
+    return `<div class="medication-tracker"><section class="medication-plan-summary"><span class="medication-plan-eye">${eyes[plan.eye]||'수술할 눈 미선택'}</span><h2>백내장 수술 전</h2><p>수술일 ${label(plan.surgeryDate)}${timeLabel(plan)?' '+timeLabel(plan):periods[plan.period]?' '+periods[plan.period]:''} · ${plan.surgeryDate.slice(0,4)}년</p><a href="#/before/cataract/medication">수술일·수술할 눈 수정 →</a><p id="medication-progress" role="status">${done} / ${total}회 완료</p><progress id="medication-progress-bar" max="${total}" value="${done}" aria-label="안약 사용 완료 횟수"></progress></section><section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은 <strong>수술 후</strong>에 드셔야 합니다.</p><div class="medication-products">${medicines.map(m=>`<article class="medication-product ${m.id}"><img src="${m.photo}" alt="${m.name} 안약과 포장" width="220" height="220"><h3>${m.name}</h3></article>`).join('')}</div></section><p class="medication-tracker-hint">안약을 넣은 후 체크해 주세요.<br>아침·저녁에는 두 안약을 5분 이상 간격으로 사용하세요.</p>${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}${renderArrivalCard()}<p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에 저장됩니다.</p></div>`;
   }
   function saveAppointment(form){
     const value=name=>form.elements.namedItem(name).value;
@@ -92,9 +92,9 @@
     const appointment=cleanAppointment({surgeryDate:`${Number(value('year'))}-${pad(Number(value('month')))}-${pad(Number(value('day')))}`,period:value('period'),hour:String(value('hour')).trim()?Number(value('hour')):null,minute:String(value('minute')).trim()?Number(value('minute')):null});
     if(!appointment){status.textContent='올바른 수술 예정일을 입력해 주세요.';return;}
     const store=read();store.appointment=appointment;
-    if(store.plan)store.plan={eye:store.plan.eye,...appointment};
+    store.plan={eye:store.plan?.eye||'pending',...appointment};
     if(!write(store)){status.textContent='기기에 저장하지 못했습니다. 다시 시도해 주세요.';return;}
-    status.textContent='자동 저장되었습니다. 약 사용법에도 반영됩니다.';
+    status.textContent='자동 저장되었습니다. 내정보 일정과 약 사용법에 반영됩니다.';
     document.querySelector('#medication-date-preview').textContent=`${label(dates(appointment)[0])}부터 ${label(appointment.surgeryDate)} 수술 당일까지 사용`;
   }
   document.addEventListener('submit',event=>{
@@ -103,7 +103,14 @@
     event.preventDefault();
     const status=document.querySelector('#medication-form-status'),plan=formPlan(event.target);
     if(!plan){status.textContent='수술할 눈, 올바른 날짜와 오전·오후, 시·분을 입력해 주세요.';return;}
-    const store=read();store.plan=plan;store.appointment={surgeryDate:plan.surgeryDate,period:plan.period,hour:plan.hour,minute:plan.minute};
+    const store=read(),previous=store.plan;
+    if(previous?.eye==='pending'&&previous.surgeryDate===plan.surgeryDate){
+      for(const date of dates(plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++){
+        const oldKey=doseKey(previous,date,m.id,i),newKey=doseKey(plan,date,m.id,i);
+        if(store.checks[oldKey]===true&&!Object.hasOwn(store.checks,newKey))store.checks[newKey]=true;
+      }
+    }
+    store.plan=plan;store.appointment={surgeryDate:plan.surgeryDate,period:plan.period,hour:plan.hour,minute:plan.minute};
     if(!write(store)){status.textContent='기기에 저장하지 못했습니다. 브라우저의 저장 설정을 확인해 주세요.';return;}
     const toast=document.querySelector('#toast');
     clearTimeout(toastTimer);toast.textContent='저장되었습니다.';toast.classList.add('visible');
@@ -130,5 +137,5 @@
     document.querySelector('#medication-progress-bar').value=done;
     status.textContent='저장되었습니다.';
   });
-  window.CataractMedication={renderGuide,renderSchedule,renderSetup,renderArrivalCard};
+  window.CataractMedication={renderGuide,renderSchedule,renderSetup,renderArrivalCard,hasSchedule:()=>!!read().plan};
 })();

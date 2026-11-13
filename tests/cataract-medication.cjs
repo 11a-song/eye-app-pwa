@@ -17,7 +17,8 @@ assert.ok(prefilled.includes('name="month" type="number" min="1" max="12" value=
 assert.ok(prefilled.includes('value="pm" required checked'));
 assert.ok(prefilled.includes('value="2" aria-label="수술 예정 시"'));
 assert.ok(prefilled.includes('value="30" aria-label="수술 예정 분"'));
-assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'),'date-only setup does not assume an operated eye');
+assert.ok(context.window.CataractMedication.hasSchedule(),'appointment input automatically creates the personal schedule');
+assert.ok(context.window.CataractMedication.renderSchedule().includes('수술할 눈 미선택'),'date-only setup does not assume an operated eye');
 for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderGuide().includes('value="'+eye+'"'));
 const beforeInvalid=data.get('jeileye-cataract-preop-v1');
 save('left',2027,2,30);assert.equal(data.get('jeileye-cataract-preop-v1'),beforeInvalid,'invalid dates must not change saved information');
@@ -55,4 +56,11 @@ input.checked=false;handlers.change({target:input});assert.ok(context.window.Cat
 failWrite=true;input.checked=true;handlers.change({target:input});assert.equal(input.checked,false,'failed writes revert checkboxes');
 assert.ok(element('#medication-check-status').textContent.includes('저장하지 못했습니다'));
 save('both',2027,3,4);assert.ok(element('#medication-form-status').textContent.includes('저장하지 못했습니다'));
+failWrite=false;data.clear();context=session();
+handlers.change({target:{closest:selector=>selector==='#cataract-appointment-form'?appointmentForm:null}});
+const pendingHtml=context.window.CataractMedication.renderSchedule();
+const pendingDose=pendingHtml.match(/data-cataract-dose="([^"]+)"/)[1];
+handlers.change({target:{checked:true,dataset:{cataractDose:pendingDose},closest:()=>null,matches:()=>true}});
+save('left',2027,1,2,'pm',2,30);
+assert.ok(context.window.CataractMedication.renderSchedule().includes('1 / 21회 완료'),'choosing an eye preserves checks from the automatically created schedule');
 console.log('Cataract medication: automatic appointment fill, arrival time, morning/afternoon surgery limits, date validation, persistence and failed storage passed.');

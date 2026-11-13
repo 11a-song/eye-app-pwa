@@ -86,7 +86,11 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   }
   for(const resource of ['guide.css','scripts/guide.js','scripts/guide-reference.js','assets/veterans-logo.svg'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
   context.location.hash='#/profile';vm.runInContext('render()',context);
-  for(const route of ['cataract-before','cataract-after'])assert.ok(el('#main').innerHTML.includes('href="#/profile/'+route+'"'));
+  assert.ok(!el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
+  assert.ok(el('#main').innerHTML.includes('href="#/profile/cataract-after"'));
+  context.localStorage.getItem=key=>key==='jeileye-cataract-preop-v1'?JSON.stringify({appointment:{surgeryDate:'2027-01-02',period:'pm',hour:2,minute:30},checks:{}}):null;
+  vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
+  context.localStorage.getItem=()=>null;
   context.location.hash='#/profile/cataract-before';vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('약 사용 일정 설정'));
   context.location.hash='#/profile/cataract-after';vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('<h2>백내장 수술 후</h2>'));
   console.log('Guide: tab navigation, 19 facility photos, source ordering, 12 benefit groups, modal close, 2026 correction, managed content escaping, offline handling and back-link removal passed.');
