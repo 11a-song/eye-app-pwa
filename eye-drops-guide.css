@@ -1,0 +1,42 @@
+.eye-drops-page .eye-guide-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
+.eye-drops-page .eye-guide-nav { position: sticky; top: var(--eye-header-height, 70px); z-index: 5; width: 80%; margin: 0 auto; background: #f2f2f2; transition: width .35s ease; }
+.eye-drops-page .eye-guide-nav.is-stuck { width: 100%; }
+.eye-drops-page .eye-guide-nav-inner { display: flex; width: min(1120px, 100%); padding: 4px; }
+.eye-drops-page .eye-guide-nav a { display: flex; flex: 1; justify-content: center; align-items: center; min-width: 0; min-height: 56px; padding: 10px 8px; border-radius: 3px; color: #111111; font-size: 15px; font-weight: 600; text-align: center; transition: background-color .2s ease, color .2s ease; }
+.eye-drops-page .eye-guide-nav a[aria-current='location'],
+.eye-drops-page .eye-guide-nav a:hover { background: #0074ff; color: #fff; }
+.eye-drops-page .eye-guide-content { padding-bottom: 90px; }
+.eye-drops-page .eye-guide-section { padding-top: clamp(56px, 8vw, 100px); scroll-margin-top: calc(var(--eye-header-height, 70px) + var(--eye-nav-height, 64px) + 16px); }
+.eye-drops-page .eye-guide-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 28px; }
+.eye-drops-page .eye-guide-heading span { color: #0074ff; font-size: 14px; font-weight: 500; }
+.eye-drops-page .eye-guide-heading h2 { margin: 0; font-size: clamp(27px, 3.4vw, 38px); line-height: 1.35; letter-spacing: -.04em; }
+.eye-drops-page .eye-guide-lead { margin: 0 0 28px; font-size: clamp(20px, 3vw, 28px); line-height: 1.55; }
+.eye-drops-page .eye-guide-lead strong { color: #0074ff; }
+.eye-drops-page .eye-guide-list { margin: 0; padding: 0; border-top: 1px solid #333; list-style: none; }
+.eye-drops-page .eye-guide-list li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 20px; align-items: start; padding: 24px 0; border-bottom: 1px solid #dedede; }
+.eye-drops-page .eye-guide-icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: #eaf4ff; color: #0074ff; }
+.eye-drops-page .eye-guide-icon svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.eye-drops-page .eye-guide-list h3 { margin: 0 0 7px; font-size: 21px; line-height: 1.45; }
+.eye-drops-page .eye-guide-list p { margin: 0; color: var(--ink); font-size: 17px; line-height: 1.8; }
+.eye-drops-page .eye-guide-priority { margin: 24px 0 0; padding: 20px 22px; border-left: 3px solid #0074ff; background: #f5f5f5; font-size: 16px; font-weight: 600; line-height: 1.7; }
+.eye-drops-page .eye-guide-sources { margin: 34px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.eye-drops-page .eye-guide-sources a { text-decoration: underline; text-underline-offset: 3px; }
+html[data-theme='dark'] .eye-drops-page .eye-guide-nav { background: #303030; }
+html[data-theme='dark'] .eye-drops-page .eye-guide-nav a { color: #ddd; }
+html[data-theme='dark'] .eye-drops-page .eye-guide-nav a[aria-current='location'],
+html[data-theme='dark'] .eye-drops-page .eye-guide-nav a:hover { color: #fff; }
+html[data-theme='dark'] .eye-drops-page .eye-guide-list { border-color: #888; }
+html[data-theme='dark'] .eye-drops-page .eye-guide-list li { border-color: #444; }
+html[data-theme='dark'] .eye-drops-page .eye-guide-priority { background: #292d33; }
+@media (max-width: 600px) {
+  .eye-drops-page .eye-guide-nav a { min-height: 48px; padding-inline: 3px; font-size: clamp(12px, 3.4vw, 14px); }
+  .eye-drops-page .eye-guide-content { padding-bottom: 60px; }
+  .eye-drops-page .eye-guide-list li { grid-template-columns: 42px minmax(0, 1fr); gap: 14px; padding: 20px 0; }
+  .eye-drops-page .eye-guide-icon { width: 42px; height: 42px; }
+  .eye-drops-page .eye-guide-icon svg { width: 25px; height: 25px; }
+  .eye-drops-page .eye-guide-list h3 { font-size: 19px; }
+  .eye-drops-page .eye-guide-list p { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .eye-drops-page .eye-guide-nav, .eye-drops-page .eye-guide-nav a { transition: none; } }
+
+.eye-drops-page{--ink:var(--text);padding-top:24px}.eye-drops-page .eye-guide-content{padding-bottom:0}.eye-drops-page .eye-guide-section{scroll-margin-top:calc(140px + env(safe-area-inset-top))}.eye-drops-page .eye-guide-section:first-child{padding-top:0}.eye-drops-page>.surgery-detail-back{margin-bottom:24px}.eye-drops-nav{display:flex;gap:6px;padding:10px 18px;background:#fff;border-bottom:1px solid #e5e8ef}.eye-drops-nav button{flex:1;min-width:0;min-height:42px;padding:9px 6px;border:0;border-radius:999px;background:transparent;color:#737c8a;font-size:13px;font-weight:600;line-height:1.45;word-break:keep-all}.eye-drops-nav button[aria-current="location"]{background:#2d83f5;color:#fff}.medication-guide-link{display:flex;align-items:center;justify-content:center;min-height:48px;margin:0 0 20px;padding:12px 16px;border-radius:14px;background:#2d83f5;color:#fff;font-size:16px;font-weight:600;text-align:center}
