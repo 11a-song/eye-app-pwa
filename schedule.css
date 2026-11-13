@@ -70,3 +70,5 @@
 .schedule-hours-list .hours-lunch{border:0}
 .schedule-hours-list dt small{font-size:7px;color:#fff;background:#646d76;padding:3px 4px;border-radius:4px;margin-left:3px;vertical-align:middle}
 @media(max-width:360px){.doctor-filter{padding:9px 11px}.schedule-calendar-card{padding-inline:12px}.schedule-day-panel,.schedule-hours-panel{padding-inline:16px}.schedule-hours-list>div{padding-inline:2px;font-size:11px}.schedule-calendar-card .calendar .closure-band{font-size:9px}}
+
+.app-shell:has(main.schedule-view)>.app-header{display:none}.app-shell main.schedule-view{padding-top:0}.schedule-view .schedule-sticky-header{margin-bottom:24px}
