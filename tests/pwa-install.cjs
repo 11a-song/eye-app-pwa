@@ -122,7 +122,7 @@ function setup(userAgent = 'Android Chrome', standalone = false, clipboard, navi
   let downloads = 0, imageStatus = 200;
   vm.runInNewContext(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), {
     self: { location: { origin: 'https://example.com' }, registration: { scope: 'https://example.com/' }, addEventListener: (name, fn) => workerEvents[name] = fn }, URL,
-    caches: { async open() { return { async match(request) { return cachedImages.get(request.url); }, async put(request, response) { cachedImages.set(request.url, response); } }; } },
+    caches: { async open() { return { async match(request) { return cachedImages.get(typeof request === 'string' ? request : request.url); }, async put(request, response) { cachedImages.set(typeof request === 'string' ? request : request.url, response); } }; } },
     async fetch() { downloads++; return new Response('image', { status: imageStatus }); }
   });
   async function requestAsset(file) {
@@ -141,11 +141,25 @@ function setup(userAgent = 'Android Chrome', standalone = false, clipboard, navi
   await requestAsset('/assets/missing.jpg');
   assert.equal(downloads, 3, 'Failed image responses are not stored');
   imageStatus = 200;
-  await requestAsset('/app.js');
-  await requestAsset('/app.js');
-  assert.equal(downloads, 5, 'Scripts retain the existing network-first update policy');
+  await requestAsset('/assets/app.js');
+  await requestAsset('/assets/app.js');
+  assert.equal(downloads, 4, 'The versioned app bundle opens from cache without waiting for the server');
+  await requestAsset('/');
+  await requestAsset('/?install=1');
+  assert.equal(downloads, 5, 'Navigation query strings reuse the same public app shell');
+  await requestAsset('/assets/fonts/subsets/PretendardVariable.subset.91.woff2');
+  await requestAsset('/assets/fonts/subsets/PretendardVariable.subset.91.woff2');
+  assert.equal(downloads, 6, 'Only viewed font slices are downloaded once');
   assert.equal(await requestAsset('/rest/v1/private'), undefined);
   assert.equal(await requestAsset('/admin.html'), undefined);
   assert.equal(await requestAsset('https://other.example.com/photo.jpg'), undefined);
+  const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(html, /<main id="main"[^>]*>[\s\S]*?class="menu-list"/);
+  assert.equal((html.match(/<script src=/g) || []).length, 1, 'One application request replaces the script waterfall');
+  assert.equal((html.match(/rel="stylesheet"/g) || []).length, 1, 'One stylesheet request paints the first screen');
+  assert.ok(!html.includes('PretendardVariable.woff2'), 'The full 2MB font is not preloaded');
+  for (const match of fs.readFileSync(path.join(root,'assets/app.css'),'utf8').matchAll(/url\("(fonts\/subsets\/[^\"]+)"\)/g)) {
+    assert.ok(fs.existsSync(path.join(root,'assets',match[1])), 'Bundled font URL resolves locally');
+  }
   console.log('PWA installation checks passed');
 })();

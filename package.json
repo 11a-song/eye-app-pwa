@@ -2,5 +2,11 @@
   "name": "jeileye-mobile-app",
   "version": "0.1.0",
   "private": true,
-  "scripts": { "dev": "node scripts/serve.cjs", "start": "node scripts/serve.cjs", "check": "node --check scripts/pwa-install.js && node --check app.js && node --check sw.js && node --check scripts/serve.cjs && node --check scripts/admin.js && node --check scripts/guide.js && node --check scripts/guide-reference.js", "test": "node tests/pwa-install.cjs && node tests/schedule.cjs && node tests/admin.cjs && node tests/guide.cjs && node tests/cataract-medication.cjs" }
+  "scripts": {
+    "dev": "node scripts/serve.cjs",
+    "start": "node scripts/serve.cjs",
+    "check": "node scripts/build.cjs --check && node --check scripts/pwa-install.js && node --check app.js && node --check sw.js && node --check scripts/serve.cjs && node --check scripts/admin.js && node --check scripts/guide.js && node --check scripts/guide-reference.js",
+    "test": "node tests/startup.cjs && node tests/pwa-install.cjs && node tests/schedule.cjs && node tests/admin.cjs && node tests/guide.cjs && node tests/cataract-medication.cjs",
+    "build": "node scripts/build.cjs"
+  }
 }

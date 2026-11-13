@@ -87,7 +87,11 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
       for(const text of ['혈전억제제(예: 아스피린)','수술 3일 전','수술 1달 후','아침식사는 간단히!','반드시 보호자와 함께 동행','보청기'])assert.ok(el('#main').innerHTML.includes(text));
     }else assert.ok(!el('#main').innerHTML.includes('cataract-precautions'));
   }
-  for(const resource of ['guide.css','scripts/guide.js','scripts/guide-reference.js','assets/veterans-logo.svg'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
+  assert.ok(read('sw.js').includes("'./assets/app.css'"));
+  assert.ok(read('sw.js').includes("'./assets/app.js'"));
+  assert.ok(read('assets/app.css').includes('/* guide.css */'));
+  for(const resource of ['scripts/guide.js','scripts/guide-reference.js'])assert.ok(read('assets/app.js').includes('/* '+resource+' */'));
+  assert.ok(fs.existsSync(path.join(root,'assets/veterans-logo.svg')));
   context.location.hash='#/profile';vm.runInContext('render()',context);
   assert.ok(!el('#main').innerHTML.includes('href="#/profile/cataract-before"'));
   assert.ok(!el('#main').innerHTML.includes('class="surgery-category-button"'));
@@ -104,6 +108,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   await click({eyeGuideTarget:'eye-interval'});assert.equal(el('#eye-interval').lastView.block,'start');
   context.location.hash='#/eye-drops?from=profile&plan=legacy';vm.runInContext('render()',context);
   assert.ok(el('#main').innerHTML.includes('href="#/profile/cataract-before?plan=legacy"'));
-  for(const resource of ['eye-drops-guide.css','scripts/eye-drops-guide.js'])assert.ok(read('sw.js').includes("'./"+resource+"'"));
+  assert.ok(read('assets/app.css').includes('/* eye-drops-guide.css */'));
+  assert.ok(read('assets/app.js').includes('/* scripts/eye-drops-guide.js */'));
   console.log('Guide: tab navigation, 19 facility photos, source ordering, 12 benefit groups, modal close, 2026 correction, managed content escaping, offline handling and back-link removal passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
