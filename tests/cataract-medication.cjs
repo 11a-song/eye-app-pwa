@@ -17,6 +17,10 @@ save('left',2027,1,2);assert.equal(context.location.hash,'#/before/cataract/medi
 assert.equal(element('#toast').textContent,'저장되었습니다.');
 let html=context.window.CataractMedication.renderSchedule();
 assert.equal((html.match(/type="checkbox"/g)||[]).length,24,'four days, four antibiotic and two anti-inflammatory doses daily');
+const groups=[...html.matchAll(/<fieldset class="medication-time-group">([\s\S]*?)<\/fieldset>/g)].map(match=>match[1]);
+assert.equal(groups.length,16);
+for(const index of [0,2])assert.ok(groups[index].includes('목시트라')&&groups[index].includes('브로낙'),'morning and evening group both medicines');
+for(const index of [1,3])assert.ok(groups[index].includes('목시트라')&&!groups[index].includes('브로낙'),'no extra bronac doses at lunch or bedtime');
 assert.ok(html.includes('12월 30일'));assert.ok(html.includes('1월 2일'));assert.ok(html.includes('왼쪽 눈'));
 const dose=html.match(/data-cataract-dose="([^"]+)"/)[1];
 const input={checked:true,dataset:{cataractDose:dose},closest:()=>null,matches:()=>true};
