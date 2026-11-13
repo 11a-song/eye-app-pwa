@@ -1,4 +1,4 @@
-const CACHE = 'jeileye-app-v133';
+const CACHE = 'jeileye-app-v134';
 const SHELL = ['./', './assets/app.css', './assets/app.js', './manifest.webmanifest', './assets/logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/doctor-placeholder.svg'];
 // Cloudflare redirects /index.html to /. A followed redirect cannot be returned
 // directly to a navigation request whose redirect mode is manual (Chrome ERR_FAILED).
