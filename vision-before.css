@@ -1,9 +1,6 @@
 .surgery-vision-before .vision-guide { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--white); }
-.surgery-vision-before .vision-guide-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 28px clamp(24px, 5vw, 52px); background: #fff; color: #111111; cursor: pointer; list-style: none; }
-.surgery-vision-before .vision-guide-header::-webkit-details-marker, .surgery-vision-before .vision-aftercare-chapter summary::-webkit-details-marker { display: none; }
+.surgery-vision-before .vision-guide-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 28px clamp(24px, 5vw, 52px); background: #fff; color: #111111; cursor: default; }
 .surgery-vision-before .vision-guide-header-title { font-size: 19px; line-height: 1.4; font-weight: 700; }
-.surgery-vision-before .vision-guide-chevron { flex: 0 0 12px; width: 12px; height: 12px; margin-right: 4px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform .2s; }
-.surgery-vision-before details[open] > summary .vision-guide-chevron { transform: rotate(225deg); }
 .surgery-vision-before .vision-guide-header p { margin: 0; font-size: 15px; }
 .surgery-vision-before .vision-guide-header p:first-child { margin-bottom: 8px; font-size: 11px; letter-spacing: .13em; font-weight: 700; }
 .surgery-vision-before .vision-guide-header h3 { margin: 0 0 8px; color: #fff; font-size: clamp(24px, 4vw, 34px); line-height: 1.35; }
