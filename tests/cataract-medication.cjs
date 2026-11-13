@@ -105,4 +105,26 @@ assert.ok(context.window.CataractMedication.renderSchedule().includes('오후 2�
 const appended=addCardMarkup();
 assert.ok(appended.includes('data-plan-id=""')&&appended.includes('cataract-appointment-card'),'add button appends a new blank combined card');
 assert.equal((appended.match(/name="eye"/g)||[]).length,3);
+function deleteCard(id){
+  let removed=false;
+  const add={textContent:'',classList:{toggle(){}}},card={remove(){removed=true;}};
+  const panel={querySelector:selector=>selector==='[data-add-cataract-appointment]'?add:null};
+  const button={dataset:{deleteCataractAppointment:id},closest:selector=>selector==='.cataract-saved-card'?card:panel};
+  handlers.click({target:{closest:selector=>selector==='[data-delete-cataract-appointment]'?button:null}});
+  return {removed,add};
+}
+assert.ok(context.window.CataractMedication.renderSetup().indexOf('data-edit-cataract-appointment')<context.window.CataractMedication.renderSetup().indexOf('data-delete-cataract-appointment'));
+const secondId=secondForm.dataset.planId;
+failWrite=true;assert.equal(deleteCard(secondId).removed,false,'failed deletion keeps the displayed card');
+assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.length,2);
+failWrite=false;context.location.hash='#/profile/cataract-before?plan='+secondId;
+const secondDose=context.window.CataractMedication.renderSchedule().match(/data-cataract-dose="([^"]+)"/)[1];
+handlers.change({target:{checked:true,dataset:{cataractDose:secondDose},closest:()=>null,matches:()=>true}});
+assert.equal(deleteCard(originalId).removed,true);
+assert.ok(context.window.CataractMedication.renderSchedule().includes('1 / 21회 완료'),'deleting another record preserves this record and its checks');
+assert.equal((context.window.CataractMedication.renderProfileLinks().match(/class="surgery-category-button"/g)||[]).length,1);
+const deletedLast=deleteCard(secondId);assert.equal(deletedLast.add.textContent,'수술일 생성');
+context=session();assert.equal(context.window.CataractMedication.hasSchedule(),false,'last deleted schedule must not return after reload');
+assert.equal(context.window.CataractMedication.renderProfileLinks(),'');
+assert.equal(element('#toast').textContent,'삭제되었습니다.');
 console.log('Cataract medication: automatic appointment fill, arrival time, morning/afternoon surgery limits, date validation, persistence and failed storage passed.');
