@@ -78,7 +78,7 @@
     return `<section class="cataract-appointment-panel" aria-label="수술 일정"><div class="cataract-appointment-cards">${plans.map(renderSavedCard).join('')}</div><button type="button" class="cataract-appointment-add" data-add-cataract-appointment>+ ${plans.length?'항목 추가':'수술일 생성'}</button></section>`;
   }
   function renderSavedCard(plan){
-    return `<article class="cataract-saved-card${plan.archived?' is-archived':''}" data-saved-plan="${plan.id}"><header><strong>${eyes[plan.eye]||'수술할 눈 미선택'}</strong><div class="cataract-saved-actions">${plan.archived?'':`<button type="button" data-edit-cataract-appointment="${plan.id}">수정</button>`}<button type="button" data-delete-cataract-appointment="${plan.id}" aria-label="${label(plan.surgeryDate)} ${eyes[plan.eye]||''} 수술일 삭제">삭제</button></div></header><dl><div><dt>수술 예정일</dt><dd>${plan.surgeryDate.slice(0,4)}년 ${label(plan.surgeryDate)}</dd></div><div><dt>내원 시간</dt><dd>${timeLabel(plan)||'미입력'}</dd></div></dl></article>`;
+    return `<article class="cataract-saved-card${plan.archived?' is-archived':''}" data-saved-plan="${plan.id}"><header><div class="cataract-saved-heading"><strong>${eyes[plan.eye]||'수술할 눈 미선택'}</strong><span class="cataract-disease-badge">백내장</span></div><div class="cataract-saved-actions">${plan.archived?'':`<button type="button" data-edit-cataract-appointment="${plan.id}">수정</button>`}<button type="button" data-delete-cataract-appointment="${plan.id}" aria-label="${label(plan.surgeryDate)} ${eyes[plan.eye]||''} 수술일 삭제">삭제</button></div></header><dl><div><dt>수술 예정일</dt><dd>${plan.surgeryDate.slice(0,4)}년 ${label(plan.surgeryDate)}</dd></div><div><dt>내원 시간</dt><dd>${timeLabel(plan)||'미입력'}</dd></div></dl></article>`;
   }
   function renderArrivalCard(){
     const {plan}=read();
