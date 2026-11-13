@@ -28,7 +28,11 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   assert.match(modal.innerHTML,/약제비 신청/);assert.match(modal.innerHTML,/국가보훈부 안내 보기/);
   await handlers.click({target:{closest:()=>({dataset:{},hasAttribute:name=>name==='data-close',closest:()=>modal})}});assert.equal(modal.open,false);
   await click({guideTab:'facility'});assert.equal(guide.active,'facility');
-  assert.equal((el('#main').innerHTML.match(/<figure>/g)||[]).length,19);
+  assert.equal((el('#main').innerHTML.match(/<figure>/g)||[]).length,21);
+  assert.ok(el('#main').innerHTML.indexOf('guide-location-photos')<el('#main').innerHTML.indexOf('class="guide-floor"'));
+  for(const name of ['building-exterior','building-parking'])assert.ok(fs.existsSync(path.join(root,'assets/facility/'+name+'.jpg')));
+  assert.ok(el('#main').innerHTML.includes('제주시 연북로 449 메디온빌딩 2,3층'));
+  assert.ok(el('#main').innerHTML.includes('건물 뒤편 주차장'));
   assert.ok(el('#main').innerHTML.indexOf('병원 진료시간')>el('#main').innerHTML.lastIndexOf('</figure>'));
   assert.equal(reference.facilities.length,2);
   for(const floor of reference.facilities)for(const photo of floor.photos)assert.ok(fs.existsSync(path.join(root,photo.src)),photo.src);
