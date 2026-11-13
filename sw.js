@@ -1,4 +1,4 @@
-const CACHE = 'jeileye-app-v116';
+const CACHE = 'jeileye-app-v117';
 const SHELL = ['./', './index.html', './styles.css', './fonts.css', './typography.css', './assets/fonts/PretendardVariable.woff2', './schedule.css', './guide.css', './vision-before.css', './cataract-before.css', './cataract-medication.css', './eye-drops-guide.css', './scripts/eye-drops-guide.js', './scripts/cataract-medication.js', './scripts/cataract-before.js', './scripts/vision-before.js', './app.js', './scripts/pwa-install.js', './scripts/supabase-config.js', './scripts/public-content.js', './scripts/holidays.js', './scripts/schedule-source.js', './scripts/schedule-model.js', './scripts/guide-reference.js', './scripts/guide.js', './manifest.webmanifest', './assets/logo.svg', './assets/veterans-logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/doctor-placeholder.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));

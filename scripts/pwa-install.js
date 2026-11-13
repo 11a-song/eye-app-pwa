@@ -91,8 +91,8 @@
     if (isInstalled()) content = '<p>앱으로 실행 중입니다. 홈 화면의 연세제일안과 아이콘으로 이용해 주세요.</p>';
     else if (isInApp() || forceExternal) content = '<p>앱 설치를 위해 외부 브라우저에서 열어 주세요.</p><p>아이폰은 Safari, 안드로이드는 Chrome을 이용해 주세요.</p>' + externalControls();
     else if (pendingPrompt) content = '<p>홈 화면에 연세제일안과를 추가하고 앱처럼 이용하세요.</p><button type="button" class="primary-button" data-pwa-install>앱 설치하기</button>';
-    else if (isIOS()) content = '<p>Safari에서 아래 순서로 설치해 주세요.</p><ol class="install-steps"><li>브라우저의 <strong>공유</strong> 버튼을 누르세요.</li><li><strong>홈 화면에 추가</strong>를 선택하세요.</li><li><strong>추가</strong>를 누르면 설치가 완료됩니다.</li></ol>' + (needsSafari() ? '<p>Safari로 이동한 후 설치를 진행해 주세요.</p>' + externalControls() : '');
-    else content = '<p>브라우저 메뉴에서 설치할 수 있습니다.</p><ol class="install-steps"><li>Chrome 또는 삼성 인터넷에서 이 페이지를 여세요.</li><li>메뉴 <strong>⋮ / ☰</strong>를 누르세요.</li><li><strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong>를 선택하세요.</li></ol><p>컴퓨터에서는 주소창의 설치 아이콘 또는 브라우저 메뉴의 앱 설치를 이용해 주세요.</p>';
+    else if (isIOS()) content = '<p>Safari의 공유 버튼에서 <strong>홈 화면에 추가</strong>를 선택해 주세요.</p>' + (needsSafari() ? externalControls() : '');
+    else content = isAndroid() ? '<p>Chrome 메뉴(⋮)에서 <strong>앱 설치</strong> 또는 <strong>홈 화면에 추가</strong>를 선택해 주세요.</p>' : '<p>브라우저 메뉴에서 앱 설치를 선택해 주세요.</p>';
     sheet.innerHTML = '<div class="sheet-header"><h2 id="install-title">연세제일안과 앱 설치</h2><button type="button" class="icon-button" data-close aria-label="닫기">✕</button></div>' + content;
   }
   async function requestInstall() {
@@ -106,7 +106,7 @@
       const choice = await prompt.userChoice;
       if (choice.outcome === 'accepted') dialog()?.close();
     } catch {
-      // If the browser declines the prompt, keep its manual installation steps available.
+      // If the browser declines the prompt, keep a brief installation fallback available.
     } finally {
       busy = false;
       if (dialog()?.open) render();
