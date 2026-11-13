@@ -68,7 +68,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
         assert.ok(el('#main').innerHTML.includes('<h2 id="heading-beforeSurgery" class="vision-guide-header-title">시력교정 검사/수술 전 안내사항</h2>'));
         assert.ok(!el('#main').innerHTML.includes('<h2>시력교정</h2>'));
         assert.ok(!el('#main').innerHTML.includes('section-number'));
-      }else assert.ok(el('#main').innerHTML.includes('<h2>'+label+'</h2>'));
+      }else assert.ok(el('#main').innerHTML.includes('<h2>'+(stage==='before'&&id==='cataract'?'백내장 수술 전':label)+'</h2>'));
       assert.equal(el('#main').innerHTML.includes('id="beforeSurgery"'),stage==='before'&&id==='vision');
       assert.ok(el('#main').innerHTML.includes('href="#/'+stage+'"'));
     }

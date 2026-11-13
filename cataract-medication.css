@@ -38,3 +38,5 @@
 .cataract-arrival-notice{margin:16px 2px 0;color:#111;font-weight:700;font-size:13px;line-height:1.8;word-break:keep-all}.cataract-arrival-notice p{margin:0}.cataract-arrival-notice p+p{margin-top:4px}
 
 .cataract-saved-card.is-archived .cataract-saved-actions [data-delete-cataract-appointment]{border-color:#a6adb7;color:#858c97;background:transparent}
+
+.cataract-menu-bars .surgery-category-button{background:#2d83f5;border-color:#2d83f5;color:#fff}.cataract-menu-bars .surgery-category-button .menu-arrow{color:#fff}.cataract-menu-bars .surgery-category-button:active{background:#1672e6}
