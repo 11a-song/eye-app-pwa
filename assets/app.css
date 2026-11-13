@@ -1474,6 +1474,15 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 .medication-progress-step .medication-step-date{margin-bottom:14px}
 .medication-step-track{position:relative;margin-bottom:10px}
 .medication-stage-stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-8deg);display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:24px;padding:1px 5px;border:3px double #1265b9;border-radius:4px;background:#fff;color:#1265b9;font-size:12px;font-weight:750;line-height:1;white-space:nowrap;pointer-events:none}
+/* 투약 안내, 날짜별 진행 바와 일별 체크를 하나의 옅은 회색 카드로 묶습니다. */
+.medication-schedule-card{margin:0;padding:18px 16px;background:#f5f6f8;border-radius:24px}
+.medication-tracker .medication-schedule-card>.medication-tracker-hint{margin:0 0 18px}
+.medication-schedule-card .medication-day{background:#fff}
+.medication-schedule-card .medication-day-summary{background:#fff}
+.medication-schedule-card .medication-day:last-child{margin-bottom:0}
+.medication-tracker .medication-plan-summary,.medication-tracker.is-archived .medication-plan-summary{border-bottom:0}
+.medication-tracker .medication-arrival-card{border-top:0;margin-top:24px;padding-top:0}
+@media(max-width:360px){.medication-schedule-card{padding:16px 12px;border-radius:20px}}
 /* eye-drops-guide.css */
 .eye-drops-page .eye-guide-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
 .eye-drops-page .eye-guide-nav { position: sticky; top: var(--eye-header-height, 70px); z-index: 5; width: 80%; margin: 0 auto; background: #f2f2f2; transition: width .35s ease; }
