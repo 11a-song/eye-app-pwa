@@ -14,3 +14,5 @@
 .medication-tracker .medication-plan-eye{font-size:16px}.medication-tracker .medication-plan-summary h2{font-size:26px}.medication-tracker .medication-plan-summary p{font-size:17px}.medication-tracker .medication-plan-summary a{font-size:16px}.medication-tracker .medication-oral-note,.medication-tracker-hint{font-size:16px}.medication-tracker .medication-product h3{font-size:27px}.medication-day-date h3{font-size:20px}.medication-day-weekday,.medication-day .medication-day-date>span{font-size:14px}.medication-day .medication-time-title{display:flex;align-items:center;gap:8px;font-size:18px}.medication-time-icon{width:21px;height:21px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.medication-tracker>.medication-storage-note{font-size:15px}
 
 .medication-day .medication-time-group+.medication-time-group{border-top:0}
+
+.medication-dose-name{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.medication-dose-dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}.medication-dose-dot.moxitra{background:#ed424a}.medication-dose-dot.bronac{background:#50c9ee}
