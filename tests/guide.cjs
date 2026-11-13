@@ -80,7 +80,7 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
     context.location.hash='#/before/cataract/'+id;vm.runInContext('render()',context);
     assert.ok(el('#main').innerHTML.includes('class="cataract-detail-nav"'));
     assert.ok(el('#main').innerHTML.includes('href="#/before/cataract/'+id+'" aria-current="page"'));
-    assert.ok(el('#main').innerHTML.includes('<h2>'+(id==='precautions'?'백내장 수술 전 주의사항':title)+'</h2>'));
+    assert.ok(el('#main').innerHTML.includes('<h2>'+(id==='precautions'?'백내장 수술 전 주의사항':'백내장 수술 전 약 사용법')+'</h2>'));
     assert.ok(el('#main').innerHTML.includes('href="#/before/cataract"'));
     if(id==='precautions'){
       assert.equal((el('#main').innerHTML.match(/class="cataract-preop-card"/g)||[]).length,3);
