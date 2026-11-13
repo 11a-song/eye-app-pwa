@@ -251,7 +251,7 @@ function surgeryDetail(stage,categoryId,sectionId) {
   if(stage==='before'&&categoryId==='cataract'){
     const section=cataractPreopSections.find(([id])=>id===sectionId);
     if(section)return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before/cataract">'+icon('back')+'백내장 목록</a><h2>'+t(sectionId==='precautions'?'백내장 수술 전 주의사항':section[1])+'</h2>'+(sectionId==='precautions'?window.renderCataractPrecautions():window.CataractMedication.renderGuide())+'</section>';
-    return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before">'+icon('back')+'수술 전 목록</a><h2>백내장</h2><div class="surgery-category-list">'+cataractPreopSections.map(([id,label])=>'<a class="surgery-category-button" href="#/before/cataract/'+id+'"><span>'+t(label)+'</span>'+icon('arrow','menu-arrow')+'</a>').join('')+'</div></section>';
+    return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/before">'+icon('back')+'수술 전 목록</a><h2>백내장</h2>'+window.CataractMedication.renderSetup()+'<div class="surgery-category-list">'+cataractPreopSections.map(([id,label])=>'<a class="surgery-category-button" href="#/before/cataract/'+id+'"><span>'+t(label)+'</span>'+icon('arrow','menu-arrow')+'</a>').join('')+'</div></section>';
   }
   return emptyMenuPage(title)+'<section class="surgery-detail-page"><a class="surgery-detail-back" href="#/'+stage+'">'+icon('back')+t(title)+' 목록</a>'+(stage==='before'&&categoryId==='vision'?'':'<h2>'+t(category[1])+'</h2>')+(stage==='before'&&categoryId==='vision'?'<div class="surgery-vision-before">'+window.clinicVisionBeforeHtml+'</div>':'')+'</section>';
 }
