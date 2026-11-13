@@ -9,11 +9,13 @@ function session(){
 let context=session();
 const form=(eye,year,month,day,period,hour=9,minute=0)=>({id:'cataract-appointment-form',elements:{namedItem:name=>({value:{eye,year,month,day,period,hour,minute}[name]})}});
 function save(eye,year,month,day,period='am',hour=9,minute=0){handlers.submit({preventDefault(){},target:form(eye,year,month,day,period,hour,minute)});}
-function addCardMarkup(){
+function addCardMarkup(retainChanges=false){
+  const snapshot=new Map(data);
   let html='';
   const list={insertAdjacentHTML:(_,value)=>html=value,lastElementChild:{querySelector:()=>({focus(){}}),scrollIntoView(){}}};
   const button={classList:{remove(){}},closest:()=>({querySelector:()=>list})};
   handlers.click({target:{closest:selector=>selector==='[data-add-cataract-appointment]'?button:null}});
+  if(!retainChanges){data.clear();for(const [key,value] of snapshot)data.set(key,value);}
   return html;
 }
 function editCardMarkup(){
@@ -156,4 +158,13 @@ const savedId=JSON.parse(data.get('jeileye-cataract-preop-v1')).plan.id;
 let restored='';const editing={dataset:{planId:savedId},closest:()=>closingPanel,set outerHTML(html){restored=html;}};
 handlers.click({target:{closest:selector=>selector==='[data-close-cataract-appointment]'?{closest:()=>editing}:null}});
 assert.ok(restored.includes('class="cataract-saved-card"'),'closing an edit restores the saved card');
+const beforeAdd=data.get('jeileye-cataract-preop-v1');
+failWrite=true;assert.equal(addCardMarkup(true),'');assert.equal(data.get('jeileye-cataract-preop-v1'),beforeAdd);
+failWrite=false;assert.ok(addCardMarkup(true).includes('data-plan-id=""'));
+assert.ok(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.every(p=>p.archived),'existing records turn gray as soon as add is clicked');
+assert.ok(context.window.CataractMedication.renderSetup().includes('cataract-saved-card is-archived'));
+assert.ok(context.window.CataractMedication.renderProfileLinks().includes('surgery-category-button is-archived'));
+const freshForm=form('right',2027,1,9,'am',9,0);freshForm.dataset={planId:''};
+handlers.submit({target:freshForm,preventDefault(){}});
+assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.at(-1).archived,false,'newly saved record stays editable');
 console.log('Cataract medication: automatic appointment fill, arrival time, morning/afternoon surgery limits, date validation, persistence and failed storage passed.');

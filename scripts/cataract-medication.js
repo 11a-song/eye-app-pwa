@@ -207,7 +207,16 @@
     }
     const button=event.target.closest?.('[data-add-cataract-appointment]');
     if(!button)return;
-    const list=button.closest('.cataract-appointment-panel').querySelector('.cataract-appointment-cards');
+    const panel=button.closest('.cataract-appointment-panel'),store=read();
+    if(store.plans.some(p=>!p.archived)){
+      store.plans.forEach(p=>p.archived=true);
+      if(!write(store)){showSavedToast('항목을 추가하지 못했습니다. 다시 시도해 주세요.');return;}
+      for(const plan of store.plans){
+        const old=panel.querySelector(`[data-saved-plan="${plan.id}"]`)||panel.querySelector(`form[data-plan-id="${plan.id}"]`);
+        if(old)old.outerHTML=renderSavedCard(plan);
+      }
+    }
+    const list=panel.querySelector('.cataract-appointment-cards');
     list.insertAdjacentHTML('beforeend',renderSetupCard(null));
     button.textContent='+ 항목 추가';
     list.lastElementChild.querySelector('input')?.focus({preventScroll:true});
