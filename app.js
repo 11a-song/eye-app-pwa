@@ -296,7 +296,7 @@ document.addEventListener('click',async event=>{
     window.ClinicGuide.select(button.dataset.guideTab);render();
     $(`#guide-tab-${window.ClinicGuide.active}`).focus({preventScroll:true});
     $(`#guide-tab-${window.ClinicGuide.active}`).scrollIntoView({block:'nearest',inline:'nearest'});
-    $('#guide-tabs').scrollIntoView({block:'start'});return;
+    $('#guide-sticky-header').scrollIntoView({block:'start'});return;
   }
   if (button.hasAttribute('data-guide-retry')) { window.reloadClinicContent?.();return; }
   if (button.hasAttribute('data-guide-gallery')) {

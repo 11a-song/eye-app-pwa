@@ -1,5 +1,5 @@
 /* App-native guide: one section at a time, with readable cards and local photos. */
-.app-shell:has(main.guide-view)>.app-header{display:none}.app-shell main.guide-view{padding-top:0}.guide-view .guide-tabs{padding-top:calc(12px + env(safe-area-inset-top));top:0}
+.app-shell:has(main.guide-view)>.app-header{display:none}.app-shell main.guide-view{padding-top:0}
 .guide-view .page-top{margin-bottom:18px}.guide-view .page-top h1{font-size:28px}.guide-view .page-top .eyebrow{display:none}
 .guide-tabs{display:flex;gap:5px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none;position:sticky;top:0;z-index:3;margin:0 -24px;padding:12px 24px;background:var(--bg);border-bottom:1px solid #e5e8ef}
 .guide-tabs::-webkit-scrollbar{display:none}.guide-tabs button{flex:1 0 auto;min-width:59px;border:0;border-radius:999px;padding:10px 13px;background:transparent;color:#737c8a;font-size:14px;font-weight:600;white-space:nowrap}
@@ -34,3 +34,5 @@ body:has(.guide-modal[open]){overflow:hidden}
 .guide-floor-contact{display:flex;flex-wrap:wrap;align-items:center;gap:5px 6px}.guide-floor-phone-label{font-size:12px;color:var(--muted)}.guide-floor-copy .guide-floor-phone{font-size:16px;font-weight:700;white-space:nowrap;color:var(--text)}.guide-floor-copy .guide-call-button{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:4px 10px;border:1px solid var(--blue);border-radius:999px;background:#fff;color:var(--blue);font-size:13px;font-weight:600;white-space:nowrap}
 
 .guide-doctor-schedule-link{justify-content:flex-end;gap:8px}
+
+.guide-sticky-header{position:sticky;top:0;z-index:3;margin:0 -24px;padding-top:env(safe-area-inset-top);background:#fff}.guide-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:58px;padding:12px 24px;border-bottom:1px solid #f0f0f4}.guide-home-logo{display:flex;align-items:center;flex-shrink:0}.guide-home-logo img{display:block;width:140px;height:auto;max-height:30px;object-fit:contain}.guide-topbar h1{margin:0;font-size:16px;font-weight:700;line-height:1.4;letter-spacing:-.5px;text-align:right}.guide-sticky-header .guide-tabs{position:static;margin:0;background:#fff;padding-top:12px}.guide-panel{scroll-margin-top:calc(130px + env(safe-area-inset-top))}@media(max-width:360px){.guide-sticky-header{margin-inline:-18px}.guide-topbar{padding-inline:18px;gap:10px}.guide-home-logo img{width:128px}.guide-sticky-header .guide-tabs{margin:0;padding-inline:18px}}
