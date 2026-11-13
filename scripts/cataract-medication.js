@@ -210,7 +210,7 @@
     pendingRecordAction={type,button};
     const dialog=document.querySelector('#cataract-record-dialog');
     document.querySelector('#cataract-record-title').textContent=type==='delete'?'일정과 체크 기록을 삭제할까요?':'수술 정보를 수정할까요?';
-    document.querySelector('#cataract-record-description').textContent=type==='delete'?'이 항목에는 체크한 약 사용 기록이 있습니다. 항목을 삭제하면 체크 기록도 함께 삭제됩니다.':'이 항목에는 체크한 약 사용 기록이 있습니다. 수술일, 수술할 눈, 내원 시간을 수정하면 체크리스트와 기록도 함께 조정됩니다.';
+    document.querySelector('#cataract-record-description').textContent=type==='delete'?'이 항목에는 체크한 약 사용 기록이 있습니다. 항목을 삭제하면 체크 기록도 함께 삭제됩니다.':'이 항목에는 체크한 약 사용 기록이 있습니다. 내정보와 약 사용법의 기록에도 반영됩니다.';
     document.querySelector('#cataract-record-confirm').textContent=type==='delete'?'삭제':'수정 계속';
     dialog.classList.toggle('is-delete',type==='delete');
     if(!dialog.open)dialog.showModal();
