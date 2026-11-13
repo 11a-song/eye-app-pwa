@@ -32,7 +32,7 @@ function editCardMarkup(){
   return html;
 }
 assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
-assert.ok(context.window.CataractMedication.renderSetup().includes('>+ 수술일 생성</button>'));
+assert.ok(context.window.CataractMedication.renderSetup().includes('>+ 수술 스케줄 생성</button>'));
 assert.ok(!context.window.CataractMedication.renderSetup().includes('<form'));
 const appointmentForm=form('left',2027,1,2,'pm',2,30);appointmentForm.id='cataract-appointment-form';
 handlers.change({target:{closest:selector=>selector==='#cataract-appointment-form'?appointmentForm:null}});
@@ -181,7 +181,7 @@ handlers.change({target:{checked:true,dataset:{cataractDose:secondDose},closest:
 assert.equal(deleteCard(originalId).removed,true);
 assert.ok(progressTotal(context.window.CataractMedication.renderSchedule()).includes('1 / 21회 완료'),'deleting another record preserves this record and its checks');
 assert.equal((context.window.CataractMedication.renderProfileLinks().match(/class="surgery-category-button(?: is-archived)?"/g)||[]).length,1);
-const deletedLast=deleteCard(secondId);assert.equal(deletedLast.add.textContent,'+ 수술일 생성');
+const deletedLast=deleteCard(secondId);assert.equal(deletedLast.add.textContent,'+ 수술 스케줄 생성');
 context=session();assert.equal(context.window.CataractMedication.hasSchedule(),false,'last deleted schedule must not return after reload');
 assert.equal(context.window.CataractMedication.renderProfileLinks(),'');
 assert.equal(element('#toast').textContent,'삭제되었습니다.');
@@ -192,7 +192,7 @@ const unsaved={dataset:{planId:''},closest:()=>closingPanel,remove(){closed=true
 const closingButton={closest:()=>unsaved};
 const beforeClose=data.get('jeileye-cataract-preop-v1');
 handlers.click({target:{closest:selector=>selector==='[data-close-cataract-appointment]'?closingButton:null}});
-assert.equal(closed,true);assert.equal(closingAdd.textContent,'+ 수술일 생성');
+assert.equal(closed,true);assert.equal(closingAdd.textContent,'+ 수술 스케줄 생성');
 assert.equal(data.get('jeileye-cataract-preop-v1'),beforeClose,'closing an unsaved card does not modify saved data');
 save('left',2027,1,2,'pm',2,30);
 const savedId=JSON.parse(data.get('jeileye-cataract-preop-v1')).plan.id;

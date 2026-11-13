@@ -75,7 +75,7 @@
   }
   function renderSetup(){
     const {plans}=read();
-    return `<section class="cataract-appointment-panel" aria-label="수술 일정"><div class="cataract-appointment-cards">${plans.map(renderSavedCard).join('')}</div><button type="button" class="cataract-appointment-add" data-add-cataract-appointment>+ ${plans.length?'항목 추가':'수술일 생성'}</button></section>`;
+    return `<section class="cataract-appointment-panel" aria-label="수술 일정"><div class="cataract-appointment-cards">${plans.map(renderSavedCard).join('')}</div><button type="button" class="cataract-appointment-add" data-add-cataract-appointment>+ ${plans.length?'항목 추가':'수술 스케줄 생성'}</button></section>`;
   }
   function renderSavedCard(plan){
     return `<article class="cataract-saved-card${plan.archived?' is-archived':''}" data-saved-plan="${plan.id}"><header><div class="cataract-saved-heading"><strong>${eyes[plan.eye]||'수술할 눈 미선택'}</strong><span class="cataract-disease-badge">백내장</span></div><div class="cataract-saved-actions">${plan.archived?'':`<button type="button" data-edit-cataract-appointment="${plan.id}">수정</button>`}<button type="button" data-delete-cataract-appointment="${plan.id}" aria-label="${label(plan.surgeryDate)} ${eyes[plan.eye]||''} 수술일 삭제">삭제</button></div></header><dl><div><dt>수술 예정일</dt><dd>${plan.surgeryDate.slice(0,4)}년 ${label(plan.surgeryDate)}</dd></div><div><dt>내원 시간</dt><dd>${timeLabel(plan)||'미입력'}</dd></div></dl></article>`;
@@ -223,7 +223,7 @@
       remove.closest('.cataract-saved-card').remove();
       const add=panel.querySelector('[data-add-cataract-appointment]');
       const empty=!store.plans.length&&!panel.querySelector('form[data-cataract-appointment]');
-      add.textContent=empty?'+ 수술일 생성':'+ 항목 추가';
+      add.textContent=empty?'+ 수술 스케줄 생성':'+ 항목 추가';
       showSavedToast('삭제되었습니다.');return;
     }
     else{const edit=button;
@@ -265,7 +265,7 @@
       const original=read().plans.find(p=>p.id===form.dataset.planId);
       if(original)form.outerHTML=renderSavedCard(original);else form.remove();
       const add=panel.querySelector('[data-add-cataract-appointment]');
-      add.textContent=!read().plans.length&&!panel.querySelector('form[data-cataract-appointment]')?'+ 수술일 생성':'+ 항목 추가';
+      add.textContent=!read().plans.length&&!panel.querySelector('form[data-cataract-appointment]')?'+ 수술 스케줄 생성':'+ 항목 추가';
       add.focus?.({preventScroll:true});return;
     }
     const remove=event.target.closest?.('[data-delete-cataract-appointment]');
