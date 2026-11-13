@@ -1018,6 +1018,14 @@ html[data-install-welcome] .app-shell{display:none}
 .install-welcome .primary-button{font-size:17px;min-height:52px;margin:0;border-radius:16px}
 .install-continue{display:block;width:100%;background:none;border:0;color:var(--muted);font-size:14px;min-height:44px;padding:10px;margin-top:4px;text-decoration:underline;text-underline-offset:4px}
 @media(max-height:600px){.install-welcome:not([hidden]){padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(10px + env(safe-area-inset-bottom))}.install-welcome-content{gap:10px;padding:14px 0}.install-welcome h1{font-size:24px}.install-welcome-content>p{font-size:14px}.install-welcome-icon{width:64px;height:64px;border-radius:18px}.install-welcome ul{font-size:13px}.install-welcome .primary-button{min-height:46px}}
+/* 홈 메뉴: 로고 아래 여백과 하단 여백을 1:2로 배분합니다. */
+.app-shell:has(.home-view){--home-space:clamp(10px,calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--home-nav-height) - 390px)/3),30px);height:100dvh;min-height:0;display:flex;flex-direction:column;padding-bottom:calc(var(--home-nav-height) + env(safe-area-inset-bottom) + 20px)}
+.app-shell:has(.home-view) .app-header{height:auto;min-height:0;flex:0 0 auto;align-items:flex-end;padding:calc(clamp(16px,3dvh,24px) + env(safe-area-inset-top)) 24px 0}
+.app-shell:has(.home-view) .app-header img{width:166px}
+.app-shell main.home-view{height:auto;min-height:0;flex:1;padding:var(--home-space) 24px calc(var(--home-space)*2);gap:0}
+.home-view .menu-bar{border-radius:10px}
+@media(max-width:360px){.app-shell:has(.home-view) .app-header{padding-inline:18px}.app-shell:has(.home-view) .app-header img{width:148px}.app-shell main.home-view{padding-inline:18px}}
+@media(max-height:480px) and (orientation:landscape){.app-shell:has(.home-view){padding-bottom:calc(var(--home-nav-height) + env(safe-area-inset-bottom) + 12px)}.app-shell:has(.home-view) .app-header{padding-top:calc(6px + env(safe-area-inset-top))}.app-shell:has(.home-view) .app-header img{width:132px}}
 /* schedule.css */
 /* 참고 홈페이지의 원장별 일정 화면을 앱 공통 내비게이션 안에 표시합니다. */
 .app-shell:has(.schedule-view){background:var(--bg)}
