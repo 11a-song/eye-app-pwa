@@ -7,25 +7,29 @@ function session(){
   vm.runInContext(source,context);return context;
 }
 let context=session();
-const form=(eye,year,month,day,period,hour=9,minute=0)=>({id:'cataract-medication-form',elements:{namedItem:name=>({value:{eye,year,month,day,period,hour,minute}[name]})}});
+const form=(eye,year,month,day,period,hour=9,minute=0)=>({id:'cataract-appointment-form',elements:{namedItem:name=>({value:{eye,year,month,day,period,hour,minute}[name]})}});
 function save(eye,year,month,day,period='am',hour=9,minute=0){handlers.submit({preventDefault(){},target:form(eye,year,month,day,period,hour,minute)});}
 assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
-const appointmentForm=form('',2027,1,2,'pm',2,30);appointmentForm.id='cataract-appointment-form';
+const appointmentForm=form('left',2027,1,2,'pm',2,30);appointmentForm.id='cataract-appointment-form';
 handlers.change({target:{closest:selector=>selector==='#cataract-appointment-form'?appointmentForm:null}});
 assert.equal(context.window.CataractMedication.hasSchedule(),false,'editing alone does not save an appointment');
 handlers.submit({target:appointmentForm,preventDefault(){}});
 const prefilled=context.window.CataractMedication.renderGuide();
-assert.ok(prefilled.includes('name="month" type="number" min="1" max="12" value="1"'));
-assert.ok(prefilled.includes('value="pm" required checked'));
-assert.ok(prefilled.includes('value="2" aria-label="수술 예정 시"'));
-assert.ok(prefilled.includes('value="30" aria-label="수술 예정 분"'));
 const setup=context.window.CataractMedication.renderSetup();
+assert.ok(setup.indexOf('class="medication-eye"')<setup.indexOf('class="medication-date"'));
+assert.ok(!prefilled.includes('<input')&&!prefilled.includes('<form'));
+for(const text of ['왼쪽 눈','2027년 1월 2일','오후 2시 30분'])assert.ok(prefilled.includes(text));
+assert.ok(setup.includes('name="month" type="number" min="1" max="12" value="1"'));
+assert.ok(setup.includes('value="pm" required checked'));
+assert.ok(setup.includes('value="2" aria-label="수술 예정 시"'));
+assert.ok(setup.includes('value="30" aria-label="수술 예정 분"'));
+
 assert.ok(setup.includes('type="submit">저장</button>'));
 assert.ok(!setup.includes('medication-date-preview')&&!setup.includes('자동 저장되었습니다'));
 assert.equal(element('#toast').textContent,'저장되었습니다.');
 assert.ok(context.window.CataractMedication.hasSchedule(),'appointment input automatically creates the personal schedule');
-assert.ok(context.window.CataractMedication.renderSchedule().includes('수술할 눈 미선택'),'date-only setup does not assume an operated eye');
-for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderGuide().includes('value="'+eye+'"'));
+assert.ok(context.window.CataractMedication.renderSchedule().includes('왼쪽 눈'),'selected eye is saved with the appointment');
+for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderSetup().includes('value="'+eye+'"'));
 const beforeInvalid=data.get('jeileye-cataract-preop-v1');
 save('left',2027,2,30);assert.equal(data.get('jeileye-cataract-preop-v1'),beforeInvalid,'invalid dates must not change saved information');
 context.location.hash='#/before/cataract/medication';
@@ -48,7 +52,7 @@ handlers.change({target:input});assert.equal(element('#medication-progress').tex
 context=session();html=context.window.CataractMedication.renderSchedule();
 assert.ok(html.includes('data-cataract-dose="'+dose+'" checked'),'dose completion persists after reload');
 save('left',2027,1,2,'pm');assert.ok(context.window.CataractMedication.renderSchedule().includes('1월 2일 오후'));
-assert.ok(context.window.CataractMedication.renderGuide().includes('value="pm" required checked'));
+assert.ok(context.window.CataractMedication.renderSetup().includes('value="pm" required checked'));
 const afternoonHtml=context.window.CataractMedication.renderSchedule();
 assert.ok(afternoonHtml.includes('1 / 21회 완료'),'period updates preserve checks and count only visible doses');
 assert.equal((afternoonHtml.match(/type="checkbox"/g)||[]).length,21);
@@ -61,9 +65,10 @@ save('left',2027,1,2);assert.ok(context.window.CataractMedication.renderSchedule
 input.checked=false;handlers.change({target:input});assert.ok(context.window.CataractMedication.renderSchedule().includes('0 / 20회 완료'));
 failWrite=true;input.checked=true;handlers.change({target:input});assert.equal(input.checked,false,'failed writes revert checkboxes');
 assert.ok(element('#medication-check-status').textContent.includes('저장하지 못했습니다'));
-save('both',2027,3,4);assert.ok(element('#medication-form-status').textContent.includes('저장하지 못했습니다'));
-failWrite=false;data.clear();context=session();
-handlers.submit({target:appointmentForm,preventDefault(){}});
+save('both',2027,3,4);assert.ok(element('#appointment-status').textContent.includes('저장하지 못했습니다'));
+failWrite=false;data.clear();
+data.set('jeileye-cataract-preop-v1',JSON.stringify({appointment:{surgeryDate:'2027-01-02',period:'pm',hour:2,minute:30},checks:{}}));
+context=session();
 const pendingHtml=context.window.CataractMedication.renderSchedule();
 const pendingDose=pendingHtml.match(/data-cataract-dose="([^"]+)"/)[1];
 handlers.change({target:{checked:true,dataset:{cataractDose:pendingDose},closest:()=>null,matches:()=>true}});
