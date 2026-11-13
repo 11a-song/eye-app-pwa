@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../scripts/cataract-medication.js'),'utf8');
 const data=new Map(),elements=new Map(),handlers={};let failWrite=false;
-const element=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:0,classList:{add(){},remove(){}}});return elements.get(selector);};
+const element=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:0,open:false,showModal(){this.open=true;},close(){this.open=false;},classList:{add(){},remove(){},toggle(){}}});return elements.get(selector);};
 function session(){
   const context=vm.createContext({window:{},location:{hash:''},document:{querySelector:element,addEventListener:(type,handler)=>handlers[type]=handler},localStorage:{getItem:key=>data.get(key)||null,setItem:(key,value)=>{if(failWrite)throw Error('storage blocked');data.set(key,value);}},Intl,Date,console,setTimeout:()=>1,clearTimeout(){}});
   vm.runInContext(source,context);return context;
@@ -18,11 +18,13 @@ function addCardMarkup(retainChanges=false){
   if(!retainChanges){data.clear();for(const [key,value] of snapshot)data.set(key,value);}
   return html;
 }
+function modalChoice(choice){handlers.click({target:{closest:selector=>selector==='[data-cataract-record-choice]'?{dataset:{cataractRecordChoice:choice}}:null}});}
 function editCardMarkup(){
   let html='';const id=JSON.parse(data.get('jeileye-cataract-preop-v1')).plan.id;
   const card={set outerHTML(value){html=value;}},panel={querySelector:()=>({focus(){}})};
   const button={dataset:{editCataractAppointment:id},closest:selector=>selector==='.cataract-saved-card'?card:panel};
   handlers.click({target:{closest:selector=>selector==='[data-edit-cataract-appointment]'?button:null}});
+  if(element('#cataract-record-dialog').open)modalChoice('confirm');
   return html;
 }
 assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
@@ -77,6 +79,17 @@ const input={checked:true,dataset:{cataractDose:dose},closest:()=>null,matches:(
 handlers.change({target:input});assert.equal(element('#medication-progress').textContent,'1 / 20회 완료');
 context=session();html=context.window.CataractMedication.renderSchedule();
 assert.ok(html.includes('data-cataract-dose="'+dose+'" checked'),'dose completion persists after reload');
+let pendingEditHtml='';
+const editingId=JSON.parse(data.get('jeileye-cataract-preop-v1')).plan.id;
+const editingCard={set outerHTML(value){pendingEditHtml=value;}};
+const editingPanel={querySelector:()=>({focus(){}})};
+const editingButton={dataset:{editCataractAppointment:editingId},closest:selector=>selector==='.cataract-saved-card'?editingCard:editingPanel};
+const requestEdit=()=>handlers.click({target:{closest:selector=>selector==='[data-edit-cataract-appointment]'?editingButton:null}});
+requestEdit();assert.equal(element('#cataract-record-dialog').open,true);assert.equal(pendingEditHtml,'');
+assert.ok(element('#cataract-record-description').textContent.includes('체크리스트와 기록도 함께 조정'));
+const beforeCancelEdit=data.get('jeileye-cataract-preop-v1');modalChoice('cancel');
+assert.equal(pendingEditHtml,'');assert.equal(data.get('jeileye-cataract-preop-v1'),beforeCancelEdit);
+requestEdit();modalChoice('confirm');assert.ok(pendingEditHtml.includes('data-cataract-appointment'));
 save('left',2027,1,2,'pm');assert.ok(context.window.CataractMedication.renderSchedule().includes('<dd>2027년 1월 2일</dd>'));
 assert.ok(editCardMarkup().includes('value="pm" required checked'));
 const afternoonHtml=context.window.CataractMedication.renderSchedule();
@@ -128,17 +141,22 @@ assert.equal(data.get('jeileye-cataract-preop-v1'),priorData,'a stale edit canno
 const appended=addCardMarkup();
 assert.ok(appended.includes('data-plan-id=""')&&appended.includes('cataract-appointment-card'),'add button appends a new blank combined card');
 assert.equal((appended.match(/name="eye"/g)||[]).length,3);
-function deleteCard(id){
+function deleteCard(id,choice='confirm'){
   let removed=false;
   const add={textContent:'',classList:{toggle(){}}},card={remove(){removed=true;}};
   const panel={querySelector:selector=>selector==='[data-add-cataract-appointment]'?add:null};
   const button={dataset:{deleteCataractAppointment:id},closest:selector=>selector==='.cataract-saved-card'?card:panel};
   handlers.click({target:{closest:selector=>selector==='[data-delete-cataract-appointment]'?button:null}});
+  if(element('#cataract-record-dialog').open)modalChoice(choice);
   return {removed,add};
 }
 const activeCard=context.window.CataractMedication.renderSetup().split('data-saved-plan="'+secondForm.dataset.planId+'"')[1];
 assert.ok(activeCard.indexOf('data-edit-cataract-appointment')<activeCard.indexOf('data-delete-cataract-appointment'));
 const secondId=secondForm.dataset.planId;
+const beforeCancelDelete=data.get('jeileye-cataract-preop-v1');
+assert.equal(deleteCard(originalId,'cancel').removed,false);
+assert.equal(data.get('jeileye-cataract-preop-v1'),beforeCancelDelete);
+assert.ok(element('#cataract-record-description').textContent.includes('체크 기록도 함께 삭제'));
 failWrite=true;assert.equal(deleteCard(secondId).removed,false,'failed deletion keeps the displayed card');
 assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.length,2);
 failWrite=false;context.location.hash='#/profile/cataract-before?plan='+secondId;

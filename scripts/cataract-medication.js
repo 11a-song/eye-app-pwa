@@ -176,18 +176,12 @@
     const {plans}=read();
     return plans.map(p=>`<a class="surgery-category-button${p.archived?' is-archived':''}" href="#/profile/cataract-before${plans.length>1?'?plan='+p.id:''}"><span>백내장 수술 전<small>${label(p.surgeryDate)} · ${eyes[p.eye]||'수술할 눈 미선택'}${timeLabel(p)?'<br>내원 '+timeLabel(p):''}</small></span><svg class="menu-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>`).join('');
   }
-  document.addEventListener('click',event=>{
-    const close=event.target.closest?.('[data-close-cataract-appointment]');
-    if(close){
-      const form=close.closest('form[data-cataract-appointment]'),panel=form.closest('.cataract-appointment-panel');
-      const original=read().plans.find(p=>p.id===form.dataset.planId);
-      if(original)form.outerHTML=renderSavedCard(original);else form.remove();
-      const add=panel.querySelector('[data-add-cataract-appointment]');
-      add.textContent=!read().plans.length&&!panel.querySelector('form[data-cataract-appointment]')?'+ 수술일 생성':'+ 항목 추가';
-      add.focus?.({preventScroll:true});return;
-    }
-    const remove=event.target.closest?.('[data-delete-cataract-appointment]');
-    if(remove){
+  let pendingRecordAction=null;
+  function recordHasChecks(store,id){
+    return Object.entries(store.checks).some(([key,checked])=>checked===true&&(id==='legacy'?/^\d{4}-\d{2}-\d{2}:/.test(key):key.startsWith(id+':')));
+  }
+  function runRecordAction(type,button){
+    if(type==='delete'){const remove=button;
       const store=read(),id=remove.dataset.deleteCataractAppointment;
       if(!store.plans.some(p=>p.id===id))return;
       store.plans=store.plans.filter(p=>p.id!==id);
@@ -202,12 +196,43 @@
       add.textContent=empty?'+ 수술일 생성':'+ 항목 추가';
       showSavedToast('삭제되었습니다.');return;
     }
-    const edit=event.target.closest?.('[data-edit-cataract-appointment]');
-    if(edit){
+    else{const edit=button;
       const plan=read().plans.find(p=>p.id===edit.dataset.editCataractAppointment);
       if(plan&&!plan.archived){const panel=edit.closest('.cataract-appointment-panel');edit.closest('.cataract-saved-card').outerHTML=renderSetupCard(plan);panel.querySelector(`form[data-plan-id="${plan.id}"] input`)?.focus({preventScroll:true});}
       return;
     }
+  }
+  function requestRecordAction(type,button){
+    const id=type==='delete'?button.dataset.deleteCataractAppointment:button.dataset.editCataractAppointment;
+    const store=read(),plan=store.plans.find(p=>p.id===id);
+    if(!plan||(type==='edit'&&plan.archived))return;
+    if(!recordHasChecks(store,id)){runRecordAction(type,button);return;}
+    pendingRecordAction={type,button};
+    const dialog=document.querySelector('#cataract-record-dialog');
+    document.querySelector('#cataract-record-title').textContent=type==='delete'?'일정과 체크 기록을 삭제할까요?':'수술 정보를 수정할까요?';
+    document.querySelector('#cataract-record-description').textContent=type==='delete'?'이 항목에는 체크한 약 사용 기록이 있습니다. 항목을 삭제하면 체크 기록도 함께 삭제됩니다.':'이 항목에는 체크한 약 사용 기록이 있습니다. 수술일, 수술할 눈, 내원 시간을 수정하면 체크리스트와 기록도 함께 조정됩니다.';
+    document.querySelector('#cataract-record-confirm').textContent=type==='delete'?'삭제':'수정 계속';
+    dialog.classList.toggle('is-delete',type==='delete');
+    if(!dialog.open)dialog.showModal();
+  }
+  document.querySelector('#cataract-record-dialog')?.addEventListener?.('close',()=>{pendingRecordAction=null;});
+  document.addEventListener('click',event=>{
+    const choice=event.target.closest?.('[data-cataract-record-choice]');
+    if(choice){const pending=pendingRecordAction;pendingRecordAction=null;document.querySelector('#cataract-record-dialog').close();if(choice.dataset.cataractRecordChoice==='confirm'&&pending&&pending.button.isConnected!==false)runRecordAction(pending.type,pending.button);return;}
+
+    const close=event.target.closest?.('[data-close-cataract-appointment]');
+    if(close){
+      const form=close.closest('form[data-cataract-appointment]'),panel=form.closest('.cataract-appointment-panel');
+      const original=read().plans.find(p=>p.id===form.dataset.planId);
+      if(original)form.outerHTML=renderSavedCard(original);else form.remove();
+      const add=panel.querySelector('[data-add-cataract-appointment]');
+      add.textContent=!read().plans.length&&!panel.querySelector('form[data-cataract-appointment]')?'+ 수술일 생성':'+ 항목 추가';
+      add.focus?.({preventScroll:true});return;
+    }
+    const remove=event.target.closest?.('[data-delete-cataract-appointment]');
+    if(remove){requestRecordAction('delete',remove);return;}
+    const edit=event.target.closest?.('[data-edit-cataract-appointment]');
+    if(edit){requestRecordAction('edit',edit);return;}
     const button=event.target.closest?.('[data-add-cataract-appointment]');
     if(!button)return;
     const panel=button.closest('.cataract-appointment-panel'),store=read();
