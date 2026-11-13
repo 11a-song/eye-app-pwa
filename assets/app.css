@@ -1483,6 +1483,24 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 .medication-tracker .medication-plan-summary,.medication-tracker.is-archived .medication-plan-summary{border-bottom:0}
 .medication-tracker .medication-arrival-card{border-top:0;margin-top:24px;padding-top:0}
 @media(max-width:360px){.medication-schedule-card{padding:16px 12px;border-radius:20px}}
+/* 안약을 눈에 점안하는 선형 아이콘 */
+.medication-tracker .medication-title-icon{width:32px;height:32px}
+/* 둥근 아코디언은 펼친 뒤에도 배경 모서리를 유지합니다. */
+.medication-tracker .medication-day{border-radius:20px}
+.medication-tracker .medication-day-summary{border-radius:19px}
+.medication-tracker .medication-day[open]>.medication-day-summary{border-radius:19px 19px 0 0}
+.medication-tracker .medication-day-content{border-radius:0 0 19px 19px}
+.medication-tracker .medication-day-photos figcaption,.medication-tracker .medication-dose-name{font-weight:700}
+.medication-tracker .medication-day-doses{border-left:0;padding-left:0}
+.medication-dose-grid label:has(input[data-cataract-dose]:checked) .medication-dose-label{text-decoration-line:line-through;text-decoration-thickness:1.5px;text-decoration-color:currentColor}
+/* 수술 당일 구간은 기존 너비의 절반, 남는 너비는 앞의 세 구간에 배분합니다. */
+.medication-progress-steps{grid-template-columns:repeat(3,minmax(0,7fr)) minmax(0,3fr)}
+.medication-progress-step .medication-step-date{display:flex;align-items:flex-end;justify-content:center;min-height:34px;white-space:normal;line-height:1.3}
+.medication-progress-step:last-child .medication-stage-stamp{min-width:34px;font-size:11px;padding-inline:2px}
+.medication-tracker .medication-arrival-card{border-bottom:1px solid #dce2ea;padding-bottom:20px}
+.medication-arrival-notices{text-align:left;line-height:1.45;margin-top:14px}
+.medication-arrival-notices p{margin:3px 0}
+.medication-tracker>.medication-storage-note{text-align:center}
 /* eye-drops-guide.css */
 .eye-drops-page .eye-guide-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
 .eye-drops-page .eye-guide-nav { position: sticky; top: var(--eye-header-height, 70px); z-index: 5; width: 80%; margin: 0 auto; background: #f2f2f2; transition: width .35s ease; }
