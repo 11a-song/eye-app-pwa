@@ -41,3 +41,5 @@ body:has(.guide-modal[open]){overflow:hidden}
 .guide-sticky-header{background:var(--blue)}.guide-topbar{background:var(--blue);color:#fff;border-bottom-color:transparent}.guide-home-logo img{filter:brightness(0) invert(1)}
 
 .app-shell:has(main.plain-menu-view)>.app-header{display:none}.app-shell main.plain-menu-view{padding-top:0}
+
+.surgery-category-prompt{margin:28px 0 16px;font-size:16px;font-weight:600;line-height:1.6}.surgery-category-prompt+.surgery-category-list{padding-top:0}

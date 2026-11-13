@@ -238,7 +238,8 @@ function calendar() {
 const surgeryCategories=[['vision','시력교정'],['cataract','백내장'],['glaucoma','녹내장'],['retina','망막']];
 function surgeryMenu(stage) {
   const title=stage==='before'?'수술 전':'수술 후';
-  return emptyMenuPage(title)+'<div class="surgery-category-list">'+surgeryCategories.map(([id,label])=>
+  const prompt=stage==='before'?'수술예정인 질환을 선택하세요.':'수술하신 질환을 선택하세요.';
+  return emptyMenuPage(title)+'<p class="surgery-category-prompt">'+t(prompt)+'</p><div class="surgery-category-list">'+surgeryCategories.map(([id,label])=>
     '<a class="surgery-category-button" href="#/'+stage+'/'+id+'"><span>'+t(label)+'</span>'+icon('arrow','menu-arrow')+'</a>'
   ).join('')+'</div>';
 }
