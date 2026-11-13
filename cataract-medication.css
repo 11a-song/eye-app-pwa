@@ -66,3 +66,30 @@
 .cataract-saved-card.is-archived .cataract-disease-badge,.medication-saved-plan.is-archived .cataract-disease-badge,.medication-tracker.is-archived .cataract-disease-badge{background:#c9ced6;color:#858c97}.medication-day:not(:has(input[data-cataract-dose]:not(:checked))) .cataract-disease-badge{background:#626b78;color:#c2c9d3}
 
 .medication-day{display:block;padding:0;overflow:hidden}.medication-day-summary{display:flex;align-items:center;gap:12px;padding:18px 20px;list-style:none;cursor:pointer}.medication-day-summary::-webkit-details-marker{display:none}.medication-day-summary-date{display:block;flex:1;min-width:0}.medication-day-summary-date>strong{display:block;font-size:20px;font-weight:700;line-height:1.5}.medication-day-summary-phase{font-size:14px;font-weight:600;line-height:1.6;color:#2d83f5;white-space:nowrap}.medication-day-chevron{width:20px;height:20px;flex-shrink:0;transition:transform .15s}.medication-day[open]>.medication-day-summary{border-bottom:1px solid #e4e9f2}.medication-day[open]>.medication-day-summary .medication-day-chevron{transform:rotate(180deg)}.medication-day-content{display:grid;grid-template-columns:100px minmax(0,1fr);gap:12px;padding:20px 16px}.medication-day:not([open])>.medication-day-content{display:none}.medication-day-content>.medication-day-date{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:0;margin:0;padding:0}.medication-day-content .medication-day-photos{padding-top:0}.medication-day:not(:has(input[data-cataract-dose]:not(:checked))) .medication-day-summary-phase{color:#9dcbff}.medication-day:not(:has(input[data-cataract-dose]:not(:checked)))[open]>.medication-day-summary{border-bottom-color:#5b626d}
+.app-shell:has(.medication-tracker),main.plain-menu-view:has(.medication-tracker){background:#fff}
+.medication-tracker .medication-plan-summary,.medication-tracker.is-archived .medication-plan-summary{padding:0 0 24px;border:0;border-bottom:1px solid #e8ecf2;border-radius:0;background:transparent;overflow:visible}
+.medication-tracker .medication-summary-header,.medication-tracker.is-archived .medication-summary-header{min-height:40px;padding:0;margin-bottom:20px;background:transparent;color:#111}
+.medication-tracker .medication-summary-header h2{font-size:25px;font-weight:700}
+.medication-tracker .medication-summary-header .medication-summary-edit{min-height:32px;padding:4px 12px;border-color:#c9ddf9;color:#2d83f5;font-size:14px}
+.medication-tracker .medication-summary-body{padding:0;gap:12px 18px}
+.medication-tracker .medication-summary-body>.medication-plan-eye{justify-self:start;padding:0;border-radius:0;background:transparent;color:#2d83f5;font-size:20px;font-weight:700}
+.medication-tracker .medication-summary-body dt{color:#7b808b}
+.medication-tracker .medication-summary-body #medication-progress{margin:10px 0 0;font-size:16px}
+.medication-tracker .medication-summary-body progress{height:6px;appearance:none;border:0;border-radius:999px;background:#e9edf3;overflow:hidden}
+.medication-tracker .medication-summary-body progress::-webkit-progress-bar{background:#e9edf3;border-radius:999px}
+.medication-tracker .medication-summary-body progress::-webkit-progress-value{background:#2d83f5;border-radius:999px}
+.medication-tracker .medication-summary-body progress::-moz-progress-bar{background:#2d83f5;border-radius:999px}
+.medication-tracker .medication-tracker-reference{margin-top:22px;padding:0;border:0;border-radius:0;background:transparent}
+.medication-tracker .medication-oral-note{margin:0;padding:0;border:0;border-radius:0;background:transparent;font-size:16px;line-height:1.85}
+.medication-tracker-reference .medication-guide-link{margin:16px 0 0;min-height:46px;border-radius:12px}
+.medication-tracker .medication-tracker-hint{margin:22px 0 14px;font-size:14px;line-height:1.85}
+.medication-tracker .medication-day{margin-top:12px;border:1px solid #e5eaf1;border-radius:16px;background:#f6f8fb}
+.medication-tracker .medication-day:not(:has(input[data-cataract-dose]:not(:checked))){background:#34383f;border-color:#34383f}
+.medication-tracker .medication-arrival-card{margin-top:28px;padding:24px 0 0;border:0;border-top:1px solid #e8ecf2;border-radius:0;background:transparent;color:#404040}
+.medication-tracker .medication-arrival-card p:first-child{margin-bottom:8px}
+.medication-tracker .medication-arrival-card p:first-child>span{color:#7b808b}
+.medication-tracker .medication-arrival-card p:first-child>strong{font-size:22px;color:#111}
+.medication-tracker .medication-arrival-time strong,.medication-tracker .medication-arrival-card a{color:#2d83f5}
+.medication-tracker .medication-readonly-note{padding:0;border-radius:0;background:transparent;font-size:14px;color:#858c97}
+.medication-tracker.is-archived .medication-summary-header{color:#858c97}
+.medication-tracker.is-archived .medication-summary-body>.medication-plan-eye{background:transparent;color:#929aa7}
