@@ -1206,7 +1206,7 @@ function managedPage(key){
 function activeFaqs(){const content=window.clinicContent;return !content||content.status==='disabled'?faqs:content.status==='ready'?content.pages.filter(row=>row.page_key==='faq').map(row=>[row.title,row.content]):[];}
 function blogPage(){const content=window.clinicContent;return pageTop('병원 블로그','병원이 전하는 눈 건강 이야기')+(content?.status==='ready'?content.blog.map(row=>accordion(escapeHtml(row.title),`<p class="note">${escapeHtml(row.post_date)}</p>`+contentImage(row.image_url)+`<div class="managed-text">${escapeHtml(row.content)}</div>`+(safeContentUrl(row.source_url)?`<a class="text-button" href="${escapeHtml(safeContentUrl(row.source_url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.source||'출처 보기')} ↗</a>`:''))).join(''):'<section class="card"><p>블로그를 불러오는 중입니다.</p></section>');}
 function home() {
-  return `<div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span></span></a>`).join('')}</div>`;
+  return `<div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title">${t(title)}</span></span>${icon('arrow','menu-arrow')}</a>`).join('')}</div>`;
 }
 function guide() {
   return window.ClinicGuide.render(window.clinicContent,scheduleData,scheduleState);

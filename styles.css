@@ -96,3 +96,9 @@ html[data-install-welcome] .app-shell{display:none}
 .home-view .menu-bar{border-radius:10px}
 @media(max-width:360px){.app-shell:has(.home-view) .app-header{padding-inline:18px}.app-shell:has(.home-view) .app-header img{width:148px}.app-shell main.home-view{padding-inline:18px}}
 @media(max-height:480px) and (orientation:landscape){.app-shell:has(.home-view){padding-bottom:calc(var(--home-nav-height) + env(safe-area-inset-bottom) + 12px)}.app-shell:has(.home-view) .app-header{padding-top:calc(6px + env(safe-area-inset-top))}.app-shell:has(.home-view) .app-header img{width:132px}}
+/* 메뉴는 기본 88px 높이를 넘지 않고, 화면이 부족할 때만 함께 줄어듭니다. */
+.home-view .menu-list{--home-rows:6;--home-menu-gap:clamp(6px,1.3dvh,12px);flex:0 1 auto;height:calc(var(--home-rows)*88px + (var(--home-rows) - 1)*var(--home-menu-gap));grid-template-rows:repeat(var(--home-rows),minmax(44px,1fr));gap:var(--home-menu-gap)}
+.home-view .menu-bar{border-radius:18px;border:1px solid #e3e8f1;border-bottom:4px solid #dce3ed;background:linear-gradient(180deg,#fff 0%,#fff 65%,#f5f7fb 100%);box-shadow:none;padding-top:3px;padding-bottom:3px;transition:transform .12s,background .12s,border-color .12s}
+.home-view .menu-bar:active{transform:translateY(2px);border-bottom-width:1px;background:linear-gradient(180deg,#f0f4fa,#fff);box-shadow:none}
+.home-view .menu-arrow{width:16px;height:20px;color:var(--blue);margin-left:auto;flex-shrink:0}
+@media(max-height:480px){.home-view .menu-list{--home-rows:3}}
