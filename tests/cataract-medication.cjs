@@ -12,11 +12,17 @@ function save(eye,year,month,day,period='am',hour=9,minute=0){handlers.submit({p
 assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
 const appointmentForm=form('',2027,1,2,'pm',2,30);appointmentForm.id='cataract-appointment-form';
 handlers.change({target:{closest:selector=>selector==='#cataract-appointment-form'?appointmentForm:null}});
+assert.equal(context.window.CataractMedication.hasSchedule(),false,'editing alone does not save an appointment');
+handlers.submit({target:appointmentForm,preventDefault(){}});
 const prefilled=context.window.CataractMedication.renderGuide();
 assert.ok(prefilled.includes('name="month" type="number" min="1" max="12" value="1"'));
 assert.ok(prefilled.includes('value="pm" required checked'));
 assert.ok(prefilled.includes('value="2" aria-label="수술 예정 시"'));
 assert.ok(prefilled.includes('value="30" aria-label="수술 예정 분"'));
+const setup=context.window.CataractMedication.renderSetup();
+assert.ok(setup.includes('type="submit">저장</button>'));
+assert.ok(!setup.includes('medication-date-preview')&&!setup.includes('자동 저장되었습니다'));
+assert.equal(element('#toast').textContent,'저장되었습니다.');
 assert.ok(context.window.CataractMedication.hasSchedule(),'appointment input automatically creates the personal schedule');
 assert.ok(context.window.CataractMedication.renderSchedule().includes('수술할 눈 미선택'),'date-only setup does not assume an operated eye');
 for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderGuide().includes('value="'+eye+'"'));
@@ -57,7 +63,7 @@ failWrite=true;input.checked=true;handlers.change({target:input});assert.equal(i
 assert.ok(element('#medication-check-status').textContent.includes('저장하지 못했습니다'));
 save('both',2027,3,4);assert.ok(element('#medication-form-status').textContent.includes('저장하지 못했습니다'));
 failWrite=false;data.clear();context=session();
-handlers.change({target:{closest:selector=>selector==='#cataract-appointment-form'?appointmentForm:null}});
+handlers.submit({target:appointmentForm,preventDefault(){}});
 const pendingHtml=context.window.CataractMedication.renderSchedule();
 const pendingDose=pendingHtml.match(/data-cataract-dose="([^"]+)"/)[1];
 handlers.change({target:{checked:true,dataset:{cataractDose:pendingDose},closest:()=>null,matches:()=>true}});
