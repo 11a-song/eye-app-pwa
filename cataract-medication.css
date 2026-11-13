@@ -122,3 +122,4 @@
 .medication-tracker .medication-management-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:18px 0 10px}
 .medication-tracker .medication-management-heading .medication-management-title{margin:0;min-width:0}
 .medication-tracker .medication-management-heading #medication-progress{margin:0;font-size:16px;font-weight:400;text-align:right;white-space:nowrap;flex-shrink:0}
+.medication-tracker .medication-check-intro{margin:0 0 14px}

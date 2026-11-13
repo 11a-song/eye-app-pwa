@@ -1443,6 +1443,8 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 .medication-tracker .medication-management-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:18px 0 10px}
 .medication-tracker .medication-management-heading .medication-management-title{margin:0;min-width:0}
 .medication-tracker .medication-management-heading #medication-progress{margin:0;font-size:16px;font-weight:400;text-align:right;white-space:nowrap;flex-shrink:0}
+.medication-tracker .medication-check-intro{margin:0 0 14px}
+
 /* eye-drops-guide.css */
 .eye-drops-page .eye-guide-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
 .eye-drops-page .eye-guide-nav { position: sticky; top: var(--eye-header-height, 70px); z-index: 5; width: 80%; margin: 0 auto; background: #f2f2f2; transition: width .35s ease; }
