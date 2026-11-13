@@ -7,8 +7,8 @@ function session(){
   vm.runInContext(source,context);return context;
 }
 let context=session();
-const form=(eye,year,month,day)=>({id:'cataract-medication-form',elements:{namedItem:name=>({value:{eye,year,month,day}[name]})}});
-function save(eye,year,month,day){handlers.submit({preventDefault(){},target:form(eye,year,month,day)});}
+const form=(eye,year,month,day,period)=>({id:'cataract-medication-form',elements:{namedItem:name=>({value:{eye,year,month,day,period}[name]})}});
+function save(eye,year,month,day,period='am'){handlers.submit({preventDefault(){},target:form(eye,year,month,day,period)});}
 assert.ok(context.window.CataractMedication.renderSchedule().includes('약 사용 일정 설정'));
 for(const eye of ['left','right','both'])assert.ok(context.window.CataractMedication.renderGuide().includes('value="'+eye+'"'));
 save('left',2027,2,30);assert.equal(data.size,0,'invalid dates must not create a schedule');
@@ -21,6 +21,9 @@ const input={checked:true,dataset:{cataractDose:dose},closest:()=>null,matches:(
 handlers.change({target:input});assert.equal(element('#medication-progress').textContent,'1 / 24회 완료');
 context=session();html=context.window.CataractMedication.renderSchedule();
 assert.ok(html.includes('data-cataract-dose="'+dose+'" checked'),'dose completion persists after reload');
+save('left',2027,1,2,'pm');assert.ok(context.window.CataractMedication.renderSchedule().includes('1월 2일 오후'));
+assert.ok(context.window.CataractMedication.renderGuide().includes('value="pm" required checked'));
+assert.ok(context.window.CataractMedication.renderSchedule().includes('1 / 24회 완료'),'period updates preserve dose checks');
 save('right',2027,1,2);assert.ok(context.window.CataractMedication.renderSchedule().includes('0 / 24회 완료'),'different eyes keep separate checks');
 save('left',2027,1,2);assert.ok(context.window.CataractMedication.renderSchedule().includes('1 / 24회 완료'));
 input.checked=false;handlers.change({target:input});assert.ok(context.window.CataractMedication.renderSchedule().includes('0 / 24회 완료'));
