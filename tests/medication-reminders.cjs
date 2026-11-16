@@ -20,6 +20,7 @@ vm.runInContext(source,context);
 function stored(s){data.set(KEY,JSON.stringify(s));}
 function form(value=enabled){const fields={enabled:{checked:value.enabled},consent:{checked:value.consent}};
   for(let i=0;i<4;i++){fields['time'+i]={value:value.times[i]};fields['slot'+i]={checked:value.slots[i]};}
+  for(const [date,on] of Object.entries(value.days||{}))fields['day'+date]={checked:on};
   return {id:'medication-reminder-form',dataset:{plan:'plan-one'},elements:{namedItem:n=>fields[n]},querySelector:s=>s.includes('submit')?submit:test};}
 async function save(value=enabled){await handlers.submit({target:form(value),preventDefault(){}});}
 (async()=>{
@@ -28,6 +29,33 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   const state={plans:{'plan-one':enabled}},before=new Date(2030,5,6);
   const am=api.buildJobs([plan],state,before);
   assert.equal(am.length,13,'three full days and only surgery-day morning');
+  const disabledDay={...enabled,days:{'2030-06-07':false}};
+  const withoutOne=api.buildJobs([plan],{plans:{'plan-one':disabledDay}},before);
+  assert.equal(withoutOne.length,9,'one disabled pre-op day removes its four reminders');
+  assert.ok(withoutOne.every(j=>new Date(j.fire_at).getDate()!==7));
+  const onlySurgery=api.buildJobs([plan],{plans:{'plan-one':{...enabled,days:{'2030-06-07':false,'2030-06-08':false,'2030-06-09':false}}}},before);
+  assert.equal(onlySurgery.length,1,'the three pre-op toggles leave existing surgery-day rules intact');
+  const monthPlan={...plan,surgeryDate:'2030-01-02'};
+  assert.equal(api.buildJobs([monthPlan],{plans:{'plan-one':{...enabled,days:{'2029-12-30':false}}}},new Date(2029,11,28)).length,9,'date toggles work across year boundaries');
+  const initialMarkup=api.render();
+  assert.ok(initialMarkup.includes('name="day2030-06-07" checked'));
+  assert.equal((initialMarkup.match(/class="reminder-wheel"/g)||[]).length,12,'four independent AM/PM, hour and minute wheels');
+  assert.ok(!initialMarkup.includes('type="time"'),'wheel picker replaces platform-dependent time inputs');
+  const wheels={},hiddenTime={value:''};
+  const picker={querySelector:selector=>selector==='input'?hiddenTime:wheels[selector.match(/="(.*?)"/)[1]]};
+  for(const [part,values,initial] of [['period',['오전','오후'],'오전'],['hour',Array.from({length:12},(_,i)=>String(i+1)),'7'],['minute',Array.from({length:60},(_,i)=>String(i).padStart(2,'0')),'40']]){
+    const options=values.map((value,i)=>({id:part+i,dataset:{wheelOption:value},setAttribute(){}}));
+    wheels[part]={dataset:{value:initial},scrollTop:values.indexOf(initial)*36,querySelectorAll:()=>options,setAttribute(){},closest:selector=>selector==='fieldset'?null:picker};
+  }
+  const originalQuery=context.document.querySelectorAll;
+  context.document.querySelectorAll=()=>Object.values(wheels);api.initializeWheels();
+  assert.equal(wheels.hour.scrollTop,6*36);assert.equal(wheels.minute.scrollTop,40*36);
+  wheels.minute.scrollTop=41*36;handlers.scroll({target:{closest:()=>wheels.minute}});assert.equal(hiddenTime.value,'07:41','vertical swipe updates minute selection');
+  wheels.period.scrollTop=36;handlers.scroll({target:{closest:()=>wheels.period}});assert.equal(hiddenTime.value,'19:41','swiping to PM updates the saved 24-hour time');
+  handlers.keydown({key:'ArrowDown',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'20:41','keyboard navigation changes hour');
+  wheels.hour.scrollTop=11*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'12:41','12 PM is noon');
+  wheels.period.scrollTop=0;handlers.scroll({target:{closest:()=>wheels.period}});assert.equal(hiddenTime.value,'00:41','12 AM is midnight');
+  context.document.querySelectorAll=originalQuery;
   const pm=api.buildJobs([{...plan,period:'pm',hour:2}],state,before);
   assert.equal(pm.length,14,'afternoon surgery permits morning and noon');
   assert.equal(api.buildJobs([{...plan,archived:true}],state,before).length,0);
@@ -45,6 +73,9 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   assert.equal(calls.at(-1).body.jobs.length,13);assert.equal(calls.at(-1).body.token.length,64);
   assert.ok(!JSON.stringify(calls).includes('checks'),'check records never go to server');
   assert.equal(JSON.parse(data.get(KEY)).pending,false);
+  await save(disabledDay);assert.equal(calls.at(-1).body.jobs.length,9);
+  assert.equal(JSON.parse(data.get(KEY)).plans['plan-one'].days['2030-06-07'],false,'day choice persists');
+  assert.ok(!api.render().includes('name="day2030-06-07" checked'),'disabled date restores correctly');
   await save({...enabled,enabled:false});assert.equal(calls.at(-1).body.jobs.length,0,'off atomically cancels pending jobs');
   failNetwork=true;await save();assert.ok(JSON.parse(data.get(KEY)).pending,'failure stays pending for retry');assert.ok(!submit.disabled);
   failNetwork=false;all=[{...plan,archived:true}];api.plansChanged(all);

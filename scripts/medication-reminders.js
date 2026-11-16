@@ -18,6 +18,54 @@
     if(Notification.permission==='denied')return '알림이 차단되어 있습니다. 휴대폰 또는 브라우저의 사이트 알림 설정에서 허용해 주세요.';
     return '';
   }
+  const pad=n=>String(n).padStart(2,'0');
+  function reminderDates(plan){
+    const [y,m,d]=plan.surgeryDate.split('-').map(Number);
+    return [3,2,1].map(offset=>{const date=new Date(y,m-1,d-offset,12);return {value:`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`,weekday:['일','월','화','수','목','금','토'][date.getDay()],label:`${date.getMonth()+1}/${date.getDate()}`,offset};});
+  }
+  function renderDays(plan,value){
+    return `<section class="reminder-days" aria-labelledby="reminder-days-title"><h3 id="reminder-days-title">알림 받을 날짜</h3><div class="reminder-day-buttons">${reminderDates(plan).map(day=>`<label class="reminder-day-button"><input type="checkbox" name="day${day.value}" ${value.days?.[day.value]!==false?'checked':''} aria-label="${day.label} (${day.weekday}) 수술 ${day.offset}일 전 알림"><span class="reminder-day-circle">${day.weekday}</span><strong>${day.label}</strong><small>${day.offset}일 전</small></label>`).join('')}</div><p>수술 전 3일의 알림을 날짜별로 켜고 끌 수 있습니다.</p></section><p class="reminder-wheel-hint">시간을 위아래로 밀어 선택하세요.${value.times?.some(Boolean)?'':' 처음 표시되는 시간은 예시입니다. 처방에 맞춰 조정해 주세요.'}</p>`;
+  }
+  function wheel(slot,part,values,selectedValue){
+    const prefix=`reminder-wheel-${slot}-${part}`,selected=values.findIndex(value=>String(value)===String(selectedValue));
+    return `<div class="reminder-wheel" data-reminder-wheel="${part}" data-value="${selectedValue}" role="listbox" tabindex="0" aria-activedescendant="${prefix}-${selected}" aria-label="${slots[slot]} ${part==='period'?'오전·오후':part==='hour'?'시':'분'}">${values.map((value,i)=>`<button id="${prefix}-${i}" type="button" role="option" tabindex="-1" data-wheel-option="${value}" aria-selected="${String(value)===String(selectedValue)}">${value}</button>`).join('')}</div>`;
+  }
+  function renderTimePicker(index,value){
+    const time=/^([01]\d|2[0-3]):[0-5]\d$/.test(value||'')?value:['07:00','12:00','18:00','22:00'][index];
+    const [hour,minute]=time.split(':').map(Number);
+    return `<div class="reminder-time-picker" data-time-picker><input type="hidden" name="time${index}" value="${time}">${wheel(index,'period',['오전','오후'],hour<12?'오전':'오후')}${wheel(index,'hour',Array.from({length:12},(_,i)=>i+1),hour%12||12)}<span class="reminder-picker-colon" aria-hidden="true">:</span>${wheel(index,'minute',Array.from({length:60},(_,i)=>pad(i)),pad(minute))}</div>`;
+  }
+  const wheelHeight=36;
+  function selectWheel(wheel,index,scroll=false){
+    if(wheel.closest('fieldset')?.disabled)return;
+    const options=Array.from(wheel.querySelectorAll('[data-wheel-option]'));
+    index=Math.max(0,Math.min(options.length-1,index));if(!options[index])return;
+    wheel.dataset.value=options[index].dataset.wheelOption;
+    options.forEach((option,i)=>option.setAttribute('aria-selected',String(i===index)));
+    wheel.setAttribute('aria-activedescendant',options[index].id);
+    if(scroll)wheel.scrollTop=index*wheelHeight;
+    const picker=wheel.closest('[data-time-picker]');
+    const part=name=>picker.querySelector(`[data-reminder-wheel="${name}"]`).dataset.value;
+    const hour=Number(part('hour'))%12+(part('period')==='오후'?12:0);
+    picker.querySelector('input').value=`${pad(hour)}:${part('minute')}`;
+  }
+  function initializeWheels(){
+    for(const wheel of document.querySelectorAll?.('[data-reminder-wheel]')||[]){
+      const options=Array.from(wheel.querySelectorAll('[data-wheel-option]'));
+      const index=options.findIndex(option=>option.dataset.wheelOption===wheel.dataset.value);
+      wheel.scrollTop=Math.max(0,index)*wheelHeight;
+    }
+  }
+  document.addEventListener('scroll',event=>{
+    const wheel=event.target.closest?.('[data-reminder-wheel]');
+    if(wheel)selectWheel(wheel,Math.round(wheel.scrollTop/wheelHeight));
+  },{capture:true,passive:true});
+  document.addEventListener('keydown',event=>{
+    const wheel=event.target.closest?.('[data-reminder-wheel]');if(!wheel||!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
+    event.preventDefault();const last=wheel.querySelectorAll('[data-wheel-option]').length-1;
+    const index=event.key==='Home'?0:event.key==='End'?last:Math.round(wheel.scrollTop/wheelHeight)+(event.key==='ArrowUp'?-1:1);
+    selectWheel(wheel,index,true);
+  });
   function renderMenu(plan){
     if(!plan||plan.archived)return '';
     const s=read(),on=settings(s,plan.id).enabled;
@@ -26,7 +74,7 @@
   function render(){
     const plan=selected();if(!plan)return '<p>먼저 수술 스케줄을 생성해 주세요.</p>';
     const s=read(),value=settings(s,plan.id),blocked=guidance(),disabled=plan.archived;
-    return `<section class="reminder-page"><a class="surgery-detail-back" href="#/profile/cataract-before?plan=${plan.id}">‹ 안약 스케줄로</a><h2>${bell}안약 알림 설정</h2><p class="reminder-plan">${escape({left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'}[plan.eye]||'수술 일정')} · ${escape(plan.surgeryDate.replaceAll('-','.'))}</p><form id="medication-reminder-form" data-plan="${plan.id}"><fieldset ${disabled?'disabled':''}><legend class="visually-hidden">안약 알림 시간 설정</legend><label class="reminder-master"><span><strong>안약 알림 받기</strong><small>설정한 시간에 푸시 알림을 받습니다.</small></span><input type="checkbox" name="enabled" role="switch" ${value.enabled?'checked':''}></label><div class="reminder-times">${slots.map((title,i)=>`<div class="reminder-time-row"><div><label for="reminder-time-${i}">${title}</label><small>${i===0||i===2?'목시트라 · 브로낙':'목시트라'}</small></div><input type="time" id="reminder-time-${i}" name="time${i}" value="${/^\d{2}:\d{2}$/.test(value.times?.[i])?value.times[i]:''}" aria-label="${title} 알림 시간"><label class="reminder-slot-switch"><input type="checkbox" name="slot${i}" role="switch" ${value.slots?.[i]!==false?'checked':''} aria-label="${title} 알림 켜기"><span>알림</span></label></div>`).join('')}</div><p class="reminder-status" id="reminder-status" role="status">${disabled?'이전 수술 일정은 알림을 설정할 수 없습니다.':escape(blocked|| (s.pending?'이전 변경을 서버에 반영하지 못했습니다. 인터넷 연결 후 다시 저장해 주세요.':''))}</p><p class="reminder-note">시간은 현재 기기의 시간대를 기준으로 합니다. 처방받은 횟수와 간격에 맞춰 설정해 주세요.<br>수술 당일은 오전 내원 시 아침, 오후 내원 시 아침·점심만 알립니다. 내원시간 이후 알림은 보내지 않습니다.</p><label class="reminder-consent"><input type="checkbox" name="consent" ${value.consent?'checked':''}><span>알림 발송을 위한 기기 수신 정보와 발송 시간을 서버에 저장하는 데 동의합니다. 체크 기록은 전송하지 않습니다.</span></label><button class="primary-button" type="submit">알림 설정 저장</button><button class="reminder-test-button" type="button" data-test-medication-reminder ${!s.subscription?'disabled':''}>테스트 알림 보내기</button></fieldset></form><p class="reminder-note">아이폰은 iOS 16.4 이상에서 홈 화면에 설치한 앱의 알림을 허용해야 합니다. 인터넷 연결과 휴대폰 설정에 따라 알림이 지연되거나 전달되지 않을 수 있습니다.</p></section>`;
+    return `<section class="reminder-page"><a class="surgery-detail-back" href="#/profile/cataract-before?plan=${plan.id}">‹ 안약 스케줄로</a><h2>${bell}안약 알림 설정</h2><p class="reminder-plan">${escape({left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'}[plan.eye]||'수술 일정')} · ${escape(plan.surgeryDate.replaceAll('-','.'))}</p><form id="medication-reminder-form" data-plan="${plan.id}"><fieldset ${disabled?'disabled':''}><legend class="visually-hidden">안약 알림 시간 설정</legend><label class="reminder-master"><span><strong>안약 알림 받기</strong><small>설정한 시간에 푸시 알림을 받습니다.</small></span><input type="checkbox" name="enabled" role="switch" ${value.enabled?'checked':''}></label>${renderDays(plan,value)}<div class="reminder-times">${slots.map((title,i)=>`<div class="reminder-time-row"><div><strong class="reminder-slot-title">${title}</strong><small>${i===0||i===2?'목시트라 · 브로낙':'목시트라'}</small></div>${renderTimePicker(i,value.times?.[i])}<label class="reminder-slot-switch"><input type="checkbox" name="slot${i}" role="switch" ${value.slots?.[i]!==false?'checked':''} aria-label="${title} 알림 켜기"><span>알림</span></label></div>`).join('')}</div><p class="reminder-status" id="reminder-status" role="status">${disabled?'이전 수술 일정은 알림을 설정할 수 없습니다.':escape(blocked|| (s.pending?'이전 변경을 서버에 반영하지 못했습니다. 인터넷 연결 후 다시 저장해 주세요.':''))}</p><p class="reminder-note">시간은 현재 기기의 시간대를 기준으로 합니다. 처방받은 횟수와 간격에 맞춰 설정해 주세요.<br>수술 당일은 오전 내원 시 아침, 오후 내원 시 아침·점심만 알립니다. 내원시간 이후 알림은 보내지 않습니다.</p><label class="reminder-consent"><input type="checkbox" name="consent" ${value.consent?'checked':''}><span>알림 발송을 위한 기기 수신 정보와 발송 시간을 서버에 저장하는 데 동의합니다. 체크 기록은 전송하지 않습니다.</span></label><button class="primary-button" type="submit">알림 설정 저장</button><button class="reminder-test-button" type="button" data-test-medication-reminder ${!s.subscription?'disabled':''}>테스트 알림 보내기</button></fieldset></form><p class="reminder-note">아이폰은 iOS 16.4 이상에서 홈 화면에 설치한 앱의 알림을 허용해야 합니다. 인터넷 연결과 휴대폰 설정에 따라 알림이 지연되거나 전달되지 않을 수 있습니다.</p></section>`;
   }
   function buildJobs(all,s,now=new Date()){
     const jobs=[];
@@ -38,6 +86,8 @@
         if(value.slots?.[slot]===false||!/^([01]\d|2[0-3]):[0-5]\d$/.test(value.times?.[slot]||''))continue;
         if(offset===0&&slot>(p.period==='am'?0:1))continue;
         const [h,min]=value.times[slot].split(':').map(Number),date=new Date(y,m-1,d-offset,h,min);
+        const day=`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+        if(offset>0&&value.days?.[day]===false)continue;
         if(date<=now||offset===0&&date>=arrival)continue;
         jobs.push({plan_id:p.id,slot,fire_at:date.toISOString()});
       }
@@ -85,7 +135,9 @@
     const form=event.target;if(form.id!=='medication-reminder-form')return;event.preventDefault();if(busy)return;
     const p=plans().find(p=>p.id===form.dataset.plan);if(!p||p.archived)return;
     const field=name=>form.elements.namedItem(name),enabled=field('enabled').checked;
-    const value={enabled,consent:field('consent').checked,times:slots.map((_,i)=>field('time'+i).value),slots:slots.map((_,i)=>field('slot'+i).checked)};
+    // Flush a wheel still moving when the user taps Save.
+    for(const wheel of form.querySelectorAll?.('[data-reminder-wheel]')||[])selectWheel(wheel,Math.round(wheel.scrollTop/wheelHeight),true);
+    const value={enabled,consent:field('consent').checked,times:slots.map((_,i)=>field('time'+i).value),slots:slots.map((_,i)=>field('slot'+i).checked),days:Object.fromEntries(reminderDates(p).map(day=>[day.value,field('day'+day.value)?.checked!==false]))};
     if(enabled){
       const blocked=guidance();if(blocked){status(blocked);return;}
       if(!value.consent){status('알림 발송을 위한 정보 저장에 동의해 주세요.');return;}
@@ -109,6 +161,8 @@
     finally{busy=false;button.disabled=false;}
   });
   document.addEventListener('click',async event=>{
+    const option=event.target.closest?.('[data-wheel-option]');
+    if(option){const wheel=option.closest('[data-reminder-wheel]');selectWheel(wheel,Array.from(wheel.querySelectorAll('[data-wheel-option]')).indexOf(option),true);return;}
     const button=event.target.closest?.('[data-test-medication-reminder]');if(!button||busy)return;
     busy=true;button.disabled=true;
     try{
@@ -122,7 +176,7 @@
     const s=read();if(!s.subscription)return;s.pending=true;try{write(s);}catch{return;}
     synchronize().catch(()=>toast('알림 변경을 연결하지 못했습니다. 인터넷 연결 후 다시 시도합니다.'));
   }
-  window.MedicationReminders={render,renderMenu,plansChanged,buildJobs};
+  window.MedicationReminders={render,renderMenu,plansChanged,buildJobs,initializeWheels};
   lastPlans=JSON.stringify(plans().map(p=>[p.id,p.surgeryDate,p.period,p.hour,p.minute,p.archived]));
   const retry=()=>{const s=read();if(s.subscription)synchronize().catch(()=>{});};
   window.addEventListener('online',retry);
