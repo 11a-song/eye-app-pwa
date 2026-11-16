@@ -1,5 +1,27 @@
-const CACHE = 'jeileye-app-v153';
+const CACHE = 'jeileye-app-v154';
 const SHELL = ['./', './assets/app.css', './assets/app.js', './manifest.webmanifest', './assets/logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/doctor-placeholder.svg'];
+self.addEventListener('push',event=>{
+  let data={};try{data=event.data?.json()||{};}catch{}
+  const plan=/^[a-z0-9-]{1,70}$/.test(data.planId||'')?data.planId:'';
+  event.waitUntil(self.registration.showNotification('연세제일안과 · 안약 알림',{
+    body:typeof data.body==='string'?data.body.slice(0,200):'안약을 넣을 시간입니다. 오늘의 스케줄을 확인해 주세요.',
+    icon:new URL('./assets/icon-192.png',self.registration.scope).href,
+    badge:new URL('./assets/icon-192.png',self.registration.scope).href,
+    tag:typeof data.tag==='string'?data.tag.slice(0,120):'jeileye-eye-drop',
+    data:{url:new URL('./#/profile/cataract-before'+(plan?'?plan='+plan:''),self.registration.scope).href}
+  }));
+});
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  event.waitUntil((async()=>{
+    const scope=new URL(self.registration.scope),target=new URL(event.notification.data?.url||'./#/profile',scope);
+    if(target.origin!==scope.origin)return;
+    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const existing=windows.find(client=>client.url.startsWith(scope.href));
+    if(existing){await existing.navigate(target.href);return existing.focus();}
+    return self.clients.openWindow(target.href);
+  })());
+});
 // Cloudflare redirects /index.html to /. A followed redirect cannot be returned
 // directly to a navigation request whose redirect mode is manual (Chrome ERR_FAILED).
 function documentResponse(response) {

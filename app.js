@@ -292,6 +292,7 @@ function eyeDropsGuide() {
 function profile() {
   const section=location.hash.replace(/^#\/?/,'').split('?')[0].split('/')[1];
   const header=emptyMenuPage('내정보');
+  if(section==='reminders')return header+window.MedicationReminders.render();
   if(section==='cataract-before')return header+window.CataractMedication.renderSchedule();
   if(section==='cataract-after')return header+'<section class="surgery-detail-page"><h2>백내장 수술 후</h2></section>';
   return header+'<div class="surgery-category-list">'+window.CataractMedication.renderProfileLinks()+'</div>';

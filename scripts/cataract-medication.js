@@ -38,7 +38,11 @@
       return {plan,plans,activeId:plan?.id||'',appointment:plan?cleanAppointment(plan):appointment,checks:value?.checks&&typeof value.checks==='object'&&!Array.isArray(value.checks)?value.checks:{}};
     }catch{return {plan:null,plans:[],activeId:'',appointment:null,checks:{}};}
   }
-  function write(value){try{localStorage.setItem(KEY,JSON.stringify(value));return true;}catch{return false;}}
+  function write(value){
+    try{localStorage.setItem(KEY,JSON.stringify(value));}catch{return false;}
+    try{window.MedicationReminders?.plansChanged(value.plans||[]);}catch{/* Reminder retry must not invalidate a saved local check record. */}
+    return true;
+  }
   function stepArrivalMinute(input,direction){
     const current=Number(input.value),base=Number.isFinite(current)?Math.round(current):0;
     input.value=pad(((base+direction)%60+60)%60);
@@ -134,7 +138,7 @@
   function renderSchedule(){
     const store=read(),plan=store.plan;
     if(!plan)return `<section class="medication-empty"><h2>백내장 수술 전</h2><p>수술할 눈과 수술일을 입력하면 안약 사용 일정을 체크할 수 있습니다.</p><a class="primary-button" href="#/before/cataract">약 사용 일정 설정</a></section>`;
-    return `<div class="medication-tracker${plan.archived?' is-archived':''}"><section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은<br><strong>수술 후</strong>에 드셔야 합니다.</p></section><p class="medication-tracker-hint medication-check-intro">안약을 넣은 후 <span class="medication-check-phrase"><svg class="medication-check-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor"/><path d="m7 12 3 3 7-7" stroke="currentColor" stroke-width="1.6"/></svg>체크해</span> 주세요.</p>${renderPlanSummary(plan)}<section class="medication-schedule-card" aria-label="안약 스케줄 관리"><p class="medication-tracker-hint">안약과 안약 사이에는 5분 이상 간격으로 넣어주세요.</p>${renderMedicationProgress(store)}${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}</section>${renderArrivalCard()}<aside class="medication-arrival-notices" aria-label="수술 당일 내원 시 주의사항"><p>*수술실 입실까지 약 1시간 정도 대기시간이 있습니다.</p><p>*내원시간 이후 도착 시 수술 순서가 변경될 수 있습니다.</p></aside><p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에만 저장됩니다.</p></div>`;
+    return `<div class="medication-tracker${plan.archived?' is-archived':''}"><section class="medication-tracker-reference" aria-label="약 사용 안내"><p class="medication-oral-note">미리 받으신 안과 처방 <strong>먹는 약</strong>은<br><strong>수술 후</strong>에 드셔야 합니다.</p></section><p class="medication-tracker-hint medication-check-intro">안약을 넣은 후 <span class="medication-check-phrase"><svg class="medication-check-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor"/><path d="m7 12 3 3 7-7" stroke="currentColor" stroke-width="1.6"/></svg>체크해</span> 주세요.</p>${renderPlanSummary(plan)}<section class="medication-schedule-card" aria-label="안약 스케줄 관리"><p class="medication-tracker-hint">안약과 안약 사이에는 5분 이상 간격으로 넣어주세요.</p>${renderMedicationProgress(store)}${window.MedicationReminders?.renderMenu(plan)||''}${dates(plan).map((date,index)=>renderScheduleDay(plan,store,date,index)).join('')}</section>${renderArrivalCard()}<aside class="medication-arrival-notices" aria-label="수술 당일 내원 시 주의사항"><p>*수술실 입실까지 약 1시간 정도 대기시간이 있습니다.</p><p>*내원시간 이후 도착 시 수술 순서가 변경될 수 있습니다.</p></aside><p class="medication-storage-note" id="medication-check-status" role="status">체크 기록은 현재 기기에만 저장됩니다.</p></div>`;
   }
   function showSavedToast(message='저장되었습니다.'){
     const toast=document.querySelector('#toast');
@@ -204,7 +208,7 @@
   });
   function renderProfileLinks(){
     const {plans}=read();
-    return plans.map(p=>`<a class="surgery-category-button${p.archived?' is-archived':''}" href="#/profile/cataract-before${plans.length>1?'?plan='+p.id:''}"><span class="profile-plan-copy"><strong class="profile-plan-eye">${eyes[p.eye]||'수술할 눈 미선택'}</strong><span class="profile-plan-description">백내장 수술 전 안약 스케줄 관리</span><small>수술예정일 ${p.surgeryDate.slice(0,4)}년 ${label(p.surgeryDate)}${timeLabel(p)?'<br>내원시간 '+timeLabel(p):''}</small></span><svg class="menu-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>`).join('');
+    return plans.map(p=>`<div class="profile-reminder-group"><a class="surgery-category-button${p.archived?' is-archived':''}" href="#/profile/cataract-before${plans.length>1?'?plan='+p.id:''}"><span class="profile-plan-copy"><strong class="profile-plan-eye">${eyes[p.eye]||'수술할 눈 미선택'}</strong><span class="profile-plan-description">백내장 수술 전 안약 스케줄 관리</span><small>수술예정일 ${p.surgeryDate.slice(0,4)}년 ${label(p.surgeryDate)}${timeLabel(p)?'<br>내원시간 '+timeLabel(p):''}</small></span><svg class="menu-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>${window.MedicationReminders?.renderMenu(p)||''}</div>`).join('');
   }
   let pendingRecordAction=null;
   function recordHasChecks(store,id){
@@ -289,5 +293,5 @@
     list.lastElementChild.querySelector('input')?.focus({preventScroll:true});
     list.lastElementChild.scrollIntoView({block:'nearest',behavior:'smooth'});
   });
-  window.CataractMedication={renderGuide,renderSchedule,renderSetup,renderArrivalCard,renderProfileLinks,hasSchedule:()=>!!read().plan};
+  window.CataractMedication={getPlans:()=>read().plans,renderGuide,renderSchedule,renderSetup,renderArrivalCard,renderProfileLinks,hasSchedule:()=>!!read().plan};
 })();

@@ -1,8 +1,8 @@
 // Buildless Cloudflare hosting serves these checked-in bundles without a runtime build.
 const fs = require('node:fs'), path = require('node:path');
 const root = path.resolve(__dirname, '..');
-const styles = ['fonts.css','styles.css','schedule.css','guide.css','typography.css','vision-before.css','cataract-before.css','cataract-medication.css','eye-drops-guide.css'];
-const scripts = ['scripts/pwa-install.js','scripts/supabase-config.js','scripts/public-content.js','scripts/holidays.js','scripts/schedule-source.js','scripts/schedule-model.js','scripts/guide-reference.js','scripts/guide.js','scripts/vision-before.js','scripts/cataract-before.js','scripts/cataract-medication.js','scripts/eye-drops-guide.js','app.js'];
+const styles = ['fonts.css','styles.css','schedule.css','guide.css','typography.css','vision-before.css','cataract-before.css','cataract-medication.css','eye-drops-guide.css','medication-reminders.css'];
+const scripts = ['scripts/pwa-install.js','scripts/supabase-config.js','scripts/public-content.js','scripts/holidays.js','scripts/schedule-source.js','scripts/schedule-model.js','scripts/guide-reference.js','scripts/guide.js','scripts/vision-before.js','scripts/cataract-before.js','scripts/cataract-medication.js','scripts/medication-reminders.js','scripts/eye-drops-guide.js','app.js'];
 const read = file => fs.readFileSync(path.join(root,file),'utf8').replace(/\r\n/g,'\n');
 const css = styles.map(file => `/* ${file} */\n` + read(file).replace(/url\((['"]?)([^)'"\s]+)\1\)/g, (match, quote, url) => {
   if (/^(?:data:|https?:|\/|#)/.test(url)) return match;
