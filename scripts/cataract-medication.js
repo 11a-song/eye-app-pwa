@@ -14,6 +14,8 @@
   const hasTime=plan=>Number.isInteger(plan?.hour)&&plan.hour>=1&&plan.hour<=12&&Number.isInteger(plan?.minute)&&plan.minute>=0&&plan.minute<=59;
   const timeLabel=plan=>hasTime(plan)?`${periods[plan.period]||''} ${plan.hour}시 ${pad(plan.minute)}분`.trim():'';
   const key=date=>`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+  const isFuture=plan=>plan.surgeryDate>key(new Date());
+  function archivePriorPlans(plans){for(const plan of plans)if(!isFuture(plan))plan.archived=true;}
   function parseDate(value){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return null;
     const [y,m,d]=value.split('-').map(Number),date=new Date(y,m-1,d,12);
@@ -32,7 +34,10 @@
       const value=JSON.parse(localStorage.getItem(KEY)||'null'),appointment=cleanAppointment(value?.appointment);
       const plans=Array.isArray(value?.plans)?value.plans.filter(validPlan).map((p,i)=>({...p,id:/^[a-z0-9-]{1,70}$/.test(p.id||'')?p.id:`record-${i}`})):[];
       if(!plans.length){const legacy=validPlan(value?.plan)?value.plan:appointment?{...appointment,eye:'pending'}:null;if(legacy)plans.push({...legacy,id:'legacy'});}
-      plans.forEach((p,i)=>{p.archived=typeof p.archived==='boolean'?p.archived:i<plans.length-1;});
+      const restoreFuture=plans.some(p=>p.archived===true&&isFuture(p));
+      plans.forEach((p,i)=>{p.archived=isFuture(p)?false:typeof p.archived==='boolean'?p.archived:i<plans.length-1;});
+      // Repair earlier versions' future-record archival once, without changing checks or IDs.
+      if(restoreFuture)try{localStorage.setItem(KEY,JSON.stringify({...value,plans,plan:value?.plan&&isFuture(value.plan)?{...value.plan,archived:false}:value?.plan}));}catch{/* Keep the recovered view usable if storage is unavailable. */}
       const requested=location.hash.match(/[?&]plan=([a-z0-9-]+)/)?.[1];
       const plan=plans.find(p=>p.id===requested)||plans.find(p=>p.id===value?.activeId)||plans[0]||null;
       return {plan,plans,activeId:plan?.id||'',appointment:plan?cleanAppointment(plan):appointment,checks:value?.checks&&typeof value.checks==='object'&&!Array.isArray(value.checks)?value.checks:{}};
@@ -162,7 +167,7 @@
     }
     store.plan=plan;store.appointment={surgeryDate:plan.surgeryDate,period:plan.period,hour:plan.hour,minute:plan.minute};
     const existing=store.plans.findIndex(p=>p.id===plan.id);
-    if(existing<0){store.plans.forEach(p=>p.archived=true);store.plans.push(plan);}else store.plans[existing]=plan;
+    if(existing<0){archivePriorPlans(store.plans);store.plans.push(plan);}else store.plans[existing]=plan;
     store.activeId=plan.id;
     if(!write(store)){status.textContent='기기에 저장하지 못했습니다. 다시 시도해 주세요.';return;}
     if(!form.dataset)form.dataset={};form.dataset.planId=plan.id;
@@ -279,10 +284,10 @@
     const button=event.target.closest?.('[data-add-cataract-appointment]');
     if(!button)return;
     const panel=button.closest('.cataract-appointment-panel'),store=read();
-    if(store.plans.some(p=>!p.archived)){
-      store.plans.forEach(p=>p.archived=true);
+    if(store.plans.some(p=>!p.archived&&!isFuture(p))){
+      archivePriorPlans(store.plans);
       if(!write(store)){showSavedToast('항목을 추가하지 못했습니다. 다시 시도해 주세요.');return;}
-      for(const plan of store.plans){
+      for(const plan of store.plans.filter(p=>p.archived)){
         const old=panel.querySelector(`[data-saved-plan="${plan.id}"]`)||panel.querySelector(`form[data-plan-id="${plan.id}"]`);
         if(old)old.outerHTML=renderSavedCard(plan);
       }
