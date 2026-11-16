@@ -38,25 +38,36 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   const monthPlan={...plan,surgeryDate:'2030-01-02'};
   assert.equal(api.buildJobs([monthPlan],{plans:{'plan-one':{...enabled,days:{'2029-12-30':false}}}},new Date(2029,11,28)).length,9,'date toggles work across year boundaries');
   const initialMarkup=api.render();
-  assert.ok(initialMarkup.includes('name="day2030-06-10" checked'));
+  assert.equal((initialMarkup.match(/<input[^>]*type="checkbox"[^>]*\schecked/g)||[]).length,0,'new schedule defaults to all notifications off');
+  const childToggles=Array.from({length:8},()=>({checked:false})),consentToggle={checked:false};
+  const master={name:'enabled',checked:true,closest:()=>({querySelectorAll:()=>childToggles})};
+  handlers.change({target:master});assert.ok(childToggles.every(toggle=>toggle.checked),'master ON turns on all date and time switches');
+  assert.equal(consentToggle.checked,false,'master cannot grant data consent');
+  childToggles[0].checked=false;handlers.change({target:{name:'slot0'}});assert.equal(childToggles[0].checked,false,'individual switches remain adjustable');
+  master.checked=false;handlers.change({target:master});assert.ok(childToggles.every(toggle=>!toggle.checked),'master OFF turns all child switches off');
+  assert.ok(initialMarkup.includes('>오전 7시</button>')&&initialMarkup.includes('>오후 1시</button>'));
+  assert.ok(!initialMarkup.includes('data-reminder-wheel="period"'),'AM/PM is included in the hour instead of a separate wheel');
+  assert.ok(!initialMarkup.includes('name="day2030-06-10" checked'));
   assert.ok(initialMarkup.includes('<small>수술 당일</small>')&&!initialMarkup.includes('0일 전'));
-  assert.ok(initialMarkup.includes('name="day2030-06-07" checked'));
-  assert.equal((initialMarkup.match(/class="reminder-wheel"/g)||[]).length,12,'four independent AM/PM, hour and minute wheels');
+  assert.ok(!initialMarkup.includes('name="day2030-06-07" checked'));
+  assert.equal((initialMarkup.match(/class="reminder-wheel"/g)||[]).length,8,'four independent localized-hour and minute wheels');
   assert.ok(!initialMarkup.includes('type="time"'),'wheel picker replaces platform-dependent time inputs');
   const wheels={},hiddenTime={value:''};
-  const picker={querySelector:selector=>selector==='input'?hiddenTime:wheels[selector.match(/="(.*?)"/)[1]]};
-  for(const [part,values,initial] of [['period',['오전','오후'],'오전'],['hour',Array.from({length:12},(_,i)=>String(i+1)),'7'],['minute',Array.from({length:60},(_,i)=>String(i).padStart(2,'0')),'40']]){
+  const picker={dataset:{},querySelector:selector=>selector==='input'?hiddenTime:wheels[selector.match(/="(.*?)"/)[1]]};
+  for(const [part,values,initial] of [['hour',Array.from({length:24},(_,i)=>String(i)),'7'],['minute',Array.from({length:60},(_,i)=>String(i).padStart(2,'0')),'40']]){
     const options=values.map((value,i)=>({id:part+i,dataset:{wheelOption:value},setAttribute(){}}));
     wheels[part]={dataset:{value:initial},scrollTop:values.indexOf(initial)*36,querySelectorAll:()=>options,setAttribute(){},closest:selector=>selector==='fieldset'?null:picker};
   }
   const originalQuery=context.document.querySelectorAll;
   context.document.querySelectorAll=()=>Object.values(wheels);api.initializeWheels();
-  assert.equal(wheels.hour.scrollTop,6*36);assert.equal(wheels.minute.scrollTop,40*36);
+  assert.equal(wheels.hour.scrollTop,7*36);assert.equal(wheels.minute.scrollTop,40*36);
   wheels.minute.scrollTop=41*36;handlers.scroll({target:{closest:()=>wheels.minute}});assert.equal(hiddenTime.value,'07:41','vertical swipe updates minute selection');
-  wheels.period.scrollTop=36;handlers.scroll({target:{closest:()=>wheels.period}});assert.equal(hiddenTime.value,'19:41','swiping to PM updates the saved 24-hour time');
+  wheels.hour.scrollTop=19*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'19:41','swiping to PM updates the saved 24-hour time');
   handlers.keydown({key:'ArrowDown',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'20:41','keyboard navigation changes hour');
-  wheels.hour.scrollTop=11*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'12:41','12 PM is noon');
-  wheels.period.scrollTop=0;handlers.scroll({target:{closest:()=>wheels.period}});assert.equal(hiddenTime.value,'00:41','12 AM is midnight');
+  wheels.hour.scrollTop=12*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'12:41','12 PM is noon');
+  assert.equal(picker.dataset.period,'pm','noon uses the afternoon color');
+  wheels.hour.scrollTop=0;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'00:41','12 AM is midnight');
+  assert.equal(picker.dataset.period,'am','morning color follows the selected hour');
   context.document.querySelectorAll=originalQuery;
   const pm=api.buildJobs([{...plan,period:'pm',hour:2}],state,before);
   assert.equal(pm.length,14,'afternoon surgery permits morning and noon');

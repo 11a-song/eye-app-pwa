@@ -131,8 +131,8 @@ handlers.change({target:{checked:true,dataset:{cataractDose:pendingDose},closest
 save('left',2027,1,2,'pm',2,30);
 assert.ok(progressTotal(context.window.CataractMedication.renderSchedule()).includes('1 / 21회 완료'),'choosing an eye preserves checks from the automatically created schedule');
 const originalId=JSON.parse(data.get('jeileye-cataract-preop-v1')).plan.id;
-const secondForm=form('left',2027,1,2,'pm',3,0);secondForm.dataset={planId:''};
-setDeviceDay('2028-01-01'); // Exercise prior-record archival using dates that are actually past.
+const secondForm=form('left',2027,1,4,'pm',3,0);secondForm.dataset={planId:''};
+setDeviceDay('2027-01-03'); // Only the first record is past; the second remains future.
 handlers.submit({target:secondForm,preventDefault(){}});
 assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.length,2,'adding a card creates an independent record');
 assert.ok(progressTotal(context.window.CataractMedication.renderSchedule()).includes('0 / 21회 완료'),'even matching dates and eyes keep separate checks');
@@ -203,11 +203,12 @@ handlers.click({target:{closest:selector=>selector==='[data-close-cataract-appoi
 assert.ok(restored.includes('class="cataract-saved-card"'),'closing an edit restores the saved card');
 const beforeAdd=data.get('jeileye-cataract-preop-v1');
 setDeviceDay('2028-01-01');
-failWrite=true;assert.equal(addCardMarkup(true),'');assert.equal(data.get('jeileye-cataract-preop-v1'),beforeAdd);
+failWrite=true;assert.ok(addCardMarkup(true).includes('data-plan-id=""'));assert.equal(data.get('jeileye-cataract-preop-v1'),beforeAdd);
 failWrite=false;assert.ok(addCardMarkup(true).includes('data-plan-id=""'));
 assert.ok(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.every(p=>p.archived),'existing records turn gray as soon as add is clicked');
 assert.ok(context.window.CataractMedication.renderSetup().includes('cataract-saved-card is-archived'));
 assert.ok(context.window.CataractMedication.renderProfileLinks().includes('surgery-category-button is-archived'));
+setDeviceDay('2026-11-16');
 const freshForm=form('right',2027,1,9,'am',9,0);freshForm.dataset={planId:''};
 handlers.submit({target:freshForm,preventDefault(){}});
 assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.at(-1).archived,false,'newly saved record stays editable');
@@ -228,6 +229,7 @@ const pastSurgery=new Date(deviceToday);pastSurgery.setDate(pastSurgery.getDate(
 const pastForm=form('left',pastSurgery.getFullYear(),pastSurgery.getMonth()+1,pastSurgery.getDate(),'pm',2,0);pastForm.dataset={planId:''};handlers.submit({target:pastForm,preventDefault(){}});
 const pastTags=context.window.CataractMedication.renderSchedule().match(/<details class="medication-day"[^>]*>/g)||[];
 assert.equal(pastTags.filter(tag=>tag.includes('data-past="true"')).length,4,'past-day styling uses the device-local calendar date');
+context.location.hash='#/profile/cataract-before?plan='+currentForm.dataset.planId;
 const feedback={hidden:true,textContent:'',hasAttribute:name=>name==='data-dose-feedback'};
 const localDose=context.window.CataractMedication.renderSchedule().match(/data-cataract-dose="([^"]+)"/)[1];
 const localInput={checked:true,dataset:{cataractDose:localDose},matches:()=>true,closest:selector=>selector==='label'?{nextElementSibling:feedback}:null};
@@ -272,7 +274,7 @@ const pastA={...futureA,id:'past-a',surgeryDate:'2026-11-06',archived:false};
 const futureDose='future-a:2026-12-11:left:2026-12-08:moxitra:0';
 data.set('jeileye-cataract-preop-v1',JSON.stringify({plans:[pastA,futureA,futureB],plan:futureA,activeId:futureA.id,checks:{[futureDose]:true}}));
 let recovered=context.window.CataractMedication.getPlans();
-assert.equal(recovered.filter(p=>!p.archived).length,3,'both future records recover from previous archival');
+assert.equal(recovered.filter(p=>!p.archived).length,2,'future records recover and past records archive automatically');
 let persisted=JSON.parse(data.get('jeileye-cataract-preop-v1'));
 assert.equal(persisted.plans.find(p=>p.id===futureA.id).archived,false,'recovery persists instead of reappearing on surgery day');
 assert.equal(persisted.checks[futureDose],true,'recovery preserves existing dose history');
@@ -306,4 +308,12 @@ for(const [period,hour,minute,expected] of [['am',8,30,'오전 8시 30분'],['pm
   save('right',2026,12,22,period,hour,minute);
   assert.ok(context.window.CataractMedication.renderArrivalCard().includes(expected),'AM/PM is inferred from the 24-hour picker');
 }
-console.log('Cataract medication: schedule limits, arrival hours, automatic AM/PM, persistence, future recovery, Add/edit behavior and storage failures passed.');
+setDeviceDay('2026-11-16');
+data.set('jeileye-cataract-preop-v1',JSON.stringify({plans:[{...futureA,id:'past',surgeryDate:'2026-11-15',archived:false},{...futureA,id:'today',surgeryDate:'2026-11-16',archived:true},{...futureA,id:'future',surgeryDate:'2026-11-17',archived:true}],checks:{}}));
+const dateStates=context.window.CataractMedication.getPlans();
+assert.deepEqual(Array.from(dateStates,p=>p.archived),[true,false,false],'past auto-archives; today and future remain active regardless of previous status');
+addCardMarkup(true);
+assert.deepEqual(Array.from(context.window.CataractMedication.getPlans(),p=>p.archived),[true,false,false],'Add cannot gray today or future schedules');
+setDeviceDay('2026-11-17');
+assert.deepEqual(Array.from(context.window.CataractMedication.getPlans(),p=>p.archived),[true,true,false],'date rollover archives yesterday without any Add action');
+console.log('Cataract medication: date-based archival, today/future activation, arrival limits, AM/PM, persistence, Add/edit behavior and storage failures passed.');

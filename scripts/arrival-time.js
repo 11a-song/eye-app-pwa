@@ -7,12 +7,14 @@
     const [hour,minute]=value.split(':').map(Number),total=hour*60+minute;
     return minute<60&&minute%10===0&&total>=510&&total<=1140?{period:hour<12?'am':'pm',hour:hour%12||12,minute}:null;
   }
-  function options(values,selected,prefix,hours=false){return values.map(value=>`<button id="${prefix}-${value}" type="button" role="option" tabindex="-1" data-arrival-option="${value}" aria-selected="${value===selected}">${hours?`${value<12?'오전':'오후'} ${value%12||12}시`:pad(value)}</button>`).join('');}
+  function options(values,selected,prefix,hours=false){return values.map(value=>`<button id="${prefix}-${value}" type="button" role="option" tabindex="-1" data-arrival-option="${value}" ${hours?`data-period="${value<12?'am':'pm'}"`:''} aria-selected="${value===selected}">${hours?`${value<12?'오전':'오후'} ${value%12||12}시`:pad(value)}</button>`).join('');}
+  function editors(){return ['hour','minute'].map(part=>`<input class="arrival-direct-input" data-arrival-input="${part}" type="text" inputmode="numeric" maxlength="2" enterkeyhint="done" autocomplete="off" aria-label="${part==='hour'?'내원 시 직접 입력, 1~7은 오후':'내원 분 직접 입력, 10분 단위'}" hidden>`).join('');}
+  const typingHint='가운데 시·분을 누르면 숫자로 입력할 수 있습니다. 1~7시는 오후로 적용됩니다.';
   function render(plan,id){
     const valid=Number.isInteger(plan?.hour)&&plan.hour>=1&&plan.hour<=12&&Number.isInteger(plan?.minute)&&plan.minute>=0&&plan.minute<60&&['am','pm'].includes(plan.period);
     const old=valid?(plan.hour%12+(plan.period==='pm'?12:0))*60+plan.minute:510;
     const total=Math.max(510,Math.min(1140,Math.round(old/10)*10)),hour=Math.floor(total/60),minute=total%60;
-    return `<div class="arrival-picker" data-arrival-picker><input type="hidden" name="arrivalTime" value="${pad(hour)}:${pad(minute)}"><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 시, 오전·오후 포함" aria-activedescendant="${id}-hour-${hour}" data-arrival-wheel="hour" data-prefix="${id}-hour" data-value="${hour}">${options(Array.from({length:12},(_,i)=>i+8),hour,id+'-hour',true)}</div><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 분, 10분 단위" aria-activedescendant="${id}-minute-${minute}" data-arrival-wheel="minute" data-prefix="${id}-minute" data-value="${minute}">${options(minutesFor(hour),minute,id+'-minute')}</div><span>분</span></div><p class="arrival-picker-note">오전 8:30~오후 7:00 · 10분 단위로 선택하세요.${valid&&old!==total?' 기존 내원시간은 저장 시 선택한 시간으로 변경됩니다.':''}</p>`;
+    return `<div class="arrival-picker" data-arrival-picker data-period="${hour<12?'am':'pm'}"><input type="hidden" name="arrivalTime" value="${pad(hour)}:${pad(minute)}"><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 시, 오전·오후 포함" aria-activedescendant="${id}-hour-${hour}" data-arrival-wheel="hour" data-prefix="${id}-hour" data-value="${hour}">${options(Array.from({length:12},(_,i)=>i+8),hour,id+'-hour',true)}</div><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 분, 10분 단위" aria-activedescendant="${id}-minute-${minute}" data-arrival-wheel="minute" data-prefix="${id}-minute" data-value="${minute}">${options(minutesFor(hour),minute,id+'-minute')}</div><span>분</span>${editors()}</div><p data-arrival-error class="arrival-input-error" role="status" hidden></p><p class="arrival-picker-note">오전 8:30~오후 7:00 · 10분 단위로 선택하세요.<br>${typingHint}${valid&&old!==total?' 기존 내원시간은 저장 시 선택한 시간으로 변경됩니다.':''}</p>`;
   }
   function select(wheel,index,scroll=false){
     const rows=Array.from(wheel.querySelectorAll('[data-arrival-option]'));
@@ -30,6 +32,7 @@
       minutes.setAttribute('aria-activedescendant',`${minutes.dataset.prefix}-${minute}`);minutes.scrollTop=values.indexOf(minute)*36;
     }
     picker.querySelector('input').value=`${pad(hour)}:${pad(Number(minutes.dataset.value))}`;
+    picker.dataset.period=hour<12?'am':'pm';
   }
   function initialize(root=document){
     for(const wheel of root.querySelectorAll?.('[data-arrival-wheel]')||[]){
@@ -37,20 +40,59 @@
       wheel.scrollTop=Math.max(0,rows.findIndex(row=>row.dataset.arrivalOption===wheel.dataset.value))*36;
     }
   }
-  function flush(form){
-    for(const part of ['hour','minute'])for(const wheel of form.querySelectorAll?.(`[data-arrival-wheel="${part}"]`)||[])select(wheel,Math.round(wheel.scrollTop/36),true);
+  function showError(picker,text){
+    const error=picker.nextElementSibling;if(!error?.hasAttribute?.('data-arrival-error'))return;
+    error.textContent=text;error.hidden=!text;
   }
+  function startTyping(wheel){
+    const picker=wheel.closest('[data-arrival-picker]'),part=wheel.dataset.arrivalWheel;
+    const input=picker.querySelector(`[data-arrival-input="${part}"]`);if(!input)return;
+    input.value=part==='hour'?String(Number(wheel.dataset.value)%12||12):pad(Number(wheel.dataset.value));
+    input.style.left=wheel.offsetLeft+'px';input.style.width=wheel.clientWidth+'px';input.hidden=false;
+    input.removeAttribute('aria-invalid');showError(picker,'');input.focus();input.select();
+  }
+  function commitTyping(input,cancel=false){
+    if(input.hidden)return true;
+    const picker=input.closest('[data-arrival-picker]'),part=input.dataset.arrivalInput;
+    if(cancel){input.hidden=true;input.removeAttribute('aria-invalid');showError(picker,'');initialize(picker);return true;}
+    const raw=input.value.trim();let number=/^\d{1,2}$/.test(raw)?Number(raw):NaN;
+    if(part==='hour'&&number>=1&&number<=7)number+=12;
+    const wheel=picker.querySelector(`[data-arrival-wheel="${part}"]`),rows=Array.from(wheel.querySelectorAll('[data-arrival-option]'));
+    const index=rows.findIndex(row=>Number(row.dataset.arrivalOption)===number);
+    if(index<0){
+      const hour=Number(picker.querySelector('[data-arrival-wheel="hour"]').dataset.value);
+      const message=part==='hour'?'오전 8시~오후 7시 범위로 입력해 주세요. 1~7은 오후로 적용됩니다.':hour===8?'오전 8시는 30·40·50분만 입력할 수 있습니다.':hour===19?'오후 7시는 00분만 입력할 수 있습니다.':'분은 00·10·20·30·40·50 중에서 입력해 주세요.';
+      input.setAttribute('aria-invalid','true');showError(picker,message);return false;
+    }
+    input.hidden=true;input.removeAttribute('aria-invalid');showError(picker,'');select(wheel,index,true);return true;
+  }
+  function flush(form){
+    for(const input of form.querySelectorAll?.('[data-arrival-input]')||[])if(!commitTyping(input))return false;
+    for(const part of ['hour','minute'])for(const wheel of form.querySelectorAll?.(`[data-arrival-wheel="${part}"]`)||[])select(wheel,Math.round(wheel.scrollTop/36),true);
+    return true;
+  }
+  document.addEventListener('focusout',event=>{if(event.target.matches?.('[data-arrival-input]'))commitTyping(event.target);});
   document.addEventListener('scroll',event=>{
-    const wheel=event.target.closest?.('[data-arrival-wheel]');if(wheel)select(wheel,Math.round(wheel.scrollTop/36));
+    const wheel=event.target.closest?.('[data-arrival-wheel]');
+    if(wheel){const input=wheel.closest('[data-arrival-picker]').querySelector(`[data-arrival-input="${wheel.dataset.arrivalWheel}"]`);if(input&&!input.hidden)return;select(wheel,Math.round(wheel.scrollTop/36));}
   },{capture:true,passive:true});
   document.addEventListener('keydown',event=>{
+    if(event.target.matches?.('[data-arrival-input]')){
+      if(['Enter','Escape'].includes(event.key)){event.preventDefault();commitTyping(event.target,event.key==='Escape');}
+      return;
+    }
+    const selectedWheel=event.target.closest?.('[data-arrival-wheel]');
+    if(selectedWheel&&(event.key==='Enter'||event.key==='F2')){event.preventDefault();startTyping(selectedWheel);return;}
     const wheel=event.target.closest?.('[data-arrival-wheel]');if(!wheel||!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
     event.preventDefault();const last=wheel.querySelectorAll('[data-arrival-option]').length-1;
     select(wheel,event.key==='Home'?0:event.key==='End'?last:Math.round(wheel.scrollTop/36)+(event.key==='ArrowUp'?-1:1),true);
   });
   document.addEventListener('click',event=>{
     const option=event.target.closest?.('[data-arrival-option]');if(!option)return;
-    const wheel=option.closest('[data-arrival-wheel]');select(wheel,Array.from(wheel.querySelectorAll('[data-arrival-option]')).indexOf(option),true);
+    const wheel=option.closest('[data-arrival-wheel]');
+    const alreadySelected=wheel.dataset.value===option.dataset.arrivalOption;
+    select(wheel,Array.from(wheel.querySelectorAll('[data-arrival-option]')).indexOf(option),true);
+    if(alreadySelected)startTyping(wheel);
   });
   window.ClinicArrivalTime={render,initialize,flush,parse};
 })();

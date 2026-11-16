@@ -14,8 +14,7 @@
   const hasTime=plan=>Number.isInteger(plan?.hour)&&plan.hour>=1&&plan.hour<=12&&Number.isInteger(plan?.minute)&&plan.minute>=0&&plan.minute<=59;
   const timeLabel=plan=>hasTime(plan)?`${periods[plan.period]||''} ${plan.hour}시 ${pad(plan.minute)}분`.trim():'';
   const key=date=>`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
-  const isFuture=plan=>plan.surgeryDate>key(new Date());
-  function archivePriorPlans(plans){for(const plan of plans)if(!isFuture(plan))plan.archived=true;}
+  function archivePriorPlans(plans){for(const plan of plans)plan.archived=plan.surgeryDate<key(new Date());}
   function parseDate(value){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return null;
     const [y,m,d]=value.split('-').map(Number),date=new Date(y,m-1,d,12);
@@ -34,10 +33,10 @@
       const value=JSON.parse(localStorage.getItem(KEY)||'null'),appointment=cleanAppointment(value?.appointment);
       const plans=Array.isArray(value?.plans)?value.plans.filter(validPlan).map((p,i)=>({...p,id:/^[a-z0-9-]{1,70}$/.test(p.id||'')?p.id:`record-${i}`})):[];
       if(!plans.length){const legacy=validPlan(value?.plan)?value.plan:appointment?{...appointment,eye:'pending'}:null;if(legacy)plans.push({...legacy,id:'legacy'});}
-      const restoreFuture=plans.some(p=>p.archived===true&&isFuture(p));
-      plans.forEach((p,i)=>{p.archived=isFuture(p)?false:typeof p.archived==='boolean'?p.archived:i<plans.length-1;});
-      // Repair earlier versions' future-record archival once, without changing checks or IDs.
-      if(restoreFuture)try{localStorage.setItem(KEY,JSON.stringify({...value,plans,plan:value?.plan&&isFuture(value.plan)?{...value.plan,archived:false}:value?.plan}));}catch{/* Keep the recovered view usable if storage is unavailable. */}
+      const today=key(new Date()),statusChanged=plans.some(p=>p.archived!==(p.surgeryDate<today));
+      archivePriorPlans(plans);
+      // The surgery date alone determines read-only status; preserve IDs and checks.
+      if(statusChanged)try{localStorage.setItem(KEY,JSON.stringify({...value,plans,plan:value?.plan?{...value.plan,archived:value.plan.surgeryDate<today}:value?.plan}));}catch{/* Keep records visible when storage is unavailable. */}
       const requested=location.hash.match(/[?&]plan=([a-z0-9-]+)/)?.[1];
       const plan=plans.find(p=>p.id===requested)||plans.find(p=>p.id===value?.activeId)||plans[0]||null;
       return {plan,plans,activeId:plan?.id||'',appointment:plan?cleanAppointment(plan):appointment,checks:value?.checks&&typeof value.checks==='object'&&!Array.isArray(value.checks)?value.checks:{}};
@@ -56,7 +55,7 @@
   const label=(value,withWeekday=true)=>{const d=parseDate(value);return `${d.getMonth()+1}월 ${d.getDate()}일${withWeekday?` (${weekday(value)})`:''}`;};
   const doseKey=(plan,date,medicine,slot)=>[...(plan.id&&plan.id!=='legacy'?[plan.id]:[]),plan.surgeryDate,plan.eye,date,medicine,slot].join(':');
   function formPlan(form){
-    window.ClinicArrivalTime.flush(form);
+    if(window.ClinicArrivalTime.flush(form)===false)return null;
     const time=window.ClinicArrivalTime.parse(form.elements.namedItem('arrivalTime')?.value);
     if(!time)return null;
     const plan={eye:form.elements.namedItem('eye').value,surgeryDate:form.elements.namedItem('surgeryDate').value,...time};
@@ -150,7 +149,7 @@
     plan.id=requestedId===undefined?(store.plan?.id||newPlanId()):store.plans.some(p=>p.id===requestedId)?requestedId:newPlanId();
     const previous=store.plans.find(p=>p.id===plan.id);
     if(previous?.archived){status.textContent='이전 수술 일정은 수정할 수 없습니다.';return;}
-    plan.archived=false;
+    plan.archived=plan.surgeryDate<key(new Date());
     if(previous?.eye==='pending'&&previous.surgeryDate===plan.surgeryDate){
       for(const date of dates(plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++){
         const oldKey=doseKey(previous,date,m.id,i),newKey=doseKey(plan,date,m.id,i);
@@ -271,13 +270,9 @@
     const button=event.target.closest?.('[data-add-cataract-appointment]');
     if(!button)return;
     const panel=button.closest('.cataract-appointment-panel'),store=read();
-    if(store.plans.some(p=>!p.archived&&!isFuture(p))){
-      archivePriorPlans(store.plans);
-      if(!write(store)){showSavedToast('항목을 추가하지 못했습니다. 다시 시도해 주세요.');return;}
-      for(const plan of store.plans.filter(p=>p.archived)){
-        const old=panel.querySelector(`[data-saved-plan="${plan.id}"]`)||panel.querySelector(`form[data-plan-id="${plan.id}"]`);
-        if(old)old.outerHTML=renderSavedCard(plan);
-      }
+    for(const plan of store.plans.filter(p=>p.archived)){
+      const old=panel.querySelector(`[data-saved-plan="${plan.id}"]`)||panel.querySelector(`form[data-plan-id="${plan.id}"]`);
+      if(old)old.outerHTML=renderSavedCard(plan);
     }
     const list=panel.querySelector('.cataract-appointment-cards');
     list.insertAdjacentHTML('beforeend',renderSetupCard(null));

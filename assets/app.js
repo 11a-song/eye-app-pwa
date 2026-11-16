@@ -929,12 +929,14 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     const [hour,minute]=value.split(':').map(Number),total=hour*60+minute;
     return minute<60&&minute%10===0&&total>=510&&total<=1140?{period:hour<12?'am':'pm',hour:hour%12||12,minute}:null;
   }
-  function options(values,selected,prefix,hours=false){return values.map(value=>`<button id="${prefix}-${value}" type="button" role="option" tabindex="-1" data-arrival-option="${value}" aria-selected="${value===selected}">${hours?`${value<12?'오전':'오후'} ${value%12||12}시`:pad(value)}</button>`).join('');}
+  function options(values,selected,prefix,hours=false){return values.map(value=>`<button id="${prefix}-${value}" type="button" role="option" tabindex="-1" data-arrival-option="${value}" ${hours?`data-period="${value<12?'am':'pm'}"`:''} aria-selected="${value===selected}">${hours?`${value<12?'오전':'오후'} ${value%12||12}시`:pad(value)}</button>`).join('');}
+  function editors(){return ['hour','minute'].map(part=>`<input class="arrival-direct-input" data-arrival-input="${part}" type="text" inputmode="numeric" maxlength="2" enterkeyhint="done" autocomplete="off" aria-label="${part==='hour'?'내원 시 직접 입력, 1~7은 오후':'내원 분 직접 입력, 10분 단위'}" hidden>`).join('');}
+  const typingHint='가운데 시·분을 누르면 숫자로 입력할 수 있습니다. 1~7시는 오후로 적용됩니다.';
   function render(plan,id){
     const valid=Number.isInteger(plan?.hour)&&plan.hour>=1&&plan.hour<=12&&Number.isInteger(plan?.minute)&&plan.minute>=0&&plan.minute<60&&['am','pm'].includes(plan.period);
     const old=valid?(plan.hour%12+(plan.period==='pm'?12:0))*60+plan.minute:510;
     const total=Math.max(510,Math.min(1140,Math.round(old/10)*10)),hour=Math.floor(total/60),minute=total%60;
-    return `<div class="arrival-picker" data-arrival-picker><input type="hidden" name="arrivalTime" value="${pad(hour)}:${pad(minute)}"><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 시, 오전·오후 포함" aria-activedescendant="${id}-hour-${hour}" data-arrival-wheel="hour" data-prefix="${id}-hour" data-value="${hour}">${options(Array.from({length:12},(_,i)=>i+8),hour,id+'-hour',true)}</div><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 분, 10분 단위" aria-activedescendant="${id}-minute-${minute}" data-arrival-wheel="minute" data-prefix="${id}-minute" data-value="${minute}">${options(minutesFor(hour),minute,id+'-minute')}</div><span>분</span></div><p class="arrival-picker-note">오전 8:30~오후 7:00 · 10분 단위로 선택하세요.${valid&&old!==total?' 기존 내원시간은 저장 시 선택한 시간으로 변경됩니다.':''}</p>`;
+    return `<div class="arrival-picker" data-arrival-picker data-period="${hour<12?'am':'pm'}"><input type="hidden" name="arrivalTime" value="${pad(hour)}:${pad(minute)}"><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 시, 오전·오후 포함" aria-activedescendant="${id}-hour-${hour}" data-arrival-wheel="hour" data-prefix="${id}-hour" data-value="${hour}">${options(Array.from({length:12},(_,i)=>i+8),hour,id+'-hour',true)}</div><div class="arrival-wheel reminder-wheel" role="listbox" tabindex="0" aria-label="내원 분, 10분 단위" aria-activedescendant="${id}-minute-${minute}" data-arrival-wheel="minute" data-prefix="${id}-minute" data-value="${minute}">${options(minutesFor(hour),minute,id+'-minute')}</div><span>분</span>${editors()}</div><p data-arrival-error class="arrival-input-error" role="status" hidden></p><p class="arrival-picker-note">오전 8:30~오후 7:00 · 10분 단위로 선택하세요.<br>${typingHint}${valid&&old!==total?' 기존 내원시간은 저장 시 선택한 시간으로 변경됩니다.':''}</p>`;
   }
   function select(wheel,index,scroll=false){
     const rows=Array.from(wheel.querySelectorAll('[data-arrival-option]'));
@@ -952,6 +954,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
       minutes.setAttribute('aria-activedescendant',`${minutes.dataset.prefix}-${minute}`);minutes.scrollTop=values.indexOf(minute)*36;
     }
     picker.querySelector('input').value=`${pad(hour)}:${pad(Number(minutes.dataset.value))}`;
+    picker.dataset.period=hour<12?'am':'pm';
   }
   function initialize(root=document){
     for(const wheel of root.querySelectorAll?.('[data-arrival-wheel]')||[]){
@@ -959,20 +962,59 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
       wheel.scrollTop=Math.max(0,rows.findIndex(row=>row.dataset.arrivalOption===wheel.dataset.value))*36;
     }
   }
-  function flush(form){
-    for(const part of ['hour','minute'])for(const wheel of form.querySelectorAll?.(`[data-arrival-wheel="${part}"]`)||[])select(wheel,Math.round(wheel.scrollTop/36),true);
+  function showError(picker,text){
+    const error=picker.nextElementSibling;if(!error?.hasAttribute?.('data-arrival-error'))return;
+    error.textContent=text;error.hidden=!text;
   }
+  function startTyping(wheel){
+    const picker=wheel.closest('[data-arrival-picker]'),part=wheel.dataset.arrivalWheel;
+    const input=picker.querySelector(`[data-arrival-input="${part}"]`);if(!input)return;
+    input.value=part==='hour'?String(Number(wheel.dataset.value)%12||12):pad(Number(wheel.dataset.value));
+    input.style.left=wheel.offsetLeft+'px';input.style.width=wheel.clientWidth+'px';input.hidden=false;
+    input.removeAttribute('aria-invalid');showError(picker,'');input.focus();input.select();
+  }
+  function commitTyping(input,cancel=false){
+    if(input.hidden)return true;
+    const picker=input.closest('[data-arrival-picker]'),part=input.dataset.arrivalInput;
+    if(cancel){input.hidden=true;input.removeAttribute('aria-invalid');showError(picker,'');initialize(picker);return true;}
+    const raw=input.value.trim();let number=/^\d{1,2}$/.test(raw)?Number(raw):NaN;
+    if(part==='hour'&&number>=1&&number<=7)number+=12;
+    const wheel=picker.querySelector(`[data-arrival-wheel="${part}"]`),rows=Array.from(wheel.querySelectorAll('[data-arrival-option]'));
+    const index=rows.findIndex(row=>Number(row.dataset.arrivalOption)===number);
+    if(index<0){
+      const hour=Number(picker.querySelector('[data-arrival-wheel="hour"]').dataset.value);
+      const message=part==='hour'?'오전 8시~오후 7시 범위로 입력해 주세요. 1~7은 오후로 적용됩니다.':hour===8?'오전 8시는 30·40·50분만 입력할 수 있습니다.':hour===19?'오후 7시는 00분만 입력할 수 있습니다.':'분은 00·10·20·30·40·50 중에서 입력해 주세요.';
+      input.setAttribute('aria-invalid','true');showError(picker,message);return false;
+    }
+    input.hidden=true;input.removeAttribute('aria-invalid');showError(picker,'');select(wheel,index,true);return true;
+  }
+  function flush(form){
+    for(const input of form.querySelectorAll?.('[data-arrival-input]')||[])if(!commitTyping(input))return false;
+    for(const part of ['hour','minute'])for(const wheel of form.querySelectorAll?.(`[data-arrival-wheel="${part}"]`)||[])select(wheel,Math.round(wheel.scrollTop/36),true);
+    return true;
+  }
+  document.addEventListener('focusout',event=>{if(event.target.matches?.('[data-arrival-input]'))commitTyping(event.target);});
   document.addEventListener('scroll',event=>{
-    const wheel=event.target.closest?.('[data-arrival-wheel]');if(wheel)select(wheel,Math.round(wheel.scrollTop/36));
+    const wheel=event.target.closest?.('[data-arrival-wheel]');
+    if(wheel){const input=wheel.closest('[data-arrival-picker]').querySelector(`[data-arrival-input="${wheel.dataset.arrivalWheel}"]`);if(input&&!input.hidden)return;select(wheel,Math.round(wheel.scrollTop/36));}
   },{capture:true,passive:true});
   document.addEventListener('keydown',event=>{
+    if(event.target.matches?.('[data-arrival-input]')){
+      if(['Enter','Escape'].includes(event.key)){event.preventDefault();commitTyping(event.target,event.key==='Escape');}
+      return;
+    }
+    const selectedWheel=event.target.closest?.('[data-arrival-wheel]');
+    if(selectedWheel&&(event.key==='Enter'||event.key==='F2')){event.preventDefault();startTyping(selectedWheel);return;}
     const wheel=event.target.closest?.('[data-arrival-wheel]');if(!wheel||!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
     event.preventDefault();const last=wheel.querySelectorAll('[data-arrival-option]').length-1;
     select(wheel,event.key==='Home'?0:event.key==='End'?last:Math.round(wheel.scrollTop/36)+(event.key==='ArrowUp'?-1:1),true);
   });
   document.addEventListener('click',event=>{
     const option=event.target.closest?.('[data-arrival-option]');if(!option)return;
-    const wheel=option.closest('[data-arrival-wheel]');select(wheel,Array.from(wheel.querySelectorAll('[data-arrival-option]')).indexOf(option),true);
+    const wheel=option.closest('[data-arrival-wheel]');
+    const alreadySelected=wheel.dataset.value===option.dataset.arrivalOption;
+    select(wheel,Array.from(wheel.querySelectorAll('[data-arrival-option]')).indexOf(option),true);
+    if(alreadySelected)startTyping(wheel);
   });
   window.ClinicArrivalTime={render,initialize,flush,parse};
 })();
@@ -995,8 +1037,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   const hasTime=plan=>Number.isInteger(plan?.hour)&&plan.hour>=1&&plan.hour<=12&&Number.isInteger(plan?.minute)&&plan.minute>=0&&plan.minute<=59;
   const timeLabel=plan=>hasTime(plan)?`${periods[plan.period]||''} ${plan.hour}시 ${pad(plan.minute)}분`.trim():'';
   const key=date=>`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
-  const isFuture=plan=>plan.surgeryDate>key(new Date());
-  function archivePriorPlans(plans){for(const plan of plans)if(!isFuture(plan))plan.archived=true;}
+  function archivePriorPlans(plans){for(const plan of plans)plan.archived=plan.surgeryDate<key(new Date());}
   function parseDate(value){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return null;
     const [y,m,d]=value.split('-').map(Number),date=new Date(y,m-1,d,12);
@@ -1015,10 +1056,10 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
       const value=JSON.parse(localStorage.getItem(KEY)||'null'),appointment=cleanAppointment(value?.appointment);
       const plans=Array.isArray(value?.plans)?value.plans.filter(validPlan).map((p,i)=>({...p,id:/^[a-z0-9-]{1,70}$/.test(p.id||'')?p.id:`record-${i}`})):[];
       if(!plans.length){const legacy=validPlan(value?.plan)?value.plan:appointment?{...appointment,eye:'pending'}:null;if(legacy)plans.push({...legacy,id:'legacy'});}
-      const restoreFuture=plans.some(p=>p.archived===true&&isFuture(p));
-      plans.forEach((p,i)=>{p.archived=isFuture(p)?false:typeof p.archived==='boolean'?p.archived:i<plans.length-1;});
-      // Repair earlier versions' future-record archival once, without changing checks or IDs.
-      if(restoreFuture)try{localStorage.setItem(KEY,JSON.stringify({...value,plans,plan:value?.plan&&isFuture(value.plan)?{...value.plan,archived:false}:value?.plan}));}catch{/* Keep the recovered view usable if storage is unavailable. */}
+      const today=key(new Date()),statusChanged=plans.some(p=>p.archived!==(p.surgeryDate<today));
+      archivePriorPlans(plans);
+      // The surgery date alone determines read-only status; preserve IDs and checks.
+      if(statusChanged)try{localStorage.setItem(KEY,JSON.stringify({...value,plans,plan:value?.plan?{...value.plan,archived:value.plan.surgeryDate<today}:value?.plan}));}catch{/* Keep records visible when storage is unavailable. */}
       const requested=location.hash.match(/[?&]plan=([a-z0-9-]+)/)?.[1];
       const plan=plans.find(p=>p.id===requested)||plans.find(p=>p.id===value?.activeId)||plans[0]||null;
       return {plan,plans,activeId:plan?.id||'',appointment:plan?cleanAppointment(plan):appointment,checks:value?.checks&&typeof value.checks==='object'&&!Array.isArray(value.checks)?value.checks:{}};
@@ -1037,7 +1078,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   const label=(value,withWeekday=true)=>{const d=parseDate(value);return `${d.getMonth()+1}월 ${d.getDate()}일${withWeekday?` (${weekday(value)})`:''}`;};
   const doseKey=(plan,date,medicine,slot)=>[...(plan.id&&plan.id!=='legacy'?[plan.id]:[]),plan.surgeryDate,plan.eye,date,medicine,slot].join(':');
   function formPlan(form){
-    window.ClinicArrivalTime.flush(form);
+    if(window.ClinicArrivalTime.flush(form)===false)return null;
     const time=window.ClinicArrivalTime.parse(form.elements.namedItem('arrivalTime')?.value);
     if(!time)return null;
     const plan={eye:form.elements.namedItem('eye').value,surgeryDate:form.elements.namedItem('surgeryDate').value,...time};
@@ -1131,7 +1172,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     plan.id=requestedId===undefined?(store.plan?.id||newPlanId()):store.plans.some(p=>p.id===requestedId)?requestedId:newPlanId();
     const previous=store.plans.find(p=>p.id===plan.id);
     if(previous?.archived){status.textContent='이전 수술 일정은 수정할 수 없습니다.';return;}
-    plan.archived=false;
+    plan.archived=plan.surgeryDate<key(new Date());
     if(previous?.eye==='pending'&&previous.surgeryDate===plan.surgeryDate){
       for(const date of dates(plan))for(const m of medicines)for(let i=0;i<m.slots.length;i++){
         const oldKey=doseKey(previous,date,m.id,i),newKey=doseKey(plan,date,m.id,i);
@@ -1252,13 +1293,9 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     const button=event.target.closest?.('[data-add-cataract-appointment]');
     if(!button)return;
     const panel=button.closest('.cataract-appointment-panel'),store=read();
-    if(store.plans.some(p=>!p.archived&&!isFuture(p))){
-      archivePriorPlans(store.plans);
-      if(!write(store)){showSavedToast('항목을 추가하지 못했습니다. 다시 시도해 주세요.');return;}
-      for(const plan of store.plans.filter(p=>p.archived)){
-        const old=panel.querySelector(`[data-saved-plan="${plan.id}"]`)||panel.querySelector(`form[data-plan-id="${plan.id}"]`);
-        if(old)old.outerHTML=renderSavedCard(plan);
-      }
+    for(const plan of store.plans.filter(p=>p.archived)){
+      const old=panel.querySelector(`[data-saved-plan="${plan.id}"]`)||panel.querySelector(`form[data-plan-id="${plan.id}"]`);
+      if(old)old.outerHTML=renderSavedCard(plan);
     }
     const list=panel.querySelector('.cataract-appointment-cards');
     list.insertAdjacentHTML('beforeend',renderSetupCard(null));
@@ -1281,7 +1318,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   const selected=()=>{const id=location.hash.match(/[?&]plan=([a-z0-9-]+)/)?.[1];return plans().find(p=>p.id===id)||plans().find(p=>!p.archived)||plans()[0];};
   function read(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');return s&&typeof s==='object'&&s.plans&&typeof s.plans==='object'?s:{plans:{}};}catch{return {plans:{}};}}
   function write(s){localStorage.setItem(KEY,JSON.stringify(s));}
-  const settings=(s,id)=>s.plans[id]||{enabled:false,times:['','','',''],slots:[true,true,true,true]};
+  const settings=(s,id)=>s.plans[id]||{enabled:false,times:['','','',''],slots:[false,false,false,false]};
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const support=()=>isSecureContext&&'Notification' in window&&'PushManager' in window&&'serviceWorker' in navigator;
   const ios=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1;
@@ -1298,16 +1335,16 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     return [3,2,1,0].map(offset=>{const date=new Date(y,m-1,d-offset,12);return {value:`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`,weekday:['일','월','화','수','목','금','토'][date.getDay()],label:`${date.getMonth()+1}/${date.getDate()}`,offset};});
   }
   function renderDays(plan,value){
-    return `<section class="reminder-days" aria-labelledby="reminder-days-title"><h3 id="reminder-days-title">알림 받을 날짜</h3><div class="reminder-day-buttons">${reminderDates(plan).map(day=>`<label class="reminder-day-button"><input type="checkbox" name="day${day.value}" ${value.days?.[day.value]!==false?'checked':''} aria-label="${day.label} (${day.weekday}) ${day.offset?'수술 '+day.offset+'일 전':'수술 당일'} 알림"><span class="reminder-day-circle">${day.weekday}</span><strong>${day.label}</strong><small>${day.offset?day.offset+'일 전':'수술 당일'}</small></label>`).join('')}</div><p>수술 3일 전부터 수술 당일까지 날짜별로 켜고 끌 수 있습니다.</p></section><p class="reminder-wheel-hint">시간을 위아래로 밀어 선택하세요.${value.times?.some(Boolean)?'':' 처음 표시되는 시간은 예시입니다. 처방에 맞춰 조정해 주세요.'}</p>`;
+    return `<section class="reminder-days" aria-labelledby="reminder-days-title"><h3 id="reminder-days-title">알림 받을 날짜</h3><div class="reminder-day-buttons">${reminderDates(plan).map(day=>`<label class="reminder-day-button"><input type="checkbox" name="day${day.value}" ${value.enabled&&value.days?.[day.value]!==false?'checked':''} aria-label="${day.label} (${day.weekday}) ${day.offset?'수술 '+day.offset+'일 전':'수술 당일'} 알림"><span class="reminder-day-circle">${day.weekday}</span><strong>${day.label}</strong><small>${day.offset?day.offset+'일 전':'수술 당일'}</small></label>`).join('')}</div><p>수술 3일 전부터 수술 당일까지 날짜별로 켜고 끌 수 있습니다.</p></section><p class="reminder-wheel-hint">시간을 위아래로 밀어 선택하세요.${value.times?.some(Boolean)?'':' 처음 표시되는 시간은 예시입니다. 처방에 맞춰 조정해 주세요.'}</p>`;
   }
   function wheel(slot,part,values,selectedValue){
     const prefix=`reminder-wheel-${slot}-${part}`,selected=values.findIndex(value=>String(value)===String(selectedValue));
-    return `<div class="reminder-wheel" data-reminder-wheel="${part}" data-value="${selectedValue}" role="listbox" tabindex="0" aria-activedescendant="${prefix}-${selected}" aria-label="${slots[slot]} ${part==='period'?'오전·오후':part==='hour'?'시':'분'}">${values.map((value,i)=>`<button id="${prefix}-${i}" type="button" role="option" tabindex="-1" data-wheel-option="${value}" aria-selected="${String(value)===String(selectedValue)}">${value}</button>`).join('')}</div>`;
+    return `<div class="reminder-wheel" data-reminder-wheel="${part}" data-value="${selectedValue}" role="listbox" tabindex="0" aria-activedescendant="${prefix}-${selected}" aria-label="${slots[slot]} ${part==='hour'?'오전·오후 포함 시':'분'}">${values.map((value,i)=>`<button id="${prefix}-${i}" type="button" role="option" tabindex="-1" data-wheel-option="${value}" ${part==='hour'?`data-period="${Number(value)<12?'am':'pm'}"`:''} aria-selected="${String(value)===String(selectedValue)}">${part==='hour'?`${Number(value)<12?'오전':'오후'} ${Number(value)%12||12}시`:value}</button>`).join('')}</div>`;
   }
   function renderTimePicker(index,value){
     const time=/^([01]\d|2[0-3]):[0-5]\d$/.test(value||'')?value:['07:00','12:00','18:00','22:00'][index];
     const [hour,minute]=time.split(':').map(Number);
-    return `<div class="reminder-time-picker" data-time-picker><input type="hidden" name="time${index}" value="${time}">${wheel(index,'period',['오전','오후'],hour<12?'오전':'오후')}${wheel(index,'hour',Array.from({length:12},(_,i)=>i+1),hour%12||12)}<span class="reminder-picker-colon" aria-hidden="true">:</span>${wheel(index,'minute',Array.from({length:60},(_,i)=>pad(i)),pad(minute))}</div>`;
+    return `<div class="reminder-time-picker" data-time-picker data-period="${hour<12?'am':'pm'}"><input type="hidden" name="time${index}" value="${time}">${wheel(index,'hour',Array.from({length:24},(_,i)=>i),hour)}<span class="reminder-picker-colon" aria-hidden="true">:</span>${wheel(index,'minute',Array.from({length:60},(_,i)=>pad(i)),pad(minute))}</div>`;
   }
   const wheelHeight=36;
   function selectWheel(wheel,index,scroll=false){
@@ -1320,8 +1357,9 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     if(scroll)wheel.scrollTop=index*wheelHeight;
     const picker=wheel.closest('[data-time-picker]');
     const part=name=>picker.querySelector(`[data-reminder-wheel="${name}"]`).dataset.value;
-    const hour=Number(part('hour'))%12+(part('period')==='오후'?12:0);
+    const hour=Number(part('hour'));
     picker.querySelector('input').value=`${pad(hour)}:${part('minute')}`;
+    picker.dataset.period=hour<12?'am':'pm';
   }
   function initializeWheels(){
     for(const wheel of document.querySelectorAll?.('[data-reminder-wheel]')||[]){
@@ -1340,6 +1378,12 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     const index=event.key==='Home'?0:event.key==='End'?last:Math.round(wheel.scrollTop/wheelHeight)+(event.key==='ArrowUp'?-1:1);
     selectWheel(wheel,index,true);
   });
+  document.addEventListener('change',event=>{
+    const input=event.target;
+    if(input.name!=='enabled')return;
+    const form=input.closest?.('#medication-reminder-form');if(!form)return;
+    for(const toggle of form.querySelectorAll('input[name^="slot"],input[name^="day"]'))toggle.checked=input.checked;
+  });
   function renderMenu(plan){
     if(!plan||plan.archived)return '';
     const s=read(),on=settings(s,plan.id).enabled;
@@ -1348,7 +1392,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   function render(){
     const plan=selected();if(!plan)return '<p>먼저 수술 스케줄을 생성해 주세요.</p>';
     const s=read(),value=settings(s,plan.id),blocked=guidance(),disabled=plan.archived;
-    return `<section class="reminder-page"><a class="surgery-detail-back" href="#/profile/cataract-before?plan=${plan.id}">‹ 안약 스케줄로</a><h2>${bell}안약 알림 설정</h2><p class="reminder-plan">${escape({left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'}[plan.eye]||'수술 일정')} · ${escape(plan.surgeryDate.replaceAll('-','.'))}</p><form id="medication-reminder-form" data-plan="${plan.id}"><fieldset ${disabled?'disabled':''}><legend class="visually-hidden">안약 알림 시간 설정</legend><label class="reminder-master"><span><strong>안약 알림 받기</strong><small>설정한 시간에 푸시 알림을 받습니다.</small></span><input type="checkbox" name="enabled" role="switch" ${value.enabled?'checked':''}></label>${renderDays(plan,value)}<div class="reminder-times">${slots.map((title,i)=>`<div class="reminder-time-row"><div><strong class="reminder-slot-title">${title}</strong><small>${i===0||i===2?'목시트라 · 브로낙':'목시트라'}</small></div>${renderTimePicker(i,value.times?.[i])}<label class="reminder-slot-switch"><input type="checkbox" name="slot${i}" role="switch" ${value.slots?.[i]!==false?'checked':''} aria-label="${title} 알림 켜기"><span>알림</span></label></div>`).join('')}</div><p class="reminder-status" id="reminder-status" role="status">${disabled?'이전 수술 일정은 알림을 설정할 수 없습니다.':escape(blocked|| (s.pending?'이전 변경을 서버에 반영하지 못했습니다. 인터넷 연결 후 다시 저장해 주세요.':''))}</p><p class="reminder-note">시간은 현재 기기의 시간대를 기준으로 합니다. 처방받은 횟수와 간격에 맞춰 설정해 주세요.<br>수술 당일은 오전 내원 시 아침, 오후 내원 시 아침·점심만 알립니다. 내원시간 이후 알림은 보내지 않습니다.</p><label class="reminder-consent"><input type="checkbox" name="consent" ${value.consent?'checked':''}><span>알림 발송을 위한 기기 수신 정보와 발송 시간을 서버에 저장하는 데 동의합니다. 체크 기록은 전송하지 않습니다.</span></label><button class="primary-button" type="submit">알림 설정 저장</button><button class="reminder-test-button" type="button" data-test-medication-reminder ${!s.subscription?'disabled':''}>테스트 알림 보내기</button></fieldset></form><p class="reminder-note">아이폰은 iOS 16.4 이상에서 홈 화면에 설치한 앱의 알림을 허용해야 합니다. 인터넷 연결과 휴대폰 설정에 따라 알림이 지연되거나 전달되지 않을 수 있습니다.</p></section>`;
+    return `<section class="reminder-page"><a class="surgery-detail-back" href="#/profile/cataract-before?plan=${plan.id}">‹ 안약 스케줄로</a><h2>${bell}안약 알림 설정</h2><p class="reminder-plan">${escape({left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'}[plan.eye]||'수술 일정')} · ${escape(plan.surgeryDate.replaceAll('-','.'))}</p><form id="medication-reminder-form" data-plan="${plan.id}"><fieldset ${disabled?'disabled':''}><legend class="visually-hidden">안약 알림 시간 설정</legend><label class="reminder-master"><span><strong>안약 알림 받기</strong><small>설정한 시간에 푸시 알림을 받습니다.</small></span><input type="checkbox" name="enabled" role="switch" ${value.enabled?'checked':''}></label>${renderDays(plan,value)}<div class="reminder-times">${slots.map((title,i)=>`<div class="reminder-time-row"><div><strong class="reminder-slot-title">${title}</strong><small>${i===0||i===2?'목시트라 · 브로낙':'목시트라'}</small></div>${renderTimePicker(i,value.times?.[i])}<label class="reminder-slot-switch"><input type="checkbox" name="slot${i}" role="switch" ${value.enabled&&value.slots?.[i]!==false?'checked':''} aria-label="${title} 알림 켜기"><span>알림</span></label></div>`).join('')}</div><p class="reminder-status" id="reminder-status" role="status">${disabled?'이전 수술 일정은 알림을 설정할 수 없습니다.':escape(blocked|| (s.pending?'이전 변경을 서버에 반영하지 못했습니다. 인터넷 연결 후 다시 저장해 주세요.':''))}</p><p class="reminder-note">시간은 현재 기기의 시간대를 기준으로 합니다. 처방받은 횟수와 간격에 맞춰 설정해 주세요.<br>수술 당일은 오전 내원 시 아침, 오후 내원 시 아침·점심만 알립니다. 내원시간 이후 알림은 보내지 않습니다.</p><label class="reminder-consent"><input type="checkbox" name="consent" ${value.consent?'checked':''}><span>알림 발송을 위한 기기 수신 정보와 발송 시간을 서버에 저장하는 데 동의합니다. 체크 기록은 전송하지 않습니다.</span></label><button class="primary-button" type="submit">알림 설정 저장</button><button class="reminder-test-button" type="button" data-test-medication-reminder ${!s.subscription?'disabled':''}>테스트 알림 보내기</button></fieldset></form><p class="reminder-note">아이폰은 iOS 16.4 이상에서 홈 화면에 설치한 앱의 알림을 허용해야 합니다. 인터넷 연결과 휴대폰 설정에 따라 알림이 지연되거나 전달되지 않을 수 있습니다.</p></section>`;
   }
   function buildJobs(all,s,now=new Date()){
     const jobs=[];

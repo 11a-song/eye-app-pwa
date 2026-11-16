@@ -1,4 +1,4 @@
-const CACHE = 'jeileye-app-v159';
+const CACHE = 'jeileye-app-v160';
 const SHELL = ['./', './assets/app.css', './assets/app.js', './manifest.webmanifest', './assets/logo.svg', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/doctor-placeholder.svg'];
 self.addEventListener('push',event=>{
   let data={};try{data=event.data?.json()||{};}catch{}
