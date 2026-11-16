@@ -1243,10 +1243,10 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   const pad=n=>String(n).padStart(2,'0');
   function reminderDates(plan){
     const [y,m,d]=plan.surgeryDate.split('-').map(Number);
-    return [3,2,1].map(offset=>{const date=new Date(y,m-1,d-offset,12);return {value:`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`,weekday:['일','월','화','수','목','금','토'][date.getDay()],label:`${date.getMonth()+1}/${date.getDate()}`,offset};});
+    return [3,2,1,0].map(offset=>{const date=new Date(y,m-1,d-offset,12);return {value:`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`,weekday:['일','월','화','수','목','금','토'][date.getDay()],label:`${date.getMonth()+1}/${date.getDate()}`,offset};});
   }
   function renderDays(plan,value){
-    return `<section class="reminder-days" aria-labelledby="reminder-days-title"><h3 id="reminder-days-title">알림 받을 날짜</h3><div class="reminder-day-buttons">${reminderDates(plan).map(day=>`<label class="reminder-day-button"><input type="checkbox" name="day${day.value}" ${value.days?.[day.value]!==false?'checked':''} aria-label="${day.label} (${day.weekday}) 수술 ${day.offset}일 전 알림"><span class="reminder-day-circle">${day.weekday}</span><strong>${day.label}</strong><small>${day.offset}일 전</small></label>`).join('')}</div><p>수술 전 3일의 알림을 날짜별로 켜고 끌 수 있습니다.</p></section><p class="reminder-wheel-hint">시간을 위아래로 밀어 선택하세요.${value.times?.some(Boolean)?'':' 처음 표시되는 시간은 예시입니다. 처방에 맞춰 조정해 주세요.'}</p>`;
+    return `<section class="reminder-days" aria-labelledby="reminder-days-title"><h3 id="reminder-days-title">알림 받을 날짜</h3><div class="reminder-day-buttons">${reminderDates(plan).map(day=>`<label class="reminder-day-button"><input type="checkbox" name="day${day.value}" ${value.days?.[day.value]!==false?'checked':''} aria-label="${day.label} (${day.weekday}) ${day.offset?'수술 '+day.offset+'일 전':'수술 당일'} 알림"><span class="reminder-day-circle">${day.weekday}</span><strong>${day.label}</strong><small>${day.offset?day.offset+'일 전':'수술 당일'}</small></label>`).join('')}</div><p>수술 3일 전부터 수술 당일까지 날짜별로 켜고 끌 수 있습니다.</p></section><p class="reminder-wheel-hint">시간을 위아래로 밀어 선택하세요.${value.times?.some(Boolean)?'':' 처음 표시되는 시간은 예시입니다. 처방에 맞춰 조정해 주세요.'}</p>`;
   }
   function wheel(slot,part,values,selectedValue){
     const prefix=`reminder-wheel-${slot}-${part}`,selected=values.findIndex(value=>String(value)===String(selectedValue));
@@ -1309,7 +1309,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
         if(offset===0&&slot>(p.period==='am'?0:1))continue;
         const [h,min]=value.times[slot].split(':').map(Number),date=new Date(y,m-1,d-offset,h,min);
         const day=`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
-        if(offset>0&&value.days?.[day]===false)continue;
+        if(value.days?.[day]===false)continue;
         if(date<=now||offset===0&&date>=arrival)continue;
         jobs.push({plan_id:p.id,slot,fire_at:date.toISOString()});
       }

@@ -38,6 +38,8 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   const monthPlan={...plan,surgeryDate:'2030-01-02'};
   assert.equal(api.buildJobs([monthPlan],{plans:{'plan-one':{...enabled,days:{'2029-12-30':false}}}},new Date(2029,11,28)).length,9,'date toggles work across year boundaries');
   const initialMarkup=api.render();
+  assert.ok(initialMarkup.includes('name="day2030-06-10" checked'));
+  assert.ok(initialMarkup.includes('<small>수술 당일</small>')&&!initialMarkup.includes('0일 전'));
   assert.ok(initialMarkup.includes('name="day2030-06-07" checked'));
   assert.equal((initialMarkup.match(/class="reminder-wheel"/g)||[]).length,12,'four independent AM/PM, hour and minute wheels');
   assert.ok(!initialMarkup.includes('type="time"'),'wheel picker replaces platform-dependent time inputs');
@@ -58,6 +60,13 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   context.document.querySelectorAll=originalQuery;
   const pm=api.buildJobs([{...plan,period:'pm',hour:2}],state,before);
   assert.equal(pm.length,14,'afternoon surgery permits morning and noon');
+  const surgeryOff={...enabled,days:{'2030-06-10':false}};
+  assert.equal(api.buildJobs([plan],{plans:{'plan-one':surgeryOff}},before).length,12,'surgery-day off removes morning reminder');
+  assert.equal(api.buildJobs([{...plan,period:'pm',hour:2}],{plans:{'plan-one':surgeryOff}},before).length,12,'surgery-day off removes morning and lunch reminders');
+  const surgeryOnly=pm.filter(j=>new Date(j.fire_at).getDate()===10);
+  assert.deepEqual(Array.from(surgeryOnly,j=>j.slot),[0,1],'surgery day never includes evening or bedtime');
+  const atNoon=api.buildJobs([{...plan,period:'pm',hour:12}],state,before).filter(j=>new Date(j.fire_at).getDate()===10);
+  assert.deepEqual(Array.from(atNoon,j=>j.slot),[0],'lunch at arrival time is not scheduled');
   assert.equal(api.buildJobs([{...plan,archived:true}],state,before).length,0);
   assert.equal(api.buildJobs([plan],{plans:{'plan-one':{...enabled,enabled:false}}},before).length,0);
   const late={plans:{'plan-one':{...enabled,times:['10:00','12:00','18:00','22:00']}}};
@@ -76,6 +85,9 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   await save(disabledDay);assert.equal(calls.at(-1).body.jobs.length,9);
   assert.equal(JSON.parse(data.get(KEY)).plans['plan-one'].days['2030-06-07'],false,'day choice persists');
   assert.ok(!api.render().includes('name="day2030-06-07" checked'),'disabled date restores correctly');
+  await save(surgeryOff);assert.equal(calls.at(-1).body.jobs.length,12);
+  assert.equal(JSON.parse(data.get(KEY)).plans['plan-one'].days['2030-06-10'],false,'surgery-day off persists');
+  assert.ok(!api.render().includes('name="day2030-06-10" checked'),'surgery-day choice restores');
   await save({...enabled,enabled:false});assert.equal(calls.at(-1).body.jobs.length,0,'off atomically cancels pending jobs');
   failNetwork=true;await save();assert.ok(JSON.parse(data.get(KEY)).pending,'failure stays pending for retry');assert.ok(!submit.disabled);
   failNetwork=false;all=[{...plan,archived:true}];api.plansChanged(all);
