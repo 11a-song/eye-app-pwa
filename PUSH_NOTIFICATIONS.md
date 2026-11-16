@@ -15,6 +15,8 @@
 
 ## 서버 구성
 
+수술 일정의 내원시간은 별도 오전·오후 버튼 없이 24시간제 휠에서 선택합니다. 선택 범위는 08:30~19:00이며 08시의 분은 30~59, 19시의 분은 00만 허용합니다. 결과와 알림 계산은 기존 오전·오후 저장 형식을 유지합니다. 기존 범위 밖 기록은 자동 변경하지 않으며 수정 화면에서 새 시간을 선택해 저장할 때만 바뀝니다.
+
 - Supabase 프로젝트 `issyhftzmzpudoeidoum`, Edge Function `medication-reminders`.
 - `sql/medication-reminders.sql`: 서비스 역할만 접근 가능한 설정·기기·발송 작업 테이블 및 함수, 매분 발송 cron, 일별 만료 데이터 정리.
 - VAPID 개인키와 cron 인증키는 Supabase Vault에 암호화 보관합니다. 공개키만 `/config`로 반환합니다.

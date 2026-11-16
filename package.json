@@ -6,7 +6,7 @@
     "dev": "node scripts/serve.cjs",
     "start": "node scripts/serve.cjs",
     "check": "node scripts/build.cjs --check && node --check scripts/pwa-install.js && node --check app.js && node --check sw.js && node --check scripts/serve.cjs && node --check scripts/admin.js && node --check scripts/guide.js && node --check scripts/guide-reference.js",
-    "test": "node tests/startup.cjs && node tests/pwa-install.cjs && node tests/schedule.cjs && node tests/admin.cjs && node tests/guide.cjs && node tests/cataract-medication.cjs && node tests/medication-reminders.cjs",
+    "test": "node tests/startup.cjs && node tests/pwa-install.cjs && node tests/schedule.cjs && node tests/admin.cjs && node tests/guide.cjs && node tests/arrival-time.cjs && node tests/cataract-medication.cjs && node tests/medication-reminders.cjs",
     "build": "node scripts/build.cjs"
   }
 }

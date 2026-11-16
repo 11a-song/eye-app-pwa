@@ -8,11 +8,12 @@ function progressTotal(html){
 const element=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:0,open:false,showModal(){this.open=true;},close(){this.open=false;},classList:{add(){},remove(){},toggle(){}}});return elements.get(selector);};
 function session(){
   const context=vm.createContext({window:{},location:{hash:''},document:{querySelector:element,addEventListener:(type,handler)=>handlers[type]=handler},localStorage:{getItem:key=>data.get(key)||null,setItem:(key,value)=>{if(failWrite)throw Error('storage blocked');data.set(key,value);}},Intl,Date,console,setTimeout:()=>1,clearTimeout(){}});
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../scripts/arrival-time.js'),'utf8'),context);
   vm.runInContext(source,context);return context;
 }
 let context=session();
 function setDeviceDay(value){context.Date=class extends Date{constructor(...args){super(...(args.length?args:[value+'T12:00:00']));}};}
-const form=(eye,year,month,day,period,hour=9,minute=0)=>({id:'cataract-appointment-form',elements:{namedItem:name=>({value:name==='surgeryDate'?`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`:{eye,period,hour,minute}[name]})}});
+const form=(eye,year,month,day,period,hour=9,minute=0)=>({id:'cataract-appointment-form',elements:{namedItem:name=>({value:name==='surgeryDate'?`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`:{eye,arrivalTime:`${String(hour%12+(period==='pm'?12:0)).padStart(2,'0')}:${String(minute).padStart(2,'0')}`}[name]})}});
 function save(eye,year,month,day,period='am',hour=9,minute=0){handlers.submit({preventDefault(){},target:form(eye,year,month,day,period,hour,minute)});}
 function addCardMarkup(retainChanges=false){
   const snapshot=new Map(data);
@@ -41,6 +42,8 @@ assert.equal(context.window.CataractMedication.hasSchedule(),false,'editing alon
 handlers.submit({target:appointmentForm,preventDefault(){}});
 const prefilled=context.window.CataractMedication.renderGuide();
 const setup=context.window.CataractMedication.renderSetup(),editMarkup=editCardMarkup();
+assert.ok(editMarkup.includes('name="arrivalTime" value="14:30"'));
+assert.ok(editMarkup.includes('data-arrival-wheel="hour"')&&!editMarkup.includes('name="period"'));
 assert.ok(editMarkup.indexOf('class="medication-eye"')<editMarkup.indexOf('class="medication-date"'));
 assert.ok(!prefilled.includes('<input')&&!prefilled.includes('<form'));
 for(const text of ['왼쪽 눈','2027년 1월 2일','오후 2시 30분'])assert.ok(prefilled.includes(text));
@@ -52,9 +55,6 @@ const dateInput={name:'surgeryDate',value:'2027-01-03',closest:selector=>selecto
 const beforeDateSelection=data.get('jeileye-cataract-preop-v1');
 handlers.change({target:dateInput});assert.equal(dateText.textContent,'2027년 1월 3일 (일)');
 assert.equal(data.get('jeileye-cataract-preop-v1'),beforeDateSelection,'calendar choice updates display without saving until requested');
-assert.ok(editMarkup.includes('value="pm" required checked'));
-assert.ok(editMarkup.includes('value="2" aria-label="내원 시"'));
-assert.ok(editMarkup.includes('value="30" aria-label="내원 분"'));
 
 assert.ok(editMarkup.includes('type="submit">저장</button>'));
 assert.ok(setup.includes('class="cataract-saved-card"')&&!setup.includes('<form'));
@@ -107,8 +107,8 @@ assert.ok(element('#cataract-record-description').textContent.includes('내정�
 const beforeCancelEdit=data.get('jeileye-cataract-preop-v1');modalChoice('cancel');
 assert.equal(pendingEditHtml,'');assert.equal(data.get('jeileye-cataract-preop-v1'),beforeCancelEdit);
 requestEdit();modalChoice('confirm');assert.ok(pendingEditHtml.includes('data-cataract-appointment'));
-save('left',2027,1,2,'pm');assert.ok(context.window.CataractMedication.renderSchedule().includes('<dd>2027년 1월 2일 (토)</dd>'));
-assert.ok(editCardMarkup().includes('value="pm" required checked'));
+save('left',2027,1,2,'pm',2);assert.ok(context.window.CataractMedication.renderSchedule().includes('<dd>2027년 1월 2일 (토)</dd>'));
+assert.ok(editCardMarkup().includes('name="arrivalTime" value="14:00"'));
 const afternoonHtml=context.window.CataractMedication.renderSchedule();
 assert.ok(progressTotal(afternoonHtml).includes('1 / 21회 완료'),'period updates preserve checks and count only visible doses');
 assert.equal((afternoonHtml.match(/type="checkbox"/g)||[]).length,21);
@@ -211,14 +211,8 @@ assert.ok(context.window.CataractMedication.renderProfileLinks().includes('surge
 const freshForm=form('right',2027,1,9,'am',9,0);freshForm.dataset={planId:''};
 handlers.submit({target:freshForm,preventDefault(){}});
 assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.at(-1).archived,false,'newly saved record stays editable');
-const minuteInput={value:'25',matches:()=>true,focus(){}};
-handlers.keydown({target:minuteInput,key:'ArrowUp',preventDefault(){}});assert.equal(minuteInput.value,'35');
-handlers.keydown({target:minuteInput,key:'ArrowDown',preventDefault(){}});assert.equal(minuteInput.value,'25');
-const minuteStep={dataset:{minuteStep:'10'},closest:()=>({querySelector:()=>minuteInput})};
-handlers.click({target:{closest:selector=>selector==='[data-minute-step]'?minuteStep:null}});assert.equal(minuteInput.value,'35');
-minuteInput.value='50';handlers.click({target:{closest:selector=>selector==='[data-minute-step]'?minuteStep:null}});assert.equal(minuteInput.value,'00');
 save('right',2027,1,9,'am',9,37);assert.ok(context.window.CataractMedication.renderArrivalCard().includes('오전 9시 37분'),'typed minutes need not be a multiple of ten');
-assert.ok(editCardMarkup().includes('step="any" data-arrival-minute'));
+assert.ok(editCardMarkup().includes('name="arrivalTime" value="09:37"'));
 const deviceToday=new Date(),surgeryDay=new Date(deviceToday);surgeryDay.setDate(surgeryDay.getDate()+3);
 context.Date=Date;
 const currentForm=form('left',surgeryDay.getFullYear(),surgeryDay.getMonth()+1,surgeryDay.getDate(),'pm',2,0);currentForm.dataset={planId:''};
@@ -303,4 +297,13 @@ const unavailable=JSON.parse(data.get('jeileye-cataract-preop-v1'));unavailable.
 data.set('jeileye-cataract-preop-v1',JSON.stringify(unavailable));failWrite=true;
 assert.equal(context.window.CataractMedication.getPlans().find(p=>p.id==='future-b').archived,false,'blocked migration writes cannot hide valid schedules');
 failWrite=false;
-console.log('Cataract medication: schedule limits, check persistence, future-record recovery, Add/edit behavior, date boundaries, prior-record archival and storage failures passed.');
+const beforeBadArrival=data.get('jeileye-cataract-preop-v1');
+for(const [period,hour,minute] of [['am',8,29],['pm',7,1],['pm',8,0]]){
+  save('right',2026,12,22,period,hour,minute);
+  assert.equal(data.get('jeileye-cataract-preop-v1'),beforeBadArrival,'out-of-hours submissions cannot alter an existing schedule');
+}
+for(const [period,hour,minute,expected] of [['am',8,30,'오전 8시 30분'],['pm',12,0,'오후 12시 00분'],['pm',7,0,'오후 7시 00분']]){
+  save('right',2026,12,22,period,hour,minute);
+  assert.ok(context.window.CataractMedication.renderArrivalCard().includes(expected),'AM/PM is inferred from the 24-hour picker');
+}
+console.log('Cataract medication: schedule limits, arrival hours, automatic AM/PM, persistence, future recovery, Add/edit behavior and storage failures passed.');
