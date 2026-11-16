@@ -211,8 +211,8 @@ assert.ok(context.window.CataractMedication.renderProfileLinks().includes('surge
 const freshForm=form('right',2027,1,9,'am',9,0);freshForm.dataset={planId:''};
 handlers.submit({target:freshForm,preventDefault(){}});
 assert.equal(JSON.parse(data.get('jeileye-cataract-preop-v1')).plans.at(-1).archived,false,'newly saved record stays editable');
-save('right',2027,1,9,'am',9,37);assert.ok(context.window.CataractMedication.renderArrivalCard().includes('오전 9시 37분'),'typed minutes need not be a multiple of ten');
-assert.ok(editCardMarkup().includes('name="arrivalTime" value="09:37"'));
+save('right',2027,1,9,'am',9,40);assert.ok(context.window.CataractMedication.renderArrivalCard().includes('오전 9시 40분'),'arrival minutes use ten-minute steps');
+assert.ok(editCardMarkup().includes('name="arrivalTime" value="09:40"'));
 const deviceToday=new Date(),surgeryDay=new Date(deviceToday);surgeryDay.setDate(surgeryDay.getDate()+3);
 context.Date=Date;
 const currentForm=form('left',surgeryDay.getFullYear(),surgeryDay.getMonth()+1,surgeryDay.getDate(),'pm',2,0);currentForm.dataset={planId:''};

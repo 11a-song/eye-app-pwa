@@ -144,7 +144,7 @@
   }
   function saveAppointment(form){
     const status=form.querySelector?.('.appointment-status')||document.querySelector('#appointment-status'),plan=formPlan(form);
-    if(!plan){status.textContent='수술할 눈과 날짜를 선택하고, 내원시간을 08:30~19:00 범위에서 설정해 주세요.';return;}
+    if(!plan){status.textContent='수술할 눈과 날짜를 선택하고, 내원시간을 08:30~19:00 범위에서 10분 단위로 설정해 주세요.';return;}
     const store=read();
     const requestedId=form.dataset?.planId;
     plan.id=requestedId===undefined?(store.plan?.id||newPlanId()):store.plans.some(p=>p.id===requestedId)?requestedId:newPlanId();

@@ -2,28 +2,32 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const handlers={},context=vm.createContext({window:{},document:{addEventListener:(type,fn)=>handlers[type]=fn}});
 vm.runInContext(fs.readFileSync('scripts/arrival-time.js','utf8'),context);
 const api=context.window.ClinicArrivalTime;
-for(const value of ['08:29','07:59','19:01','20:00','24:00','12:60','8:30','bad',''])assert.equal(api.parse(value),null,value+' must be rejected');
-for(const [value,period,hour,minute] of [['08:30','am',8,30],['11:59','am',11,59],['12:00','pm',12,0],['14:30','pm',2,30],['19:00','pm',7,0]]){
+for(const value of ['09:37','11:59','08:29','07:59','19:01','20:00','24:00','12:60','8:30','bad',''])assert.equal(api.parse(value),null,value+' must be rejected');
+for(const [value,period,hour,minute] of [['08:30','am',8,30],['11:50','am',11,50],['12:00','pm',12,0],['14:30','pm',2,30],['19:00','pm',7,0]]){
   const parsed=api.parse(value);assert.equal(parsed.period,period);assert.equal(parsed.hour,hour);assert.equal(parsed.minute,minute);
 }
 const saved={period:'am',hour:1,minute:50};
+const oldMinute={period:'am',hour:9,minute:37};
+assert.ok(api.render(oldMinute,'legacy').includes('value="09:40"'));assert.equal(oldMinute.minute,37,'new picker does not overwrite old saved minutes');
+const labels=api.render(null,'labels');
+for(const label of ['오전 8시','오전 9시','오후 12시','오후 1시','오후 7시'])assert.ok(labels.includes('>'+label+'</button>'));
 assert.ok(api.render(saved,'old').includes('value="08:30"'));assert.equal(saved.hour,1,'rendering an out-of-range existing time cannot rewrite saved records');
 assert.ok(api.render({period:'pm',hour:7,minute:0},'end').includes('value="19:00"'));
 const wheels={},time={value:'14:30'};
 const picker={querySelector:selector=>selector==='input'?time:wheels[selector.match(/="(.*?)"/)[1]]};
 function makeRows(values,part){return values.map(value=>({id:part+'-'+value,dataset:{arrivalOption:String(value)},setAttribute(){}}));}
-for(const [part,values,initial] of [['hour',Array.from({length:12},(_,i)=>i+8),14],['minute',Array.from({length:60},(_,i)=>i),30]]){
+for(const [part,values,initial] of [['hour',Array.from({length:12},(_,i)=>i+8),14],['minute',[0,10,20,30,40,50],30]]){
   let rows=makeRows(values,part);
   wheels[part]={dataset:{value:String(initial),arrivalWheel:part,prefix:part},scrollTop:0,querySelectorAll:()=>rows,closest:()=>picker,setAttribute(){},set innerHTML(html){rows=makeRows([...html.matchAll(/data-arrival-option="(\d+)"/g)].map(m=>Number(m[1])),part);}};
 }
 api.initialize({querySelectorAll:()=>Object.values(wheels)});
-assert.equal(wheels.hour.scrollTop,6*36);assert.equal(wheels.minute.scrollTop,30*36);
+assert.equal(wheels.hour.scrollTop,6*36);assert.equal(wheels.minute.scrollTop,3*36);
 function swipe(part,index){wheels[part].scrollTop=index*36;handlers.scroll({target:{closest:()=>wheels[part]}});}
-swipe('hour',0);assert.equal(time.value,'08:30');assert.equal(wheels.minute.querySelectorAll().length,30,'8 AM minutes start at 30');
-swipe('minute',29);assert.equal(time.value,'08:59');
+swipe('hour',0);assert.equal(time.value,'08:30');assert.equal(wheels.minute.querySelectorAll().length,3,'8 AM minutes start at 30');
+swipe('minute',2);assert.equal(time.value,'08:50');
 swipe('hour',11);assert.equal(time.value,'19:00');assert.equal(wheels.minute.querySelectorAll().length,1,'7 PM only permits minute 00');
-swipe('hour',10);swipe('minute',37);assert.equal(time.value,'18:37','other hours permit every minute');
-handlers.keydown({key:'Home',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(time.value,'08:37');
+swipe('hour',10);swipe('minute',4);assert.equal(time.value,'18:40','other hours use ten-minute steps');
+handlers.keydown({key:'Home',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(time.value,'08:40');
 handlers.keydown({key:'Home',preventDefault(){},target:{closest:()=>wheels.minute}});assert.equal(time.value,'08:30');
 handlers.keydown({key:'ArrowUp',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(time.value,'08:30','cannot go below opening time');
 handlers.keydown({key:'End',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(time.value,'19:00');
