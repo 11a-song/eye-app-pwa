@@ -1,5 +1,6 @@
 'use strict';
 (() => {
+  if(window.JeileyeNativeAlarm)return;
   let pendingPrompt = null, installed = false, busy = false, welcomeDismissed = false;
   const displayMode = window.matchMedia('(display-mode: standalone)');
   const isInstalled = () => installed || displayMode.matches || navigator.standalone === true;

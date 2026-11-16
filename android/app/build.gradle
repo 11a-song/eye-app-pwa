@@ -1,0 +1,22 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.jeileye.alarm'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.jeileye.alarm'
+        minSdk 28
+        targetSdk 36
+        versionCode 1
+        versionName '0.1.0'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    sourceSets.main.assets.srcDirs = [layout.buildDirectory.dir('web-assets')]
+}
+tasks.register('prepareWebAssets', Copy) {
+    from('../../') {
+        include 'index.html', 'manifest.webmanifest', 'assets/**', 'data/**'
+        exclude 'assets/vendor/**'
+    }
+    into layout.buildDirectory.dir('web-assets')
+}
+tasks.named('preBuild').configure { dependsOn 'prepareWebAssets' }

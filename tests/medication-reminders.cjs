@@ -26,6 +26,13 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
 (async()=>{
   const api=context.window.MedicationReminders;
   assert.ok(api.render().includes('안약 알림 설정'));
+  stored({plans:{'plan-one':{...enabled,times:['07:47','12:00','18:00','22:00']}}});
+  const legacyMarkup=api.render();
+  assert.ok(legacyMarkup.includes('name="time0" value="07:40"'),'old minute values align to the preceding ten-minute choice in the editor');
+  assert.equal(JSON.parse(data.get(KEY)).plans['plan-one'].times[0],'07:47','opening settings does not change saved push schedules');
+  const minuteMarkup=legacyMarkup.match(/data-reminder-wheel="minute"[\s\S]*?<\/div>/)[0];
+  assert.deepEqual([...minuteMarkup.matchAll(/data-wheel-option="(\d+)"/g)].map(m=>m[1]),['00','10','20','30','40','50']);
+  data.delete(KEY);
   const state={plans:{'plan-one':enabled}},before=new Date(2030,5,6);
   const am=api.buildJobs([plan],state,before);
   assert.equal(am.length,13,'three full days and only surgery-day morning');
@@ -54,19 +61,19 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   assert.ok(!initialMarkup.includes('type="time"'),'wheel picker replaces platform-dependent time inputs');
   const wheels={},hiddenTime={value:''};
   const picker={dataset:{},querySelector:selector=>selector==='input'?hiddenTime:wheels[selector.match(/="(.*?)"/)[1]]};
-  for(const [part,values,initial] of [['hour',Array.from({length:24},(_,i)=>String(i)),'7'],['minute',Array.from({length:60},(_,i)=>String(i).padStart(2,'0')),'40']]){
+  for(const [part,values,initial] of [['hour',Array.from({length:24},(_,i)=>String(i)),'7'],['minute',['00','10','20','30','40','50'],'40']]){
     const options=values.map((value,i)=>({id:part+i,dataset:{wheelOption:value},setAttribute(){}}));
     wheels[part]={dataset:{value:initial},scrollTop:values.indexOf(initial)*36,querySelectorAll:()=>options,setAttribute(){},closest:selector=>selector==='fieldset'?null:picker};
   }
   const originalQuery=context.document.querySelectorAll;
   context.document.querySelectorAll=()=>Object.values(wheels);api.initializeWheels();
-  assert.equal(wheels.hour.scrollTop,7*36);assert.equal(wheels.minute.scrollTop,40*36);
-  wheels.minute.scrollTop=41*36;handlers.scroll({target:{closest:()=>wheels.minute}});assert.equal(hiddenTime.value,'07:41','vertical swipe updates minute selection');
-  wheels.hour.scrollTop=19*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'19:41','swiping to PM updates the saved 24-hour time');
-  handlers.keydown({key:'ArrowDown',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'20:41','keyboard navigation changes hour');
-  wheels.hour.scrollTop=12*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'12:41','12 PM is noon');
+  assert.equal(wheels.hour.scrollTop,7*36);assert.equal(wheels.minute.scrollTop,4*36);
+  wheels.minute.scrollTop=5*36;handlers.scroll({target:{closest:()=>wheels.minute}});assert.equal(hiddenTime.value,'07:50','vertical swipe changes minutes in ten-minute steps');
+  wheels.hour.scrollTop=19*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'19:50','swiping to PM updates the saved 24-hour time');
+  handlers.keydown({key:'ArrowDown',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'20:50','keyboard navigation changes hour');
+  wheels.hour.scrollTop=12*36;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'12:50','12 PM is noon');
   assert.equal(picker.dataset.period,'pm','noon uses the afternoon color');
-  wheels.hour.scrollTop=0;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'00:41','12 AM is midnight');
+  wheels.hour.scrollTop=0;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'00:50','12 AM is midnight');
   assert.equal(picker.dataset.period,'am','morning color follows the selected hour');
   context.document.querySelectorAll=originalQuery;
   const pm=api.buildJobs([{...plan,period:'pm',hour:2}],state,before);
@@ -85,7 +92,8 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   assert.equal(api.buildJobs([plan],state,new Date(2030,5,11)).length,0,'past doses do not send');
   assert.ok(!api.renderMenu({...plan,archived:true}));
   await save({...enabled,consent:false});assert.match(status.textContent,/동의/);assert.equal(calls.length,0);
-  await save({...enabled,times:['07:00','07:02','18:00','22:00']});assert.match(status.textContent,/5분/);assert.equal(calls.length,0);
+  await save({...enabled,times:['07:02','12:00','18:00','22:00']});assert.match(status.textContent,/00·10·20/);assert.equal(calls.length,0);
+  await save({...enabled,times:['07:00','07:00','18:00','22:00']});assert.match(status.textContent,/5분/);assert.equal(calls.length,0);
   context.Notification.permission='default';allowPermission=false;
   await save();assert.match(status.textContent,/허용되지/);assert.equal(calls.length,0);assert.equal(permissionRequests,1);
   context.Notification.permission='granted';allowPermission=true;

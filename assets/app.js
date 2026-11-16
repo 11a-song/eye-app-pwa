@@ -1,6 +1,21 @@
+/* scripts/native-alarms.js */
+(function(){
+  'use strict';
+  const bridge=window.JeileyeNativeAlarm;if(!bridge)return;
+  function result(value){const data=JSON.parse(value);if(data.ok===false)throw Error(data.error||'기기에 알람을 저장하지 못했습니다.');return data;}
+  window.ClinicNativeAlarm={
+    status:()=>JSON.parse(bridge.status()),
+    openSettings:()=>bridge.openSettings(),
+    save:(jobs,activePlans)=>result(bridge.replace(JSON.stringify({jobs,activePlans}))),
+    test:plan=>result(bridge.test(plan||'test'))
+  };
+})();
+
+;
 /* scripts/pwa-install.js */
 'use strict';
 (() => {
+  if(window.JeileyeNativeAlarm)return;
   let pendingPrompt = null, installed = false, busy = false, welcomeDismissed = false;
   const displayMode = window.matchMedia('(display-mode: standalone)');
   const isInstalled = () => installed || displayMode.matches || navigator.standalone === true;
@@ -1313,6 +1328,9 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   'use strict';
   const KEY='jeileye-medication-reminders-v1';
   const slots=['아침','점심','저녁','취침 전'];
+  const native=()=>window.ClinicNativeAlarm;
+  function nativeControls(){return native()?'<button type="button" class="reminder-test-button" data-native-alarm-settings>기기 알람 권한 설정</button><p class="reminder-note">알림, 알람 및 리마인더, 전체 화면 알림을 허용하고 알람 음량을 확인해 주세요.</p>':'';}
+  function platformNote(){return '<p class="reminder-note">'+(native()?'이 앱은 휴대폰에 알람을 예약합니다. 권한 허용 후 잠금화면에서 테스트해 주세요. 휴대폰 강제 종료, 알람 음량, 방해 금지 설정에 따라 동작이 제한될 수 있습니다.':'아이폰은 iOS 16.4 이상에서 홈 화면에 설치한 앱의 알림을 허용해야 합니다. 인터넷 연결과 휴대폰 설정에 따라 알림이 지연되거나 전달되지 않을 수 있습니다.')+'</p>';}
   const bell='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4M12 2V1"/></svg>';
   const plans=()=>window.CataractMedication.getPlans();
   const selected=()=>{const id=location.hash.match(/[?&]plan=([a-z0-9-]+)/)?.[1];return plans().find(p=>p.id===id)||plans().find(p=>!p.archived)||plans()[0];};
@@ -1324,6 +1342,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   const ios=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1;
   const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
   function guidance(){
+    if(native()){const value=native().status();return value.ready?'':value.reason||'휴대폰 알람 권한을 설정해 주세요.';}
     if(ios()&&!standalone())return '아이폰에서는 Safari에서 홈 화면에 추가한 뒤, 설치된 앱을 열어 알림을 허용해 주세요.';
     if(!support())return '이 브라우저에서는 푸시 알림을 지원하지 않습니다. 설치된 앱 또는 최신 Chrome에서 이용해 주세요.';
     if(Notification.permission==='denied')return '알림이 차단되어 있습니다. 휴대폰 또는 브라우저의 사이트 알림 설정에서 허용해 주세요.';
@@ -1343,8 +1362,8 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   }
   function renderTimePicker(index,value){
     const time=/^([01]\d|2[0-3]):[0-5]\d$/.test(value||'')?value:['07:00','12:00','18:00','22:00'][index];
-    const [hour,minute]=time.split(':').map(Number);
-    return `<div class="reminder-time-picker" data-time-picker data-period="${hour<12?'am':'pm'}"><input type="hidden" name="time${index}" value="${time}">${wheel(index,'hour',Array.from({length:24},(_,i)=>i),hour)}<span class="reminder-picker-colon" aria-hidden="true">:</span>${wheel(index,'minute',Array.from({length:60},(_,i)=>pad(i)),pad(minute))}</div>`;
+    const [hour,previousMinute]=time.split(':').map(Number),minute=Math.floor(previousMinute/10)*10;
+    return `<div class="reminder-time-picker" data-time-picker data-period="${hour<12?'am':'pm'}"><input type="hidden" name="time${index}" value="${pad(hour)}:${pad(minute)}">${wheel(index,'hour',Array.from({length:24},(_,i)=>i),hour)}<span class="reminder-picker-colon" aria-hidden="true">:</span>${wheel(index,'minute',Array.from({length:6},(_,i)=>pad(i*10)),pad(minute))}</div>`;
   }
   const wheelHeight=36;
   function selectWheel(wheel,index,scroll=false){
@@ -1392,7 +1411,7 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   function render(){
     const plan=selected();if(!plan)return '<p>먼저 수술 스케줄을 생성해 주세요.</p>';
     const s=read(),value=settings(s,plan.id),blocked=guidance(),disabled=plan.archived;
-    return `<section class="reminder-page"><a class="surgery-detail-back" href="#/profile/cataract-before?plan=${plan.id}">‹ 안약 스케줄로</a><h2>${bell}안약 알림 설정</h2><p class="reminder-plan">${escape({left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'}[plan.eye]||'수술 일정')} · ${escape(plan.surgeryDate.replaceAll('-','.'))}</p><form id="medication-reminder-form" data-plan="${plan.id}"><fieldset ${disabled?'disabled':''}><legend class="visually-hidden">안약 알림 시간 설정</legend><label class="reminder-master"><span><strong>안약 알림 받기</strong><small>설정한 시간에 푸시 알림을 받습니다.</small></span><input type="checkbox" name="enabled" role="switch" ${value.enabled?'checked':''}></label>${renderDays(plan,value)}<div class="reminder-times">${slots.map((title,i)=>`<div class="reminder-time-row"><div><strong class="reminder-slot-title">${title}</strong><small>${i===0||i===2?'목시트라 · 브로낙':'목시트라'}</small></div>${renderTimePicker(i,value.times?.[i])}<label class="reminder-slot-switch"><input type="checkbox" name="slot${i}" role="switch" ${value.enabled&&value.slots?.[i]!==false?'checked':''} aria-label="${title} 알림 켜기"><span>알림</span></label></div>`).join('')}</div><p class="reminder-status" id="reminder-status" role="status">${disabled?'이전 수술 일정은 알림을 설정할 수 없습니다.':escape(blocked|| (s.pending?'이전 변경을 서버에 반영하지 못했습니다. 인터넷 연결 후 다시 저장해 주세요.':''))}</p><p class="reminder-note">시간은 현재 기기의 시간대를 기준으로 합니다. 처방받은 횟수와 간격에 맞춰 설정해 주세요.<br>수술 당일은 오전 내원 시 아침, 오후 내원 시 아침·점심만 알립니다. 내원시간 이후 알림은 보내지 않습니다.</p><label class="reminder-consent"><input type="checkbox" name="consent" ${value.consent?'checked':''}><span>알림 발송을 위한 기기 수신 정보와 발송 시간을 서버에 저장하는 데 동의합니다. 체크 기록은 전송하지 않습니다.</span></label><button class="primary-button" type="submit">알림 설정 저장</button><button class="reminder-test-button" type="button" data-test-medication-reminder ${!s.subscription?'disabled':''}>테스트 알림 보내기</button></fieldset></form><p class="reminder-note">아이폰은 iOS 16.4 이상에서 홈 화면에 설치한 앱의 알림을 허용해야 합니다. 인터넷 연결과 휴대폰 설정에 따라 알림이 지연되거나 전달되지 않을 수 있습니다.</p></section>`;
+    return `<section class="reminder-page"><a class="surgery-detail-back" href="#/profile/cataract-before?plan=${plan.id}">‹ 안약 스케줄로</a><h2>${bell}안약 알림 설정</h2><p class="reminder-plan">${escape({left:'왼쪽 눈',right:'오른쪽 눈',both:'양쪽 눈'}[plan.eye]||'수술 일정')} · ${escape(plan.surgeryDate.replaceAll('-','.'))}</p>${nativeControls()}<form id="medication-reminder-form" data-plan="${plan.id}"><fieldset ${disabled?'disabled':''}><legend class="visually-hidden">안약 알림 시간 설정</legend><label class="reminder-master"><span><strong>안약 알림 받기</strong><small>설정한 시간에 푸시 알림을 받습니다.</small></span><input type="checkbox" name="enabled" role="switch" ${value.enabled?'checked':''}></label>${renderDays(plan,value)}<div class="reminder-times">${slots.map((title,i)=>`<div class="reminder-time-row"><div><strong class="reminder-slot-title">${title}</strong><small>${i===0||i===2?'목시트라 · 브로낙':'목시트라'}</small></div>${renderTimePicker(i,value.times?.[i])}<label class="reminder-slot-switch"><input type="checkbox" name="slot${i}" role="switch" ${value.enabled&&value.slots?.[i]!==false?'checked':''} aria-label="${title} 알림 켜기"><span>알림</span></label></div>`).join('')}</div><p class="reminder-status" id="reminder-status" role="status">${disabled?'이전 수술 일정은 알림을 설정할 수 없습니다.':escape(blocked|| (s.pending?'이전 변경을 서버에 반영하지 못했습니다. 인터넷 연결 후 다시 저장해 주세요.':''))}</p><p class="reminder-note">시간은 현재 기기의 시간대를 기준으로 합니다. 처방받은 횟수와 간격에 맞춰 설정해 주세요.<br>수술 당일은 오전 내원 시 아침, 오후 내원 시 아침·점심만 알립니다. 내원시간 이후 알림은 보내지 않습니다.</p>${native()?'':`<label class="reminder-consent"><input type="checkbox" name="consent" ${value.consent?'checked':''}><span>알림 발송을 위한 기기 수신 정보와 발송 시간을 서버에 저장하는 데 동의합니다. 체크 기록은 전송하지 않습니다.</span></label>`}<button class="primary-button" type="submit">알림 설정 저장</button><button class="reminder-test-button" type="button" data-test-medication-reminder ${!native()&&!s.subscription?'disabled':''}>테스트 알림 보내기</button></fieldset></form>${platformNote()}</section>`;
   }
   function buildJobs(all,s,now=new Date()){
     const jobs=[];
@@ -1437,6 +1456,11 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   }
   function synchronize(){
     const task=async()=>{
+      if(native()){
+        const s=read(),all=plans();s.pending=true;write(s);
+        native().save(buildJobs(all,s),all.filter(p=>!p.archived&&settings(s,p.id).enabled).map(p=>p.id));
+        const latest=read();latest.pending=false;latest.nativeRegistered=true;write(latest);return;
+      }
       const s=read();if(!s.id||!s.subscription)return;
       const jobs=(typeof Notification!=='undefined'&&Notification.permission==='granted')?buildJobs(plans(),s):[];
       revision=Math.max(Date.now(),revision+1,Number(s.revision||0)+1);s.revision=revision;s.pending=true;write(s);
@@ -1455,12 +1479,13 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     const field=name=>form.elements.namedItem(name),enabled=field('enabled').checked;
     // Flush a wheel still moving when the user taps Save.
     for(const wheel of form.querySelectorAll?.('[data-reminder-wheel]')||[])selectWheel(wheel,Math.round(wheel.scrollTop/wheelHeight),true);
-    const value={enabled,consent:field('consent').checked,times:slots.map((_,i)=>field('time'+i).value),slots:slots.map((_,i)=>field('slot'+i).checked),days:Object.fromEntries(reminderDates(p).map(day=>[day.value,field('day'+day.value)?.checked!==false]))};
+    const value={enabled,consent:field('consent')?.checked===true,times:slots.map((_,i)=>field('time'+i).value),slots:slots.map((_,i)=>field('slot'+i).checked),days:Object.fromEntries(reminderDates(p).map(day=>[day.value,field('day'+day.value)?.checked!==false]))};
     if(enabled){
       const blocked=guidance();if(blocked){status(blocked);return;}
-      if(!value.consent){status('알림 발송을 위한 정보 저장에 동의해 주세요.');return;}
+      if(!native()&&!value.consent){status('알림 발송을 위한 정보 저장에 동의해 주세요.');return;}
       const active=value.times.filter((_,i)=>value.slots[i]);
       if(!active.length||active.some(t=>!/^([01]\d|2[0-3]):[0-5]\d$/.test(t))){status('알림을 받을 항목을 켜고 시간을 입력해 주세요.');return;}
+      if(active.some(t=>Number(t.slice(3))%10!==0)){status('알림 시간의 분은 00·10·20·30·40·50 중에서 선택해 주세요.');return;}
       const minutes=active.map(t=>Number(t.slice(0,2))*60+Number(t.slice(3)));
       if(minutes.some((t,i)=>i>0&&t-minutes[i-1]<5)){status('아침부터 취침 전까지 시간 순서대로, 5분 이상 간격으로 설정해 주세요.');return;}
       if(!buildJobs([p],{plans:{[p.id]:value}}).length){status('선택한 시간에는 남은 알림 일정이 없습니다. 수술일과 내원시간을 확인해 주세요.');return;}
@@ -1468,22 +1493,24 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
     busy=true;const button=form.querySelector('[type="submit"]');button.disabled=true;status('알림 설정을 저장하고 있습니다…');
     try{
       // Permission must be requested directly from the user's gesture, before any network await.
-      if(enabled&&Notification.permission!=='granted'){
+      if(!native()&&enabled&&Notification.permission!=='granted'){
         const result=await Notification.requestPermission();if(result!=='granted')throw Error('알림이 허용되지 않았습니다. 기기 설정에서 알림을 허용해 주세요.');
       }
-      let s=read();identity(s);if(enabled)await subscription(s);
+      let s=read();if(!native()){identity(s);if(enabled)await subscription(s);}
       s=read();s.plans[p.id]=value;s.pending=!!s.subscription;write(s);
       await synchronize();status(enabled?'알림이 설정되었습니다. 테스트 알림으로 수신을 확인해 주세요.':'이 수술 일정의 알림을 껐습니다.');toast('저장되었습니다.');
-      const test=form.querySelector('[data-test-medication-reminder]');if(test)test.disabled=!s.subscription;
+      const test=form.querySelector('[data-test-medication-reminder]');if(test)test.disabled=!native()&&!s.subscription;
     }catch(error){status(error.message||'저장하지 못했습니다. 다시 시도해 주세요.');}
     finally{busy=false;button.disabled=false;}
   });
   document.addEventListener('click',async event=>{
+    if(event.target.closest?.('[data-native-alarm-settings]')){native()?.openSettings();return;}
     const option=event.target.closest?.('[data-wheel-option]');
     if(option){const wheel=option.closest('[data-reminder-wheel]');selectWheel(wheel,Array.from(wheel.querySelectorAll('[data-wheel-option]')).indexOf(option),true);return;}
     const button=event.target.closest?.('[data-test-medication-reminder]');if(!button||busy)return;
     busy=true;button.disabled=true;
     try{
+      if(native()){const blocked=guidance();if(blocked)throw Error(blocked);native().test(selected()?.id);status('10초 뒤 기기 알람이 울립니다. 지금 전원 버튼으로 화면을 끄고 확인해 주세요.');return;}
       const s=read();if(!s.subscription||!support()||Notification.permission!=='granted')throw Error('먼저 알림을 허용하고 설정을 저장해 주세요.');
       await request('test',{...identity(s),planId:selected()?.id});status('테스트 알림을 보냈습니다. 휴대폰 알림을 확인해 주세요.');
     }catch(error){status(error.message);}finally{busy=false;button.disabled=false;}
@@ -1491,15 +1518,16 @@ window.clinicVisionBeforeHtml = "<section class=\"information-section\" id=\"bef
   function plansChanged(all){
     const signature=JSON.stringify(all.map(p=>[p.id,p.surgeryDate,p.period,p.hour,p.minute,p.archived]));
     if(signature===lastPlans)return;lastPlans=signature;
-    const s=read();if(!s.subscription)return;s.pending=true;try{write(s);}catch{return;}
+    const s=read();if(!s.subscription&&!native())return;s.pending=true;try{write(s);}catch{return;}
     synchronize().catch(()=>toast('알림 변경을 연결하지 못했습니다. 인터넷 연결 후 다시 시도합니다.'));
   }
   window.MedicationReminders={render,renderMenu,plansChanged,buildJobs,initializeWheels};
   lastPlans=JSON.stringify(plans().map(p=>[p.id,p.surgeryDate,p.period,p.hour,p.minute,p.archived]));
-  const retry=()=>{const s=read();if(s.subscription)synchronize().catch(()=>{});};
+  const retry=()=>{const s=read();if(s.subscription||native()&&s.nativeRegistered)synchronize().catch(()=>{});};
+  window.addEventListener('jeileye-native-resume',retry);
   window.addEventListener('online',retry);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')retry();});
-  if(read().subscription)retry();
+  if(read().subscription||native()&&read().nativeRegistered)retry();
 })();
 
 ;
@@ -1620,7 +1648,7 @@ function managedPage(key){
 function activeFaqs(){const content=window.clinicContent;return !content||content.status==='disabled'?faqs:content.status==='ready'?content.pages.filter(row=>row.page_key==='faq').map(row=>[row.title,row.content]):[];}
 function blogPage(){const content=window.clinicContent;return pageTop('병원 블로그','병원이 전하는 눈 건강 이야기')+(content?.status==='ready'?content.blog.map(row=>accordion(escapeHtml(row.title),`<p class="note">${escapeHtml(row.post_date)}</p>`+contentImage(row.image_url)+`<div class="managed-text">${escapeHtml(row.content)}</div>`+(safeContentUrl(row.source_url)?`<a class="text-button" href="${escapeHtml(safeContentUrl(row.source_url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.source||'출처 보기')} ↗</a>`:''))).join(''):'<section class="card"><p>블로그를 불러오는 중입니다.</p></section>');}
 function home() {
-  return `<div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title-row"><span class="menu-title">${t(title)}</span>${['before','after'].includes(id)?'<span class="menu-schedule-badge">스케줄 생성</span>':''}</span></span></a>`).join('')}</div>`;
+  return `<div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title-row"><span class="menu-title">${t(title)}</span></span></span></a>`).join('')}</div>`;
 }
 function guide() {
   return window.ClinicGuide.render(window.clinicContent,scheduleData,scheduleState);
@@ -1769,7 +1797,7 @@ function surgeryMenu(stage) {
   const title=stage==='before'?'수술 전':'수술 후';
   const prompt=stage==='before'?'수술예정인 질환을 선택하세요.':'수술하신 질환을 선택하세요.';
   return emptyMenuPage(title)+'<p class="surgery-category-prompt">'+t(prompt)+'</p><div class="surgery-category-list">'+surgeryCategories.map(([id,label])=>
-    '<a class="surgery-category-button" href="#/'+stage+'/'+id+'"><span>'+t(label)+'</span>'+icon('arrow','menu-arrow')+'</a>'
+    '<a class="surgery-category-button" href="#/'+stage+'/'+id+'"><span class="surgery-menu-label"><span>'+t(label)+'</span>'+(stage==='before'&&id==='cataract'?'<span class="menu-schedule-badge">스케줄 생성</span>':'')+'</span>'+icon('arrow','menu-arrow')+'</a>'
   ).join('')+'</div>';
 }
 const cataractPreopSections=[['precautions','수술 전 주의사항'],['medication','수술 전 약 사용법']];
@@ -1939,7 +1967,7 @@ document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('cli
 window.addEventListener('hashchange',()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());render(true);});
 window.addEventListener('clinic-content-updated',()=>render());
 window.addEventListener('offline',()=>{const toast=$('#toast');toast.textContent='오프라인입니다. 저장된 안내 화면을 표시합니다. 외부 문의 연결은 인터넷이 필요합니다.';toast.classList.add('visible');setTimeout(()=>toast.classList.remove('visible'),5000);});
-if('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(()=>console.warn('오프라인 기능을 시작하지 못했습니다.'));
+if(!window.JeileyeNativeAlarm && 'serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(()=>console.warn('오프라인 기능을 시작하지 못했습니다.'));
 render();
 
 ;

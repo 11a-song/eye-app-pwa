@@ -109,7 +109,7 @@ function managedPage(key){
 function activeFaqs(){const content=window.clinicContent;return !content||content.status==='disabled'?faqs:content.status==='ready'?content.pages.filter(row=>row.page_key==='faq').map(row=>[row.title,row.content]):[];}
 function blogPage(){const content=window.clinicContent;return pageTop('병원 블로그','병원이 전하는 눈 건강 이야기')+(content?.status==='ready'?content.blog.map(row=>accordion(escapeHtml(row.title),`<p class="note">${escapeHtml(row.post_date)}</p>`+contentImage(row.image_url)+`<div class="managed-text">${escapeHtml(row.content)}</div>`+(safeContentUrl(row.source_url)?`<a class="text-button" href="${escapeHtml(safeContentUrl(row.source_url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.source||'출처 보기')} ↗</a>`:''))).join(''):'<section class="card"><p>블로그를 불러오는 중입니다.</p></section>');}
 function home() {
-  return `<div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title-row"><span class="menu-title">${t(title)}</span>${['before','after'].includes(id)?'<span class="menu-schedule-badge">스케줄 생성</span>':''}</span></span></a>`).join('')}</div>`;
+  return `<div class="menu-list">${menus.map(([id,name,title]) => `<a class="menu-bar" href="#/${id}"><span class="menu-icon">${icon(name)}</span><span class="menu-copy"><span class="menu-title-row"><span class="menu-title">${t(title)}</span></span></span></a>`).join('')}</div>`;
 }
 function guide() {
   return window.ClinicGuide.render(window.clinicContent,scheduleData,scheduleState);
@@ -258,7 +258,7 @@ function surgeryMenu(stage) {
   const title=stage==='before'?'수술 전':'수술 후';
   const prompt=stage==='before'?'수술예정인 질환을 선택하세요.':'수술하신 질환을 선택하세요.';
   return emptyMenuPage(title)+'<p class="surgery-category-prompt">'+t(prompt)+'</p><div class="surgery-category-list">'+surgeryCategories.map(([id,label])=>
-    '<a class="surgery-category-button" href="#/'+stage+'/'+id+'"><span>'+t(label)+'</span>'+icon('arrow','menu-arrow')+'</a>'
+    '<a class="surgery-category-button" href="#/'+stage+'/'+id+'"><span class="surgery-menu-label"><span>'+t(label)+'</span>'+(stage==='before'&&id==='cataract'?'<span class="menu-schedule-badge">스케줄 생성</span>':'')+'</span>'+icon('arrow','menu-arrow')+'</a>'
   ).join('')+'</div>';
 }
 const cataractPreopSections=[['precautions','수술 전 주의사항'],['medication','수술 전 약 사용법']];
@@ -428,5 +428,5 @@ document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('cli
 window.addEventListener('hashchange',()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());render(true);});
 window.addEventListener('clinic-content-updated',()=>render());
 window.addEventListener('offline',()=>{const toast=$('#toast');toast.textContent='오프라인입니다. 저장된 안내 화면을 표시합니다. 외부 문의 연결은 인터넷이 필요합니다.';toast.classList.add('visible');setTimeout(()=>toast.classList.remove('visible'),5000);});
-if('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(()=>console.warn('오프라인 기능을 시작하지 못했습니다.'));
+if(!window.JeileyeNativeAlarm && 'serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(()=>console.warn('오프라인 기능을 시작하지 못했습니다.'));
 render();
