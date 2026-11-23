@@ -28,7 +28,8 @@
     return [3,2,1,0].map(offset=>{const date=new Date(y,m-1,d-offset,12);return {value:`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`,weekday:['일','월','화','수','목','금','토'][date.getDay()],label:`${date.getMonth()+1}/${date.getDate()}`,offset};});
   }
   function renderDays(plan,value){
-    return `<section class="reminder-days" aria-labelledby="reminder-days-title"><h3 id="reminder-days-title">알림 받을 날짜</h3><div class="reminder-day-buttons">${reminderDates(plan).map(day=>`<label class="reminder-day-button"><input type="checkbox" name="day${day.value}" ${value.enabled&&value.days?.[day.value]!==false?'checked':''} aria-label="${day.label} (${day.weekday}) ${day.offset?'수술 '+day.offset+'일 전':'수술 당일'} 알림"><span class="reminder-day-circle">${day.weekday}</span><strong>${day.label}</strong><small>${day.offset?day.offset+'일 전':'수술 당일'}</small></label>`).join('')}</div><p>수술 3일 전부터 수술 당일까지 날짜별로 켜고 끌 수 있습니다.</p></section><p class="reminder-wheel-hint">시간을 위아래로 밀어 선택하세요.${value.times?.some(Boolean)?'':' 처음 표시되는 시간은 예시입니다. 처방에 맞춰 조정해 주세요.'}</p>`;
+    const timeInputHint='시간을 위아래로 밀거나 가운데 시·분을 눌러 입력하세요. 시 입력은 표시된 오전·오후 기준입니다.';
+    return `<section class="reminder-days" aria-labelledby="reminder-days-title"><h3 id="reminder-days-title">알림 받을 날짜</h3><div class="reminder-day-buttons">${reminderDates(plan).map(day=>`<label class="reminder-day-button"><input type="checkbox" name="day${day.value}" ${value.enabled&&value.days?.[day.value]!==false?'checked':''} aria-label="${day.label} (${day.weekday}) ${day.offset?'수술 '+day.offset+'일 전':'수술 당일'} 알림"><span class="reminder-day-circle">${day.weekday}</span><strong>${day.label}</strong><small>${day.offset?day.offset+'일 전':'수술 당일'}</small></label>`).join('')}</div><p>수술 3일 전부터 수술 당일까지 날짜별로 켜고 끌 수 있습니다.</p></section><p class="reminder-wheel-hint">${timeInputHint}${value.times?.some(Boolean)?'':' 처음 표시되는 시간은 예시입니다. 처방에 맞춰 조정해 주세요.'}</p>`;
   }
   function wheel(slot,part,values,selectedValue){
     const prefix=`reminder-wheel-${slot}-${part}`,selected=values.findIndex(value=>String(value)===String(selectedValue));
@@ -37,7 +38,25 @@
   function renderTimePicker(index,value){
     const time=/^([01]\d|2[0-3]):[0-5]\d$/.test(value||'')?value:['07:00','12:00','18:00','22:00'][index];
     const [hour,previousMinute]=time.split(':').map(Number),minute=Math.floor(previousMinute/10)*10;
-    return `<div class="reminder-time-picker" data-time-picker data-period="${hour<12?'am':'pm'}"><input type="hidden" name="time${index}" value="${pad(hour)}:${pad(minute)}">${wheel(index,'hour',Array.from({length:24},(_,i)=>i),hour)}<span class="reminder-picker-colon" aria-hidden="true">:</span>${wheel(index,'minute',Array.from({length:6},(_,i)=>pad(i*10)),pad(minute))}</div>`;
+    return `<div class="reminder-time-picker" data-time-picker data-period="${hour<12?'am':'pm'}"><input type="hidden" name="time${index}" value="${pad(hour)}:${pad(minute)}">${wheel(index,'hour',Array.from({length:24},(_,i)=>i),hour)}${wheel(index,'minute',Array.from({length:6},(_,i)=>pad(i*10)),pad(minute))}<span class="reminder-picker-unit">분</span>${['hour','minute'].map(part=>`<input type="text" class="reminder-direct-input" data-reminder-input="${part}" inputmode="numeric" maxlength="2" enterkeyhint="done" autocomplete="off" aria-label="${slots[index]} ${part==='hour'?'시 직접 입력, 표시된 오전·오후 기준':'분 직접 입력, 10분 단위'}" hidden>`).join('')}<span class="reminder-time-error" data-time-error role="status" hidden></span></div>`;
+  }
+  function startReminderTyping(wheel){
+    if(wheel.closest('fieldset')?.disabled)return;
+    const picker=wheel.closest('[data-time-picker]'),part=wheel.dataset.reminderWheel,input=picker.querySelector(`[data-reminder-input="${part}"]`);
+    input.value=part==='hour'?String(Number(wheel.dataset.value)%12||12):wheel.dataset.value;
+    input.style.left=wheel.offsetLeft+'px';input.style.width=wheel.clientWidth+'px';input.hidden=false;input.removeAttribute('aria-invalid');
+    picker.querySelector('[data-time-error]').hidden=true;input.focus();input.select();
+  }
+  function commitReminderTyping(input,cancel=false){
+    if(input.hidden)return true;
+    const picker=input.closest('[data-time-picker]'),part=input.dataset.reminderInput,wheel=picker.querySelector(`[data-reminder-wheel="${part}"]`);
+    const options=Array.from(wheel.querySelectorAll('[data-wheel-option]')),error=picker.querySelector('[data-time-error]');
+    if(cancel){input.hidden=true;input.removeAttribute('aria-invalid');error.hidden=true;selectWheel(wheel,options.findIndex(o=>o.dataset.wheelOption===wheel.dataset.value),true);return true;}
+    let value=/^\d{1,2}$/.test(input.value.trim())?Number(input.value.trim()):NaN;
+    if(part==='hour'&&value>=1&&value<=12)value=value%12+(Number(wheel.dataset.value)>=12?12:0);
+    const index=options.findIndex(o=>Number(o.dataset.wheelOption)===value);
+    if(index<0){input.setAttribute('aria-invalid','true');error.textContent=part==='hour'?'시는 1~12 또는 0~23으로 입력해 주세요.':'분은 00·10·20·30·40·50으로 입력해 주세요.';error.hidden=false;return false;}
+    input.hidden=true;input.removeAttribute('aria-invalid');error.hidden=true;selectWheel(wheel,index,true);return true;
   }
   const wheelHeight=36;
   function selectWheel(wheel,index,scroll=false){
@@ -63,9 +82,13 @@
   }
   document.addEventListener('scroll',event=>{
     const wheel=event.target.closest?.('[data-reminder-wheel]');
-    if(wheel)selectWheel(wheel,Math.round(wheel.scrollTop/wheelHeight));
+    if(wheel){const input=wheel.closest('[data-time-picker]').querySelector(`[data-reminder-input="${wheel.dataset.reminderWheel}"]`);if(input&&!input.hidden)return;selectWheel(wheel,Math.round(wheel.scrollTop/wheelHeight));}
   },{capture:true,passive:true});
+  document.addEventListener('focusout',event=>{if(event.target.matches?.('[data-reminder-input]'))commitReminderTyping(event.target);});
   document.addEventListener('keydown',event=>{
+    if(event.target.matches?.('[data-reminder-input]')){if(['Enter','Escape'].includes(event.key)){event.preventDefault();commitReminderTyping(event.target,event.key==='Escape');}return;}
+    const selected=event.target.closest?.('[data-reminder-wheel]');
+    if(selected&&['Enter','F2'].includes(event.key)){event.preventDefault();startReminderTyping(selected);return;}
     const wheel=event.target.closest?.('[data-reminder-wheel]');if(!wheel||!['ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
     event.preventDefault();const last=wheel.querySelectorAll('[data-wheel-option]').length-1;
     const index=event.key==='Home'?0:event.key==='End'?last:Math.round(wheel.scrollTop/wheelHeight)+(event.key==='ArrowUp'?-1:1);
@@ -151,6 +174,7 @@
     const form=event.target;if(form.id!=='medication-reminder-form')return;event.preventDefault();if(busy)return;
     const p=plans().find(p=>p.id===form.dataset.plan);if(!p||p.archived)return;
     const field=name=>form.elements.namedItem(name),enabled=field('enabled').checked;
+    for(const input of form.querySelectorAll?.('[data-reminder-input]')||[])if(!commitReminderTyping(input)){status('입력한 시·분을 확인해 주세요. 분은 10분 단위로 입력해 주세요.');return;}
     // Flush a wheel still moving when the user taps Save.
     for(const wheel of form.querySelectorAll?.('[data-reminder-wheel]')||[])selectWheel(wheel,Math.round(wheel.scrollTop/wheelHeight),true);
     const value={enabled,consent:field('consent')?.checked===true,times:slots.map((_,i)=>field('time'+i).value),slots:slots.map((_,i)=>field('slot'+i).checked),days:Object.fromEntries(reminderDates(p).map(day=>[day.value,field('day'+day.value)?.checked!==false]))};
@@ -180,7 +204,7 @@
   document.addEventListener('click',async event=>{
     if(event.target.closest?.('[data-native-alarm-settings]')){native()?.openSettings();return;}
     const option=event.target.closest?.('[data-wheel-option]');
-    if(option){const wheel=option.closest('[data-reminder-wheel]');selectWheel(wheel,Array.from(wheel.querySelectorAll('[data-wheel-option]')).indexOf(option),true);return;}
+    if(option){const wheel=option.closest('[data-reminder-wheel]'),selected=wheel.dataset.value===option.dataset.wheelOption;selectWheel(wheel,Array.from(wheel.querySelectorAll('[data-wheel-option]')).indexOf(option),true);if(selected)startReminderTyping(wheel);return;}
     const button=event.target.closest?.('[data-test-medication-reminder]');if(!button||busy)return;
     busy=true;button.disabled=true;
     try{

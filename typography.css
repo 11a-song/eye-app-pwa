@@ -34,25 +34,27 @@ body{font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wra
 .empty p,.faq-empty{font-size:13px}
 .schedule-page-top h1{font-size:22px}
 .schedule-page-top p{font-size:13px;line-height:1.7}
-.schedule-calendar-card .calendar-head strong{font-size:clamp(25px,5vw,30px)}
-.doctor-filter{font-size:12px;line-height:1.4}
-.doctor-filter[aria-pressed=true]{font-size:15px}
-.schedule-calendar-card .calendar-key{font-size:11px}
-.schedule-calendar-card .calendar .weekday{font-size:12px}
-.schedule-calendar-card .calendar .day-number,.calendar-outside{font-size:14px}
-.schedule-calendar-card .calendar .today-label{font-size:8px}
-.schedule-calendar-card .calendar .closure-band{font-size:11px}
-.schedule-day-panel>.section-label{font-size:12px}
-.schedule-day-panel>h2{font-size:24px}
-.schedule-doctor>strong{font-size:19px}
-.schedule-doctor .doctor-title{font-size:13px}
-.schedule-view .period-tag{font-size:10px}
-.schedule-view .schedule-time{font-size:16px;line-height:1.8}
-.schedule-time>span{font-size:11px}
-.closure-time small{font-size:12px}
-.schedule-hours-panel>h2{font-size:18px}
-.schedule-hours-list>div{display:grid;grid-template-columns:minmax(72px,.8fr) minmax(0,1.3fr);font-size:clamp(14px,3.8vw,16px);padding-inline:0}
+.schedule-calendar-card .calendar-head strong{font-size:clamp(28px,7.2vw,34px)}
+.doctor-filter{font-size:14px;line-height:1.4}
+.doctor-filter[aria-pressed=true]{font-size:16px}
+.schedule-calendar-card .calendar-key{font-size:13px}
+.schedule-calendar-card .calendar .weekday{font-size:14px}
+.schedule-calendar-card .calendar .day-number{font-size:22px}
+.calendar-outside{font-size:18px}
+.schedule-calendar-card .calendar .today-label{font-size:10px}
+.schedule-calendar-card .calendar .closure-band{font-size:12px}
+.schedule-day-panel>.section-label{font-size:14px}
+.schedule-day-panel>h2{font-size:28px}
+.schedule-doctor>strong{font-size:21px}
+.schedule-doctor .doctor-title{font-size:14px}
+.schedule-view .period-tag{font-size:12px}
+.schedule-view .schedule-time{font-size:18px;line-height:1.8}
+.schedule-time>span{font-size:13px}
+.closure-time small{font-size:14px}
+.schedule-hours-panel>h2{font-size:22px}
+.schedule-hours-list>div{display:grid;grid-template-columns:minmax(88px,1fr) minmax(0,1.5fr);font-size:clamp(16px,4.2vw,18px);padding-inline:0}
 .schedule-hours-list dd{white-space:normal;text-align:right}
-.schedule-hours-list .hours-substitute dt,.schedule-hours-list .hours-substitute dd{font-size:clamp(13px,3.5vw,15px)}
-.schedule-hours-list dt small{font-size:9px;display:inline-block;margin-left:0}
-@media(max-width:360px){.schedule-calendar-card .calendar .closure-band{font-size:11px}}
+.schedule-hours-list .hours-substitute dt,.schedule-hours-list .hours-substitute dd{font-size:clamp(15px,4vw,17px)}
+.schedule-hours-list dt{display:flex;flex-wrap:wrap;align-items:center;gap:5px;white-space:normal}
+.schedule-hours-list dt small{font-size:10px;display:inline-block;margin-left:0}
+@media(max-width:360px){.schedule-calendar-card .calendar .closure-band{font-size:12px}}
