@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   const reference=window.clinicGuideReference;
-  const tabs=[['support','보훈·지원'],['facility','시설'],['director','의료진'],['equipment','장비'],['history','History']];
+  const tabs=[['support','보훈·지원'],['facility','시설/장비'],['director','의료진'],['hours','진료시간']];
   let active='support';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function safeUrl(value){
@@ -47,7 +47,7 @@
     return `<div class="guide-gallery-controls"><button type="button" data-guide-gallery="${id}" data-direction="-1" aria-label="${esc(label)} 이전 사진">←</button><button type="button" data-guide-gallery="${id}" data-direction="1" aria-label="${esc(label)} 다음 사진">→</button></div>`;
   }
   function facilities(content){
-    return `${locationPhotos()}${reference.facilities.map((floor,index)=>`<section class="guide-floor"><header><div class="guide-floor-heading"><h3>${esc(floor.floor)}</h3><div class="guide-floor-copy"><strong>${esc(floor.description)}</strong><div class="guide-floor-contact">${floor.phoneLabel?`<span class="guide-floor-phone-label">${esc(floor.phoneLabel.trim())}</span>`:''}<a class="guide-floor-phone" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}">${esc(floor.phone||'')}</a><a class="guide-call-button" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}" aria-label="${esc(floor.floor)} ${esc(floor.description)} 전화 연결하기">연결하기</a></div></div></div>${galleryControls(index,floor.floor)}</header><div class="guide-carousel"><div id="guide-gallery-${index}" class="guide-gallery" tabindex="0" role="region" aria-label="${esc(floor.floor)} 시설 사진. 좌우로 넘겨 보세요.">${floor.photos.map((photo,i)=>`<figure>${image(photo.src,photo.alt)}<figcaption><span>${esc(photo.caption)}</span><small>${i+1} / ${floor.photos.length}</small></figcaption></figure>`).join('')}</div></div></section>`).join('')}${hours(content)}`;
+    return `${locationPhotos()}${reference.facilities.map((floor,index)=>`<section class="guide-floor"><header><div class="guide-floor-heading"><h3>${esc(floor.floor)}</h3><div class="guide-floor-copy"><strong>${esc(floor.description)}</strong><div class="guide-floor-contact">${floor.phoneLabel?`<span class="guide-floor-phone-label">${esc(floor.phoneLabel.trim())}</span>`:''}<a class="guide-floor-phone" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}">${esc(floor.phone||'')}</a><a class="guide-call-button" href="tel:${esc(String(floor.phone||'').replace(/\D/g,''))}" aria-label="${esc(floor.floor)} ${esc(floor.description)} 전화 연결하기">연결하기</a></div></div></div>${galleryControls(index,floor.floor)}</header><div class="guide-carousel"><div id="guide-gallery-${index}" class="guide-gallery" tabindex="0" role="region" aria-label="${esc(floor.floor)} 시설 사진. 좌우로 넘겨 보세요.">${floor.photos.map((photo,i)=>`<figure>${image(photo.src,photo.alt)}<figcaption><span>${esc(photo.caption)}</span><small>${i+1} / ${floor.photos.length}</small></figcaption></figure>`).join('')}</div></div></section>`).join('')}`;
   }
   function doctors(content,schedule,scheduleState){
     if(content?.status!=='ready')return status(content);
@@ -71,9 +71,9 @@
       return `<details class="guide-equipment-group" name="guide-equipment" data-guide-detail="equipment-${category}"><summary><span>${title}<small>${rows.length}종</small></span><svg class="guide-expand" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></summary><div class="guide-equipment-list">${rows.map(r=>`<article><div class="guide-equipment-photo">${image(r.image_url,r.title+' 장비')}</div><div class="guide-equipment-copy"><small>${esc(title.replace(/\s/g,''))}</small><h3>${esc(r.title)}</h3><p>${esc(r.description||'')}</p></div></article>`).join('')||'<p>장비 안내를 준비 중입니다.</p>'}</div></details>`;
     }).join('');
   }
-  function history(){return reference.historyMarkup;}
+  function history(){return `<section class="card guide-history-card" aria-label="병원 연혁">${reference.historyMarkup}</section>`;}
   function render(content,schedule,scheduleState){
-    const panes={support:()=>support(content),facility:()=>facilities(content),director:()=>doctors(content,schedule,scheduleState),equipment:()=>equipment(content),history};
+    const panes={support:()=>support(content),facility:()=>facilities(content)+equipment(content),director:()=>doctors(content,schedule,scheduleState),hours:()=>hours(content)+history()};
     return `<div class="guide-sticky-header" id="guide-sticky-header"><header class="guide-topbar"><a class="guide-home-logo" href="#/" aria-label="연세제일안과 홈"><img src="${esc(safeUrl(content?.settings?.logo_url)||'assets/logo.svg')}" alt="연세제일안과" width="140" height="25"></a><h1>병원 이용 안내</h1></header><div class="guide-tabs" id="guide-tabs" role="tablist" aria-label="병원 이용 안내 항목">${tabs.map(([id,label])=>`<button type="button" role="tab" id="guide-tab-${id}" data-guide-tab="${id}" aria-controls="guide-panel" aria-selected="${active===id}" tabindex="${active===id?'0':'-1'}">${label}</button>`).join('')}</div></div><section id="guide-panel" class="guide-panel" role="tabpanel" tabindex="0" aria-labelledby="guide-tab-${active}">${panes[active]()}</section>`;
   }
   function veterans(){

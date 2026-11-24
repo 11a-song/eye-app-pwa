@@ -3,7 +3,9 @@
   const $=s=>document.querySelector(s),{definitions,payload,safeUrl}=window.ClinicAdminModel;
   const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
   const config=window.clinicBackend||{};
-  let client,verified=false,authVersion=0,working=false,loading=false,current='doctors',rows=[],doctors=[],page=0,loadVersion=0,editing=null,dirty=false;
+  let client,verified=false,authVersion=0,working=false,loading=false,current='schedule',rows=[],doctors=[],page=0,loadVersion=0,editing=null,editingKey=null,dirty=false;
+  const scheduleKeys=['doctors','weekly','dates','closures'];
+  let scheduleData={},scheduleErrors={},scheduleQueries={};
   const state=$('#auth-status'),editor=$('#editor'),form=$('#editor-form'),fields=$('#editor-fields');
   const configured=()=>config.adminEnabled===true&&/^https:\/\/[a-z0-9]+\.supabase\.co\/?$/.test(config.url||'')&&/^sb_publishable_/.test(config.publishableKey||'');
   function errorText(error){
@@ -37,7 +39,7 @@
     }catch(error){if(version===authVersion){gate(false,errorText(error));$('#login-panel').hidden=false;}}
   }
   function doctorName(id){return doctors.find(row=>String(row.id)===String(id))?.name||'원장 확인 필요';}
-  function titleOf(row){const def=definitions[current];return row.title||row.name||(row.doctor_id?doctorName(row.doctor_id):def.fields.find(f=>f.key==='id')?.choices?.[row.id])||row.name||String(row.id||'');}
+  function titleOf(row,key=current){const def=definitions[key];return row.title||row.name||(row.doctor_id?doctorName(row.doctor_id):def.fields.find(f=>f.key==='id')?.choices?.[row.id])||row.name||String(row.id||'');}
   function describe(row){
     return definitions[current].fields.filter(f=>!['image','color','checkbox'].includes(f.type)).map(field=>{
       let value=row[field.key];if(value===null||value===undefined||value==='')return '';
@@ -49,7 +51,8 @@
   }
   function drawNav(){
     const root=$('#admin-nav');root.replaceChildren();let group='';
-    for(const [key,def] of Object.entries(definitions)){
+    const menu={schedule:{group:'진료 일정',title:'원장별 일정 관리'},...Object.fromEntries(Object.entries(definitions).filter(([key])=>!scheduleKeys.includes(key)))};
+    for(const [key,def] of Object.entries(menu)){
       if(group!==def.group){group=def.group;root.append(el('span',group,'nav-group'));}
       const button=el('button',def.title);button.type='button';if(key===current)button.setAttribute('aria-current','page');
       button.addEventListener('click',()=>{if(working)return;current=key;page=0;$('#search').value='';drawNav();load();});root.append(button);
@@ -61,7 +64,20 @@
   }
   async function load(){
     if(!verified)return;
-    const version=++loadVersion,key=current,def=definitions[key];loading=true;rows=[];render();
+    const version=++loadVersion,key=current;
+    if(key==='schedule'){
+      loading=true;scheduleData={};scheduleErrors={};render();
+      $('#group-label').textContent='진료 일정';$('#section-title').textContent='원장별 일정 관리';$('#section-description').textContent='정기 일정, 특정 날짜의 변경 일정, 휴진 기간을 구분해 확인합니다.';
+      try{
+        await requireAdmin();
+        const results=await Promise.allSettled(scheduleKeys.map(name=>readAll(definitions[name].table)));
+        if(version!==loadVersion||key!==current||!verified)return;
+        results.forEach((result,index)=>{const name=scheduleKeys[index];if(result.status==='fulfilled')scheduleData[name]=result.value;else scheduleErrors[name]=errorText(result.reason);});
+        doctors=scheduleData.doctors||[];loading=false;$('#list-status').textContent=Object.keys(scheduleErrors).length?'일부 목록을 조회하지 못했습니다. 해당 항목은 편집할 수 없습니다.':'';render();
+      }catch(error){if(version!==loadVersion)return;loading=false;$('#list-status').textContent=errorText(error);render(true);}
+      return;
+    }
+    const def=definitions[key];loading=true;rows=[];render();
     $('#group-label').textContent=def.group;$('#section-title').textContent=def.title;$('#section-description').textContent=def.description;$('#add').textContent=def.storage?'이미지 업로드':'새 항목';
     try{
       await requireAdmin();
@@ -78,9 +94,14 @@
   }
   function render(failed=false){
     const root=$('#records');root.replaceChildren();$('#add').disabled=loading||failed||!verified;
+    $('#add').parentElement.hidden=current==='schedule';
     $('#refresh').disabled=loading;$('#pagination').replaceChildren();
     if(loading){root.append(el('p','목록을 불러오는 중입니다.','empty-state'));return;}
     if(failed)return;
+    if(current==='schedule'){
+      window.ClinicAdminSchedule.render(root,{data:scheduleData,errors:scheduleErrors,queries:scheduleQueries,canEdit:verified&&!working,definitions,safeUrl,onEdit:(key,row)=>openEditor(row,key)});
+      return;
+    }
     const query=$('#search').value.trim().toLocaleLowerCase();
     const matches=rows.filter(row=>(definitions[current].storage?row.name:titleOf(row)+' '+describe(row)).toLocaleLowerCase().includes(query));
     const pages=Math.max(1,Math.ceil(matches.length/20));page=Math.min(page,pages-1);
@@ -98,9 +119,9 @@
     const pager=$('#pagination');const prev=el('button','이전','button'),next=el('button','다음','button');prev.disabled=page===0;next.disabled=page===pages-1;prev.onclick=()=>{page--;render();};next.onclick=()=>{page++;render();};pager.append(prev,el('span',`${page+1} / ${pages} · ${matches.length}개`),next);
   }
   function preview(row){$('#preview-title').textContent=titleOf(row);const target=$('#preview-content');target.replaceChildren(el('p',describe(row)));const url=safeUrl(row.image_url||row.photo_url||row.profile_photo_url,true);if(url){const img=el('img');img.src=url;img.alt='등록 이미지';target.prepend(img);}$('#preview').showModal();}
-  function openEditor(row){
+  function openEditor(row,key=current){
     if(!verified||working)return;
-    const def=definitions[current];editing=row?{...row}:null;dirty=false;form.reset();fields.replaceChildren();$('#editor-error').textContent='';$('#delete').hidden=!row||def.storage;
+    editingKey=key;const def=definitions[key];editing=row?{...row}:null;dirty=false;form.reset();fields.replaceChildren();$('#editor-error').textContent='';$('#delete').hidden=!row||def.storage;
     $('#editor-title').textContent=def.title+' · '+(row?'편집':'추가');
     if(def.storage){const label=el('label','이미지 선택','field'),input=el('input');input.type='file';input.name='asset';input.accept='image/jpeg,image/png,image/webp,image/gif';input.required=true;label.append(input,el('small','JPG, PNG, WebP, GIF · 최대 5MB'));fields.append(label);}
     for(const field of def.fields){
@@ -114,6 +135,7 @@
       else{input=el('input');input.type=field.type==='image'?'text':field.type;}
       input.name=field.key;input.required=!!field.required;input.disabled=!!row&&def.manualKey&&field.key===(def.key||'id');
       let value=row?.[field.key]??field.default??'';
+      if(field.key==='end_time')value=String(row?.end_time||(Number(row?.weekday)===6?'17:00':field.default||'19:00')).slice(0,5);
       if(field.type==='checkbox')input.checked=Boolean(value);
       else if(field.type==='lines')input.value=Array.isArray(value)?value.join('\n'):value;
       else{if(field.type==='time')value=String(value).slice(0,5);input.value=value;}
@@ -123,9 +145,18 @@
         uploader.onchange=async()=>{if(!uploader.files[0])return;setBusy(true);try{const url=await uploadImage(uploader.files[0]);input.value=url;dirty=true;$('#editor-error').textContent='이미지를 업로드했습니다. 저장을 눌러 항목에 연결해 주세요.';}catch(error){$('#editor-error').textContent=errorText(error);}finally{setBusy(false);}};label.append(uploader);
       }
     }
-    editor.showModal();
+    function scheduleFields(event){
+      if(!['weekly','dates'].includes(editingKey))return;
+      const morning=form.elements.namedItem('period').value==='morning',end=form.elements.namedItem('end_time');end.disabled=morning;end.closest('label').hidden=morning;
+      if(event&&['weekday','schedule_date'].includes(event.target.name)){
+        const saturday=editingKey==='weekly'?form.elements.namedItem('weekday').value==='6':new Date(form.elements.namedItem('schedule_date').value+'T12:00:00').getDay()===6;
+        end.value=saturday?'17:00':'19:00';
+      }
+      if(editingKey==='weekly'){const weeks=form.elements.namedItem('saturday_weeks');const saturday=form.elements.namedItem('weekday').value==='6';weeks.disabled=!saturday;weeks.closest('label').hidden=!saturday;}
+    }
+    fields.onchange=scheduleFields;scheduleFields();editor.showModal();
   }
-  function setBusy(value){working=value;fields.disabled=value;form.querySelectorAll('button').forEach(button=>button.disabled=value);$('#delete-confirm').querySelectorAll('button').forEach(button=>button.disabled=value);}
+  function setBusy(value){working=value;fields.disabled=value;form.querySelectorAll('button').forEach(button=>button.disabled=value);$('#delete-confirm').querySelectorAll('button').forEach(button=>button.disabled=value);if(!value&&current==='schedule'&&!loading)render();}
   async function uploadImage(file){
     await requireAdmin();
     const types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
@@ -138,11 +169,11 @@
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(working)return;$('#editor-error').textContent='';setBusy(true);
     try{
-      await requireAdmin();const def=definitions[current];
+      await requireAdmin();const def=definitions[editingKey];
       if(def.storage)await uploadImage(form.elements.asset.files[0]);
       else{
         const values={};for(const field of def.fields){const input=form.elements.namedItem(field.key);values[field.key]=field.type==='checkbox'?input.checked:input.value;}
-        await window.ClinicAdminStore.save(client,current,values,editing);
+        await window.ClinicAdminStore.save(client,editingKey,values,editing);
       }
       dirty=false;editor.close();await load();$('#list-status').textContent='저장했습니다. 앱을 새로 열면 반영됩니다.';
     }catch(error){$('#editor-error').textContent=errorText(error);}finally{setBusy(false);}
@@ -150,12 +181,12 @@
   function closeEditor(){if(working)return;if(dirty&&!window.confirm('저장하지 않은 변경을 버릴까요?'))return;editor.close();dirty=false;}
   document.querySelectorAll('[data-editor-close]').forEach(button=>button.onclick=closeEditor);
   editor.addEventListener('cancel',event=>{event.preventDefault();closeEditor();});
-  $('#delete').onclick=()=>{if(working||!editing)return;$('#delete-name').textContent=titleOf(editing);$('#delete-confirm').showModal();};
+  $('#delete').onclick=()=>{if(working||!editing)return;$('#delete-name').textContent=titleOf(editing,editingKey);$('#delete-confirm').showModal();};
   $('#delete-cancel').onclick=()=>$('#delete-confirm').close();
   $('#delete-confirm').addEventListener('cancel',event=>{if(working)event.preventDefault();});
   $('#delete-yes').onclick=async()=>{
     if(working||!editing)return;setBusy(true);
-    try{await requireAdmin();await window.ClinicAdminStore.remove(client,current,editing);dirty=false;$('#delete-confirm').close();editor.close();await load();$('#list-status').textContent='삭제했습니다.';}catch(error){$('#delete-confirm').close();$('#editor-error').textContent=errorText(error);}finally{setBusy(false);}
+    try{await requireAdmin();await window.ClinicAdminStore.remove(client,editingKey,editing);dirty=false;$('#delete-confirm').close();editor.close();await load();$('#list-status').textContent='삭제했습니다.';}catch(error){$('#delete-confirm').close();$('#editor-error').textContent=errorText(error);}finally{setBusy(false);}
   };
   $('#preview-close').onclick=()=>$('#preview').close();
   $('#search').oninput=()=>{page=0;render();};$('#add').onclick=()=>openEditor(null);$('#refresh').onclick=()=>load();

@@ -14,7 +14,8 @@ for(const file of ['scripts/guide-reference.js','scripts/guide.js','scripts/holi
 const reference=context.window.clinicGuideReference,guide=context.window.ClinicGuide;
 const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:name=>Object.hasOwn(dataset,name.replace(/^data-/,'').replace(/-([a-z])/g,(_,c)=>c.toUpperCase()))})}});
 (async()=>{
-  assert.equal((el('#main').innerHTML.match(/role="tab" /g)||[]).length,5);
+  assert.equal((el('#main').innerHTML.match(/role="tab" /g)||[]).length,4);
+  assert.ok(!el('#main').innerHTML.includes('data-guide-tab="history"'));
   assert.ok(!el('#main').innerHTML.includes('class="page-top"'));
   assert.ok(!el('#main').innerHTML.includes('class="back"'));
   assert.match(el('#main').innerHTML,/국가유공자 및 국가유공자의 유가족/);
@@ -50,7 +51,9 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   for(const name of ['building-exterior','building-parking'])assert.ok(fs.existsSync(path.join(root,'assets/facility/'+name+'.jpg')));
   assert.ok(el('#main').innerHTML.includes('제주시 연북로 449 메디온빌딩 2,3층'));
   assert.ok(el('#main').innerHTML.includes('건물 뒤편 주차장'));
-  assert.ok(el('#main').innerHTML.indexOf('병원 진료시간')>el('#main').innerHTML.lastIndexOf('</figure>'));
+  assert.ok(!el('#main').innerHTML.includes('병원 진료시간'));
+  assert.ok(!el('#main').innerHTML.includes('guide-history-card'));
+  assert.ok(el('#main').innerHTML.indexOf('guide-equipment-group')>el('#main').innerHTML.lastIndexOf('</figure>'),'equipment follows the floor galleries');
   assert.equal(reference.facilities.length,2);
   for(const floor of reference.facilities)for(const photo of floor.photos)assert.ok(fs.existsSync(path.join(root,photo.src)),photo.src);
   assert.equal((el('#main').innerHTML.match(/class="guide-gallery-controls"/g)||[]).length,2);
@@ -66,11 +69,14 @@ const click=dataset=>handlers.click({target:{closest:()=>({dataset,hasAttribute:
   // Use canonical doctor names from data to verify source ordering, independent of allocated IDs.
   let previous=-1;for(const name of reference.doctorOrder){const doctor=data.doctors.find(d=>d.name.startsWith(name));const at=html.indexOf('<strong>'+doctor.name+'</strong>');assert.ok(at>previous);previous=at;}
   assert.match(html,/약력/);assert.match(html,/학회활동/);assert.match(html,/guide-weekly/);
-  await click({guideTab:'equipment'});assert.equal((el('#main').innerHTML.match(/<article>/g)||[]).length,41);
+  await click({guideTab:'facility'});assert.equal((el('#main').innerHTML.match(/<article>/g)||[]).length,41);
   assert.ok(el('#main').innerHTML.indexOf('수술 장비')<el('#main').innerHTML.indexOf('검진 장비'));
-  await click({guideTab:'history'});for(const year of ['2017','2019','2020','2022','2025','2026'])assert.ok(el('#main').innerHTML.includes('<h4>'+year+'</h4>'));
-  await handlers.keydown({key:'Home',preventDefault(){},target:{closest:()=>({dataset:{guideTab:'history'}})}});assert.equal(guide.active,'support');
-  content.status='error';guide.select('equipment');vm.runInContext('render()',context);assert.match(el('#main').innerHTML,/다시 불러오기/);assert.ok(!el('#main').innerHTML.includes('<article>'));
+  await click({guideTab:'hours'});assert.equal(guide.active,'hours');for(const year of ['2017','2019','2020','2022','2025','2026'])assert.ok(el('#main').innerHTML.includes('<h4>'+year+'</h4>'));
+  assert.ok(el('#main').innerHTML.indexOf('병원 진료시간')<el('#main').innerHTML.indexOf('class="card guide-history-card"'),'history follows clinic hours in its own card');
+  assert.ok(!el('#main').innerHTML.includes('guide-gallery-'));
+  assert.ok(!el('#main').innerHTML.includes('guide-equipment-group'));
+  await handlers.keydown({key:'Home',preventDefault(){},target:{closest:()=>({dataset:{guideTab:'hours'}})}});assert.equal(guide.active,'support');
+  content.status='error';guide.select('facility');vm.runInContext('render()',context);assert.match(el('#main').innerHTML,/다시 불러오기/);assert.ok(!el('#main').innerHTML.includes('<article>'));
   content.status='ready';content.profiles[0].greeting='<img src=x onerror=alert(1)>';guide.select('director');vm.runInContext('render()',context);assert.ok(el('#main').innerHTML.includes('&lt;img src=x'));assert.ok(!el('#main').innerHTML.includes('<img src=x'));
   scheduleFails=true;await vm.runInContext('loadSchedules(true)',context);await new Promise(setImmediate);assert.equal(vm.runInContext('scheduleState',context),'error');assert.equal(scheduleCalls,2,'failed guide schedule must not auto-retry in a render loop');
   for(const route of ['before','after','dream','faq','profile','schedule']){context.location.hash='#/'+route;vm.runInContext('render()',context);assert.ok(!el('#main').innerHTML.includes('class="back"'),route);}

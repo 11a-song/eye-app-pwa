@@ -59,11 +59,11 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   assert.ok(!initialMarkup.includes('name="day2030-06-07" checked'));
   assert.equal((initialMarkup.match(/class="reminder-wheel"/g)||[]).length,8,'four independent localized-hour and minute wheels');
   assert.ok(!initialMarkup.includes('type="time"'),'wheel picker replaces platform-dependent time inputs');
-  const wheels={},hiddenTime={value:''},editors={},timeError={hidden:true,textContent:''};
-  const picker={dataset:{},querySelector:selector=>selector==='input'?hiddenTime:selector==='[data-time-error]'?timeError:selector.startsWith('[data-reminder-input')?editors[selector.match(/="(.*?)"/)[1]]:wheels[selector.match(/="(.*?)"/)[1]]};
-  for(const part of ['hour','minute'])editors[part]={hidden:true,value:'',dataset:{reminderInput:part},style:{},attributes:{},closest:()=>picker,matches:()=>true,setAttribute(name,value){this.attributes[name]=value;},removeAttribute(name){delete this.attributes[name];},focus(){},select(){}};
+  assert.ok(!initialMarkup.includes('data-reminder-input')&&!initialMarkup.includes('type="text"'),'alarm time has no direct typing input');
+  const wheels={},hiddenTime={value:''};
+  const picker={dataset:{},querySelector:selector=>selector==='input'?hiddenTime:wheels[selector.match(/="(.*?)"/)[1]]};
   for(const [part,values,initial] of [['hour',Array.from({length:24},(_,i)=>String(i)),'7'],['minute',['00','10','20','30','40','50'],'40']]){
-    const options=values.map((value,i)=>({id:part+i,dataset:{wheelOption:value},setAttribute(){}}));
+    const options=values.map((value,i)=>({id:part+i,dataset:{wheelOption:value},setAttribute(){},closest:()=>wheels[part]}));
     wheels[part]={dataset:{value:initial,reminderWheel:part},scrollTop:values.indexOf(initial)*36,querySelectorAll:()=>options,setAttribute(){},closest:selector=>selector==='fieldset'?null:picker};
   }
   const originalQuery=context.document.querySelectorAll;
@@ -77,12 +77,11 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   wheels.hour.scrollTop=0;handlers.scroll({target:{closest:()=>wheels.hour}});assert.equal(hiddenTime.value,'00:50','12 AM is midnight');
   assert.equal(picker.dataset.period,'am','morning color follows the selected hour');
   assert.ok(initialMarkup.includes('class="reminder-picker-unit">분</span>')&&!initialMarkup.includes('reminder-picker-colon'),'display format matches surgery arrival time');
-  handlers.keydown({key:'Enter',preventDefault(){},target:{closest:()=>wheels.hour}});assert.equal(editors.hour.hidden,false);
-  editors.hour.value='7';handlers.keydown({key:'Enter',preventDefault(){},target:editors.hour});assert.equal(hiddenTime.value,'07:50','typing preserves the displayed morning period');
-  handlers.keydown({key:'Enter',preventDefault(){},target:{closest:()=>wheels.hour}});editors.hour.value='19';handlers.keydown({key:'Enter',preventDefault(){},target:editors.hour});assert.equal(hiddenTime.value,'19:50');assert.equal(picker.dataset.period,'pm');
-  handlers.keydown({key:'Enter',preventDefault(){},target:{closest:()=>wheels.minute}});editors.minute.value='37';handlers.keydown({key:'Enter',preventDefault(){},target:editors.minute});assert.equal(timeError.hidden,false);assert.equal(editors.minute.hidden,false);
-  editors.minute.value='30';handlers.focusout({target:editors.minute});assert.equal(hiddenTime.value,'19:30');assert.equal(editors.minute.hidden,true);
-  handlers.keydown({key:'Enter',preventDefault(){},target:{closest:()=>wheels.hour}});editors.hour.value='25';handlers.keydown({key:'Escape',preventDefault(){},target:editors.hour});assert.equal(hiddenTime.value,'19:30','cancel restores the selected alarm time');
+  for(const key of ['Enter','F2','7'])handlers.keydown({key,preventDefault(){},target:{closest:()=>wheels.hour}});
+  assert.equal(hiddenTime.value,'00:50','typing and edit shortcuts do not change the selected time');
+  const selectedOption=wheels.hour.querySelectorAll()[0];
+  await handlers.click({target:{closest:selector=>selector==='[data-wheel-option]'?selectedOption:null}});
+  assert.equal(hiddenTime.value,'00:50','tapping the selected hour only selects it and cannot open an editor');
   context.document.querySelectorAll=originalQuery;
   const pm=api.buildJobs([{...plan,period:'pm',hour:2}],state,before);
   assert.equal(pm.length,14,'afternoon surgery permits morning and noon');
