@@ -3,7 +3,7 @@ const source=fs.readFileSync('scripts/medication-reminders.js','utf8');
 const KEY='jeileye-medication-reminders-v1';
 const plan={id:'plan-one',eye:'left',surgeryDate:'2030-06-10',period:'am',hour:9,minute:0,archived:false};
 const enabled={enabled:true,consent:true,times:['07:00','12:00','18:00','22:00'],slots:[true,true,true,true]};
-let all=[plan],calls=[],permissionRequests=0,failNetwork=false,allowPermission=true;
+let all=[plan],calls=[],permissionRequests=0,failNetwork=false,allowPermission=true,statusNotices=[],shownStatusCount=0;
 const data=new Map(),handlers={},windowEvents={},status={textContent:''},submit={disabled:false},test={disabled:false};
 const sub={endpoint:'https://fcm.googleapis.com/example',keys:{auth:'x'.repeat(22),p256dh:'y'.repeat(87)}};
 const context=vm.createContext({
@@ -11,7 +11,7 @@ const context=vm.createContext({
   document:{addEventListener:(t,f)=>handlers[t]=f,querySelector:s=>s==='#reminder-status'?status:null},
   location:{hash:'#/profile/reminders?plan=plan-one'},isSecureContext:true,
   Notification:{permission:'granted',async requestPermission(){permissionRequests++;return allowPermission?'granted':'denied';}},
-  navigator:{userAgent:'Android Chrome',serviceWorker:{ready:Promise.resolve({pushManager:{getSubscription:async()=>({toJSON:()=>sub})}})}},
+  navigator:{userAgent:'Android Chrome',serviceWorker:{ready:Promise.resolve({pushManager:{getSubscription:async()=>({toJSON:()=>sub})},getNotifications:async({tag})=>statusNotices.filter(notice=>notice.tag===tag),showNotification:async(title,options)=>{shownStatusCount++;statusNotices=[{...options,title,close(){statusNotices=[];}}];}})}},
   matchMedia:()=>({matches:true}),localStorage:{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)},
   fetch:async(url,options)=>{calls.push({url,body:JSON.parse(options.body||'null')});if(failNetwork)throw Error('offline');return {ok:true,json:async()=>({ok:true})};},
   crypto:webcrypto,Date,URL,Uint8Array,AbortController,setTimeout,clearTimeout,console
@@ -105,6 +105,9 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   await save();assert.match(status.textContent,/허용되지/);assert.equal(calls.length,0);assert.equal(permissionRequests,1);
   context.Notification.permission='granted';allowPermission=true;
   await save();assert.match(status.textContent,/설정되었습니다/);assert.ok(!submit.disabled);
+  assert.equal(statusNotices.length,1);assert.equal(statusNotices[0].title,'안약 알림이 설정되었습니다');assert.equal(statusNotices[0].silent,true,'saving does not ring the medication alarm');
+  assert.equal(statusNotices[0].data.url,'./#/profile');assert.match(statusNotices[0].body,/다음 알림/);
+  const previousNoticeCount=shownStatusCount;await save();assert.equal(shownStatusCount,previousNoticeCount,'unchanged schedule does not duplicate the status notification');
   assert.equal(calls.at(-1).body.jobs.length,13);assert.equal(calls.at(-1).body.token.length,64);
   assert.ok(!JSON.stringify(calls).includes('checks'),'check records never go to server');
   assert.equal(JSON.parse(data.get(KEY)).pending,false);
@@ -115,7 +118,9 @@ async function save(value=enabled){await handlers.submit({target:form(value),pre
   assert.equal(JSON.parse(data.get(KEY)).plans['plan-one'].days['2030-06-10'],false,'surgery-day off persists');
   assert.ok(!api.render().includes('name="day2030-06-10" checked'),'surgery-day choice restores');
   await save({...enabled,enabled:false});assert.equal(calls.at(-1).body.jobs.length,0,'off atomically cancels pending jobs');
-  failNetwork=true;await save();assert.ok(JSON.parse(data.get(KEY)).pending,'failure stays pending for retry');assert.ok(!submit.disabled);
+  assert.equal(statusNotices.length,0,'turning all reminders off removes the status notification');
+  const beforeFailure=shownStatusCount;
+  failNetwork=true;await save();assert.ok(JSON.parse(data.get(KEY)).pending,'failure stays pending for retry');assert.ok(!submit.disabled);assert.equal(shownStatusCount,beforeFailure,'failed save cannot announce success');
   failNetwork=false;all=[{...plan,archived:true}];api.plansChanged(all);
   await new Promise(r=>setTimeout(r,5));assert.equal(calls.at(-1).body.jobs.length,0,'archival cancels jobs');
   all=[plan];api.plansChanged(all);await new Promise(r=>setTimeout(r,5));

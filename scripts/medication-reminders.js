@@ -129,6 +129,20 @@
     if(!sub){const {publicKey}=await request('config');const raw=atob(publicKey.replace(/-/g,'+').replace(/_/g,'/'));sub=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(raw,c=>c.charCodeAt(0))});}
     s.subscription=sub.toJSON();write(s);return s.subscription;
   }
+  async function updateStatusNotification(jobs){
+    if(native()||typeof Notification==='undefined'||Notification.permission!=='granted'||!navigator.serviceWorker)return;
+    const registration=await navigator.serviceWorker.ready;
+    if(!registration.getNotifications||!registration.showNotification)return;
+    const tag='jeileye-reminder-settings',existing=await registration.getNotifications({tag});
+    if(!jobs.length){existing.forEach(notice=>notice.close());return;}
+    const next=jobs.reduce((first,job)=>job.fire_at<first.fire_at?job:first),signature=JSON.stringify(jobs);
+    if(existing.some(notice=>notice.data?.signature===signature))return;
+    const when=new Date(next.fire_at).toLocaleString('ko-KR',{month:'long',day:'numeric',hour:'numeric',minute:'2-digit'});
+    await registration.showNotification('안약 알림이 설정되었습니다',{
+      body:`다음 알림: ${when}. 예약한 시간에 안약 알림을 받습니다.`,tag,icon:'assets/icon-192.png',
+      silent:true,requireInteraction:true,data:{url:'./#/profile',signature}
+    });
+  }
   function synchronize(){
     const task=async()=>{
       if(native()){
@@ -142,6 +156,8 @@
       await request('save',{...identity(s),subscription:s.subscription,revision,jobs});
       // Preserve newer form edits that may have been made while this request was in flight.
       const latest=read();if(latest.revision===revision){latest.pending=false;write(latest);}
+      // A status notice is supplementary; a blocked status channel must not undo saved jobs.
+      if(latest.revision===revision)await updateStatusNotification(jobs).catch(()=>{});
     };
     queue=queue.catch(()=>{}).then(task);return queue;
   }

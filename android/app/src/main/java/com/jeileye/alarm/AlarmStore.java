@@ -38,21 +38,22 @@ final class AlarmStore {
         if(!prefs(c).edit().putString("jobs",valid.toString()).commit())throw new IllegalStateException("기기에 알람을 저장하지 못했습니다.");
         for(int n=0;n<previous.length();n++)manager.cancel(pending(c,previous.getJSONObject(n)));
         try{for(int n=0;n<valid.length();n++)schedule(c,valid.getJSONObject(n));}
-        catch(SecurityException e){throw new IllegalStateException("정확한 알람 권한을 허용한 뒤 다시 저장해 주세요.");}
+        catch(SecurityException e){c.getSystemService(NotificationManager.class).cancel(AlarmStatusNotification.ID);throw new IllegalStateException("정확한 알람 권한을 허용한 뒤 다시 저장해 주세요.");}
         String ringing=prefs(c).getString("ringing","");boolean keep=false;
         for(int n=0;n<activePlans.length();n++)if(ringing.equals(activePlans.optString(n)))keep=true;
         if(!ringing.isEmpty()&&!keep)c.stopService(new Intent(c,AlarmService.class));
+        AlarmStatusNotification.update(c,valid);
     }
     static synchronized JSONObject consume(Context c,String key) throws Exception {
         JSONObject test=new JSONObject(prefs(c).getString("test","{}"));
         if(key(test).equals(key)){if(!prefs(c).edit().remove("test").commit())throw new IllegalStateException("알람 상태 저장 실패");return test;}
         JSONArray list=jobs(c),remaining=new JSONArray();JSONObject found=null;
         for(int n=0;n<list.length();n++){JSONObject j=list.getJSONObject(n);if(key(j).equals(key))found=j;else remaining.put(j);}
-        if(!prefs(c).edit().putString("jobs",remaining.toString()).commit())throw new IllegalStateException("알람 상태 저장 실패");return found;
+        if(!prefs(c).edit().putString("jobs",remaining.toString()).commit())throw new IllegalStateException("알람 상태 저장 실패");AlarmStatusNotification.update(c,remaining);return found;
     }
     static synchronized void restore(Context c){
-        try{JSONArray list=jobs(c);for(int n=0;n<list.length();n++)schedule(c,list.getJSONObject(n));}
-        catch(Exception ignored){/* Permission can be revoked; the setup screen reports it. */}
+        try{JSONArray list=jobs(c);for(int n=0;n<list.length();n++)schedule(c,list.getJSONObject(n));AlarmStatusNotification.update(c,list);}
+        catch(Exception ignored){c.getSystemService(NotificationManager.class).cancel(AlarmStatusNotification.ID);/* Permission can be revoked; the setup screen reports it. */}
     }
     static synchronized void test(Context c,String plan) throws Exception {
         JSONObject previous=new JSONObject(prefs(c).getString("test","{}"));if(previous.has("fire_at"))c.getSystemService(AlarmManager.class).cancel(pending(c,previous));

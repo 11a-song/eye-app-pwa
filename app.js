@@ -428,5 +428,5 @@ document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('cli
 window.addEventListener('hashchange',()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());render(true);});
 window.addEventListener('clinic-content-updated',()=>render());
 window.addEventListener('offline',()=>{const toast=$('#toast');toast.textContent='오프라인입니다. 저장된 안내 화면을 표시합니다. 외부 문의 연결은 인터넷이 필요합니다.';toast.classList.add('visible');setTimeout(()=>toast.classList.remove('visible'),5000);});
-if(!window.JeileyeNativeAlarm && 'serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(()=>console.warn('오프라인 기능을 시작하지 못했습니다.'));
+if(!window.JeileyeNativeAlarm && 'serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>console.warn('오프라인 기능을 시작하지 못했습니다.'));
 render();
